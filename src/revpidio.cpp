@@ -14,7 +14,7 @@ bool RevPiDIO::getBit(int position)
     position %= 8;
 
     lseek(fd, offset, SEEK_SET);
-    read(fd, $byte, 1);
+    read(fd, &byte, 1);
 
     result = (byte & (1 << position));
     return result;
@@ -26,11 +26,8 @@ void RevPiDIO::setBit(int position, bool on)
     int offset = 70 + (position / 8);
     position %= 8;
 
-    if(!file.isOpen())
-        return;
-
     lseek(fd, offset, SEEK_SET);
-    read(fd, $byte, 1);
+    read(fd, &byte, 1);
 
     if (on)
         byte |= (1 << position);

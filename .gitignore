@@ -84,3 +84,6 @@ etc/config/ffu/**
 
 node_modules
 npm-debug.log
+
+# Joe Backups
+*~
