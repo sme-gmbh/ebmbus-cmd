@@ -4,7 +4,7 @@ RevPiDIO::RevPiDIO(QObject *parent) :
     QObject(parent)
 {
     file.setFileName("/dev/piControl0");
-    file.open(QIODevice::ReadWrite);
+    file.open(QIODevice::ReadWrite | QIODevice::Unbuffered);
 }
 
 bool RevPiDIO::getBit(int position)
