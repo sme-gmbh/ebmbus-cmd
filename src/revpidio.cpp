@@ -3,8 +3,7 @@
 RevPiDIO::RevPiDIO(QObject *parent) :
     QObject(parent)
 {
-    file.setFileName("/dev/piControl0");
-    file.open(QIODevice::ReadWrite | QIODevice::Unbuffered);
+    fd = open("/dev/piControl0", O_RDWR);
 }
 
 bool RevPiDIO::getBit(int position)
@@ -14,11 +13,8 @@ bool RevPiDIO::getBit(int position)
     int offset = 0 + (position / 8);
     position %= 8;
 
-    if(!file.isOpen())
-        return false;
-
-    file.seek(offset);
-    file.read(&byte, 1);
+    lseek(fd, offset, SEEK_SET);
+    read(fd, $byte, 1);
 
     result = (byte & (1 << position));
     return result;
@@ -33,14 +29,14 @@ void RevPiDIO::setBit(int position, bool on)
     if(!file.isOpen())
         return;
 
-    file.seek(offset);
-    file.read(&byte, 1);
+    lseek(fd, offset, SEEK_SET);
+    read(fd, $byte, 1);
 
     if (on)
         byte |= (1 << position);
     else
         byte &= ~(1 << position);
 
-    file.seek(offset);
-    file.write(&byte, 1);
+    lseek(fd, offset, SEEK_SET);
+    write(fd, &byte, 1);
 }

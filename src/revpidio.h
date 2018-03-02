@@ -4,6 +4,14 @@
 #include <QObject>
 #include <QFile>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+
+
 class RevPiDIO : public QObject
 {
     Q_OBJECT
@@ -15,7 +23,7 @@ public:
     void setBit(int position, bool on);
 
 private:
-    QFile file;
+    int fd;
 };
 
 #endif // REVPIDIO_H
