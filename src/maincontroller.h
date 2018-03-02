@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <libebmbus/ebmbus.h>
 #include "revpidio.h"
 
 class MainController : public QObject
@@ -13,6 +14,7 @@ public:
     explicit MainController(QObject *parent = 0);
 
 private:
+    EbmBus* m_ebmbus;
     RevPiDIO m_io;
     QTimer m_timer;
 
