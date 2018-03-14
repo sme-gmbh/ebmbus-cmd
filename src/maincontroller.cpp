@@ -21,9 +21,6 @@ void MainController::slot_timer_fired()
 {
     static int speed;
 
-    m_io.setBit(4, m_io.getBit(4)); // Set lamp P1 to status of switch S1
-    //m_io.setBit(5, on); // Toggle lamp P2
-
     if (m_io.getBit(8))
     {
         if (speed < 255)
@@ -56,6 +53,16 @@ void MainController::slot_timer_fired()
     if (m_io.getBit(4) && !m_ebmbus->isDaisyChainInProgress())
     {
         printf("Start DCI Addressing...\n");
+        m_io.setBit(4, false);    // Green LED off
+        m_io.setBit(5, true);   // Red LED on
+        m_ebmbus->clearAllAddresses();
+    }
+
+    // Test DCI-DeAdressing
+    if (m_io.getBit(5) && !m_ebmbus->isDaisyChainInProgress())
+    {
+        printf("Start DCI Addressing...\n");
+        m_io.setBit(4, false);    // Green LED off
         m_io.setBit(5, true);   // Red LED on
         m_ebmbus->startDaisyChainAddressing();
     }
@@ -85,14 +92,10 @@ void MainController::slot_setDCIsignal(bool on)
 
 void MainController::slot_showResponse(quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
 {
-    QString r;
-
-    r.sprintf("PRE: %02X  commandAndFanaddress: %02X  fanGroup: %02X  data: ", preamble, commandAndFanaddress, fanGroup);
+    printf("PRE: %02X  commandAndFanaddress: %02X  fanGroup: %02X  data: ", preamble, commandAndFanaddress, fanGroup);
     foreach (quint8 byte, data)
     {
-        r.append(QString().sprintf("%02X ", byte));
+        printf("%02X ", byte);
     }
-    r.append("\n");
-
-    printf("%s", (char*)r.data());
+    printf("\n");
 }
