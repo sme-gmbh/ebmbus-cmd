@@ -20,6 +20,9 @@ private:
 
 private slots:
     void slot_timer_fired();
+    void slot_daisyChainAddressingFinished();
+    void slot_setDCIsignal(bool on);
+    void slot_showResponse(quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
 };
 
 #endif // MAINCONTROLLER_H
