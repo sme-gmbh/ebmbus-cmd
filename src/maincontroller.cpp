@@ -15,6 +15,9 @@ MainController::MainController(QObject *parent) :
     connect(m_ebmbus, SIGNAL(signal_response(quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponse(quint8,quint8,quint8,QByteArray)));
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
+
+    m_io.setBit(4, false);    // Green LED off
+    m_io.setBit(5, true);   // Red LED on
 }
 
 void MainController::slot_timer_fired()
@@ -55,7 +58,7 @@ void MainController::slot_timer_fired()
         printf("Start DCI Addressing...\n");
         m_io.setBit(4, false);    // Green LED off
         m_io.setBit(5, true);   // Red LED on
-        m_ebmbus->clearAllAddresses();
+        m_ebmbus->startDaisyChainAddressing();
     }
 
     // Test DCI-DeAdressing
@@ -64,7 +67,7 @@ void MainController::slot_timer_fired()
         printf("Start DCI Addressing...\n");
         m_io.setBit(4, false);    // Green LED off
         m_io.setBit(5, true);   // Red LED on
-        m_ebmbus->startDaisyChainAddressing();
+        m_ebmbus->clearAllAddresses();
     }
 
     // Get dci loop back signal
