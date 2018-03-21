@@ -7,90 +7,147 @@ MainController::MainController(QObject *parent) :
 {
     printf("ebmBus main controller startup...\n");
 
-    m_ebmbus = new EbmBus(this, "/dev/ttyUSB0");
-    m_ebmbus->open();
+    m_speed = 0;
 
-    connect(m_ebmbus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_daisyChainAddressingFinished()));
-    connect(m_ebmbus, SIGNAL(signal_setDCIoutput(bool)), this, SLOT(slot_setDCIsignal(bool)));
-    connect(m_ebmbus, SIGNAL(signal_response(quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponse(quint8,quint8,quint8,QByteArray)));
+    for (int i=0; i<=3; i++)
+    {
+        EbmBus* newEbmBus = new EbmBus(this, QString("/dev/ttyUSB").append(QString().setNum(i)));
+        m_ebmbuslist.append(newEbmBus);
+
+        DaisyChainInterface* newDCI = new DaisyChainInterface(this, &m_io, i, i);
+        m_dcilist.append(newDCI);
+
+        connect(newEbmBus, SIGNAL(signal_setDCIoutput(bool)), newDCI, SLOT(slot_setDCIoutput(bool)));
+        connect(newDCI, SIGNAL(signal_DCIloopResponse(bool)), newEbmBus, SLOT(slot_DCIloopResponse(bool)));
+
+        connect(newEbmBus, SIGNAL(signal_response(quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponse(quint8,quint8,quint8,QByteArray)));
+        //connect(newEbmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_daisyChainAddressingFinished()));
+
+        newEbmBus->open();
+    }
+
+
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
 
-    m_io.setBit(4, false);    // Green LED off
-    m_io.setBit(5, true);   // Red LED on
+    m_lightbutton_operation = new LightButton(this, &m_io, 4, 4);
+    m_lightbutton_error = new LightButton(this, &m_io, 5, 5);
+    m_lightbutton_speed_0 = new LightButton(this, &m_io, 6, 6);
+    m_lightbutton_speed_50 = new LightButton(this, &m_io, 7, 7);
+    m_lightbutton_speed_100 = new LightButton(this, &m_io, 8, 8);
+
+    m_ups = new UninterruptiblePowerSupply(this, &m_io, 9);
+    m_osControl = new OperatingSystemControl(this);
+    connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
+    connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
+
+    m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    m_lightbutton_error->slot_setLight(LightButton::LED_BLINK);
 }
 
 void MainController::slot_timer_fired()
 {
-    static int speed;
-
-    if (m_io.getBit(8))
+    if (m_lightbutton_speed_100->pressed_milliseconds() > 1000 && (m_speed < 255))
     {
-        if (speed < 255)
+        m_speed++;
+        foreach (EbmBus* ebmbus, m_ebmbuslist)
         {
-            speed++;
-            m_ebmbus->setSpeedSetpoint(0, 0, speed);
+            ebmbus->setSpeedSetpoint(0, 0, m_speed);
         }
     }
 
-    if (m_io.getBit(7))
+    if (m_lightbutton_speed_50->pressed_milliseconds() > 1000 && (m_speed > 0))
     {
-        if (speed > 0)
+        m_speed--;
+        foreach (EbmBus* ebmbus, m_ebmbuslist)
         {
-            speed--;
-            m_ebmbus->setSpeedSetpoint(0, 0, speed);
+            ebmbus->setSpeedSetpoint(0, 0, m_speed);
         }
     }
 
-    if (m_io.getBit(6))
+    if (m_lightbutton_speed_0->pressed_milliseconds() > 5000 && (m_speed != 0))
     {
-        if (speed > 0)
+        m_speed = 0;
+        foreach (EbmBus* ebmbus, m_ebmbuslist)
         {
-            speed = 0;
-            m_ebmbus->setSpeedSetpoint(0, 0, speed);
+            ebmbus->setSpeedSetpoint(0, 0, m_speed);
         }
     }
 
-
-    // Test DCI-Adressing
-    if (m_io.getBit(4) && !m_ebmbus->isDaisyChainInProgress())
+    if (m_speed == 0)
     {
-        printf("Start DCI Addressing...\n");
-        m_io.setBit(4, false);    // Green LED off
-        m_io.setBit(5, true);   // Red LED on
-        m_ebmbus->startDaisyChainAddressing();
+        m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
+        m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
+        m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
+    }
+    else if (m_speed < 255)
+    {
+        m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
+        m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
+        m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
+    }
+    else
+    {
+        m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
+        m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
+        m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
     }
 
-    // Test DCI-DeAdressing
-    if (m_io.getBit(5) && !m_ebmbus->isDaisyChainInProgress())
-    {
-        printf("Start DCI Addressing...\n");
-        m_io.setBit(4, false);    // Green LED off
-        m_io.setBit(5, true);   // Red LED on
-        m_ebmbus->clearAllAddresses();
-    }
 
-    // Get dci loop back signal
-    bool dciLoopBack = m_io.getBit(0);
-    static bool dciLoopBack_old = false;
+//    // Test DCI-Adressing
+//    if (m_io.getBit(4) && !m_ebmbuslist.at(0)->isDaisyChainInProgress())
+//    {
+//        printf("Start DCI Addressing...\n");
+//        m_lightbutton_operation->slot_setLight(LightButton::LED_ON);
+//        m_lightbutton_error->slot_setLight(LightButton::LED_OFF);
+//        m_ebmbuslist.at(0)->startDaisyChainAddressing();
+//    }
 
-    if (dciLoopBack != dciLoopBack_old)
+//    // Test DCI-DeAdressing
+//    if (m_io.getBit(5) && !m_ebmbuslist.at(0)->isDaisyChainInProgress())
+//    {
+//        printf("Start DCI Addressing...\n");
+//        m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
+//        m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+//        m_ebmbuslist.at(0)->clearAllAddresses();
+    //    }
+}
+
+void MainController::slot_button_operation_clicked()
+{
+
+}
+
+void MainController::slot_button_error_clicked()
+{
+    m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+}
+
+void MainController::slot_button_speed_0_clicked()
+{
+//    m_speed = 0;
+//    foreach (EbmBus* ebmbus, m_ebmbuslist)
+//    {
+//        ebmbus->setSpeedSetpoint(0, 0, m_speed);
+//    }
+}
+
+void MainController::slot_button_speed_50_clicked()
+{
+    m_speed = 128;
+    foreach (EbmBus* ebmbus, m_ebmbuslist)
     {
-        dciLoopBack_old = dciLoopBack;
-        m_ebmbus->slot_DCIloopResponse(dciLoopBack);
+        ebmbus->setSpeedSetpoint(0, 0, m_speed);
     }
 }
 
-void MainController::slot_daisyChainAddressingFinished()
+void MainController::slot_button_speed_100_clicked()
 {
-    m_io.setBit(5, false);   // Red LED off
-    m_io.setBit(4, true);    // Green LED on
-    printf("DCI Addressing finished.\n");
-}
-
-void MainController::slot_setDCIsignal(bool on)
-{
-    m_io.setBit(0, on);
+    m_speed = 255;
+    foreach (EbmBus* ebmbus, m_ebmbuslist)
+    {
+        ebmbus->setSpeedSetpoint(0, 0, m_speed);
+    }
 }
 
 void MainController::slot_showResponse(quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
@@ -101,4 +158,10 @@ void MainController::slot_showResponse(quint8 preamble, quint8 commandAndFanaddr
         printf("%02X ", byte);
     }
     printf("\n");
+}
+
+void MainController::slot_shutdownNOW()
+{
+    m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
+    m_lightbutton_error->slot_setLight(LightButton::LED_ON);
 }

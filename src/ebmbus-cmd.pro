@@ -11,10 +11,18 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     revpidio.cpp \
-    maincontroller.cpp
+    maincontroller.cpp \
+    lightbutton.cpp \
+    daisychaininterface.cpp \
+    uninterruptiblepowersupply.cpp \
+    operatingsystemcontrol.cpp
 
 LIBS     += -lebmbus
 
 HEADERS += \
     revpidio.h \
-    maincontroller.h
+    maincontroller.h \
+    lightbutton.h \
+    daisychaininterface.h \
+    uninterruptiblepowersupply.h \
+    operatingsystemcontrol.h
