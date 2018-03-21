@@ -36,6 +36,12 @@ MainController::MainController(QObject *parent) :
     m_lightbutton_speed_50 = new LightButton(this, &m_io, 7, 7);
     m_lightbutton_speed_100 = new LightButton(this, &m_io, 8, 8);
 
+    connect(m_lightbutton_operation, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_operation_clicked()));
+    connect(m_lightbutton_error, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_error_clicked()));
+    connect(m_lightbutton_speed_0, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_0_clicked()));
+    connect(m_lightbutton_speed_50, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_50_clicked()));
+    connect(m_lightbutton_speed_100, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_100_clicked()));
+
     m_ups = new UninterruptiblePowerSupply(this, &m_io, 9);
     m_osControl = new OperatingSystemControl(this);
     connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
@@ -47,32 +53,32 @@ MainController::MainController(QObject *parent) :
 
 void MainController::slot_timer_fired()
 {
-    if (m_lightbutton_speed_100->pressed_milliseconds() > 1000 && (m_speed < 255))
-    {
-        m_speed++;
-        foreach (EbmBus* ebmbus, m_ebmbuslist)
-        {
-            ebmbus->setSpeedSetpoint(0, 0, m_speed);
-        }
-    }
+//    if ((m_lightbutton_speed_100->pressed_milliseconds() > 1000) && (m_speed < 255))
+//    {
+//        m_speed++;
+//        foreach (EbmBus* ebmbus, m_ebmbuslist)
+//        {
+//            ebmbus->setSpeedSetpoint(0, 0, m_speed);
+//        }
+//    }
 
-    if (m_lightbutton_speed_50->pressed_milliseconds() > 1000 && (m_speed > 0))
-    {
-        m_speed--;
-        foreach (EbmBus* ebmbus, m_ebmbuslist)
-        {
-            ebmbus->setSpeedSetpoint(0, 0, m_speed);
-        }
-    }
+//    if ((m_lightbutton_speed_50->pressed_milliseconds() > 1000) && (m_speed > 0))
+//    {
+//        m_speed--;
+//        foreach (EbmBus* ebmbus, m_ebmbuslist)
+//        {
+//            ebmbus->setSpeedSetpoint(0, 0, m_speed);
+//        }
+//    }
 
-    if (m_lightbutton_speed_0->pressed_milliseconds() > 5000 && (m_speed != 0))
-    {
-        m_speed = 0;
-        foreach (EbmBus* ebmbus, m_ebmbuslist)
-        {
-            ebmbus->setSpeedSetpoint(0, 0, m_speed);
-        }
-    }
+//    if ((m_lightbutton_speed_0->pressed_milliseconds() > 5000) && (m_speed != 0))
+//    {
+//        m_speed = 0;
+//        foreach (EbmBus* ebmbus, m_ebmbuslist)
+//        {
+//            ebmbus->setSpeedSetpoint(0, 0, m_speed);
+//        }
+//    }
 
     if (m_speed == 0)
     {
@@ -125,11 +131,11 @@ void MainController::slot_button_error_clicked()
 
 void MainController::slot_button_speed_0_clicked()
 {
-//    m_speed = 0;
-//    foreach (EbmBus* ebmbus, m_ebmbuslist)
-//    {
-//        ebmbus->setSpeedSetpoint(0, 0, m_speed);
-//    }
+    m_speed = 0;
+    foreach (EbmBus* ebmbus, m_ebmbuslist)
+    {
+        ebmbus->setSpeedSetpoint(0, 0, m_speed);
+    }
 }
 
 void MainController::slot_button_speed_50_clicked()
