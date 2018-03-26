@@ -143,11 +143,7 @@ void MainController::slot_button_error_clicked()
 
 void MainController::slot_button_speed_0_clicked()
 {
-    m_speed = 0;
-    foreach (EbmBus* ebmbus, m_ebmbuslist)
-    {
-        ebmbus->setSpeedSetpoint(0, 0, m_speed);
-    }
+
 }
 
 void MainController::slot_button_speed_50_clicked()
