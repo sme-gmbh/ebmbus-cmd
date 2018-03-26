@@ -8,17 +8,17 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_shutdownTimeout = 25000;
     m_mainswitchDelay = 500;
 
+    m_old_mainswitchState = false;
+    m_mainswitchOffSignaled = false;
+
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
 }
 
 void UninterruptiblePowerSupply::slot_timer_fired()
 {
-    static bool old_mainswitchState = false;
-    static bool mainswitchOffSignaled = false;
-
     bool mainswitchState = m_io->getBit(m_address_mainswitch);
-    if (mainswitchState != old_mainswitchState)
+    if (mainswitchState != m_old_mainswitchState)
     {
         if (mainswitchState == false)
         {
@@ -26,16 +26,16 @@ void UninterruptiblePowerSupply::slot_timer_fired()
         }
         else
         {
-            mainswitchOffSignaled = false;
+            m_mainswitchOffSignaled = false;
         }
-        old_mainswitchState = mainswitchState;
+        m_old_mainswitchState = mainswitchState;
     }
 
     if ((mainswitchState == false) &&
-            (mainswitchOffSignaled == false) &&
+            (m_mainswitchOffSignaled == false) &&
             (m_dateTime_mainSwitchOff.msecsTo(QDateTime::currentDateTime()) > m_mainswitchDelay))
     {
         emit signal_mainswitchOff();
-        mainswitchOffSignaled = true;
+        m_mainswitchOffSignaled = true;
     }
 }

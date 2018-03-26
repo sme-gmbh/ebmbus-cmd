@@ -30,11 +30,11 @@ MainController::MainController(QObject *parent) :
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
 
-    m_lightbutton_operation = new LightButton(this, &m_io, 4, 5);
-    m_lightbutton_error = new LightButton(this, &m_io, 5, 6);
-    m_lightbutton_speed_0 = new LightButton(this, &m_io, 6, 7);
-    m_lightbutton_speed_50 = new LightButton(this, &m_io, 7, 8);
-    m_lightbutton_speed_100 = new LightButton(this, &m_io, 8, 9);
+    m_lightbutton_operation = new LightButton(this, &m_io, 4, 4);
+    m_lightbutton_error = new LightButton(this, &m_io, 5, 5);
+    m_lightbutton_speed_0 = new LightButton(this, &m_io, 6, 6);
+    m_lightbutton_speed_50 = new LightButton(this, &m_io, 7, 7);
+    m_lightbutton_speed_100 = new LightButton(this, &m_io, 8, 8);
 
     connect(m_lightbutton_operation, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_operation_clicked()));
     connect(m_lightbutton_error, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_error_clicked()));
@@ -42,7 +42,7 @@ MainController::MainController(QObject *parent) :
     connect(m_lightbutton_speed_50, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_50_clicked()));
     connect(m_lightbutton_speed_100, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_100_clicked()));
 
-    m_ups = new UninterruptiblePowerSupply(this, &m_io, 10);
+    m_ups = new UninterruptiblePowerSupply(this, &m_io, 9);
     m_osControl = new OperatingSystemControl(this);
     connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));

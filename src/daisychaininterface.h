@@ -16,6 +16,7 @@ private:
     int m_address_in;
     int m_address_out;
     QTimer m_timer;
+    bool m_old_inputState;
 
 signals:
     void signal_DCIloopResponse(bool on);

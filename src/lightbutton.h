@@ -35,6 +35,7 @@ private:
     int m_address_button;
     LED_Status m_LEDstatus;
     quint64 m_blinkFrequency;
+    bool m_old_buttonState;
     bool m_button_pressed;
     QDateTime m_dateTime_lastPress;
     int m_clickTime;

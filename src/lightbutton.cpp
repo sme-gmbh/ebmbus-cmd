@@ -6,6 +6,7 @@ LightButton::LightButton(QObject *parent, RevPiDIO *io, int address_light, int a
     m_address_light = address_light;
     m_address_button = address_button;
     m_LEDstatus = LED_OFF;
+    m_old_buttonState = false;
     m_button_pressed = false;
     m_clickTime = 1000; // ClickTime defaults to 1000 ms
     m_blinkFrequency = 1000; // Blink frequency defaults to 1 Hz
@@ -41,11 +42,9 @@ void LightButton::slot_timer_fired()
 {
     // Read in the button state and eventually emit signals
 
-    static bool old_buttonState = false;
-
     bool buttonState = m_io->getBit(m_address_button);
 
-    if (buttonState != old_buttonState)
+    if (buttonState != m_old_buttonState)
     {
         if (buttonState == true)
         {
@@ -61,7 +60,7 @@ void LightButton::slot_timer_fired()
             if (ms < m_clickTime)
                 emit signal_button_clicked();
         }
-        old_buttonState = buttonState;
+        m_old_buttonState = buttonState;
     }
 
     // Write out led state

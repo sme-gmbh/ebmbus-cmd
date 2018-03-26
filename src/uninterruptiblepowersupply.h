@@ -25,6 +25,8 @@ private:
     int m_mainswitchDelay;
     bool m_mainswitchState;
     bool m_powerstate;
+    bool m_old_mainswitchState;
+    bool m_mainswitchOffSignaled;
 
 signals:
     void signal_mainswitchOff();
