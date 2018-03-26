@@ -86,13 +86,13 @@ void MainController::slot_timer_fired()
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
     }
-    else if (m_speed < 127)
+    else if (m_speed < 170)
     {
         m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
         m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
     }
-    else if (m_speed == 127)
+    else if (m_speed == 170)
     {
         m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
@@ -148,7 +148,7 @@ void MainController::slot_button_speed_0_clicked()
 
 void MainController::slot_button_speed_50_clicked()
 {
-    m_speed = 127;
+    m_speed = 170;
     foreach (EbmBus* ebmbus, m_ebmbuslist)
     {
         ebmbus->setSpeedSetpoint(0, 0, m_speed);
