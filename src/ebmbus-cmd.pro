@@ -1,4 +1,4 @@
-QT += core
+QT += core network
 QT -= gui
 
 CONFIG += c++11
@@ -15,7 +15,13 @@ SOURCES += main.cpp \
     lightbutton.cpp \
     daisychaininterface.cpp \
     uninterruptiblepowersupply.cpp \
-    operatingsystemcontrol.cpp
+    operatingsystemcontrol.cpp \
+    remotecontroller.cpp \
+    remoteclienthandler.cpp \
+    ffu.cpp \
+    ffudatabase.cpp \
+    logentry.cpp \
+    loghandler.cpp
 
 LIBS     += -lebmbus
 
@@ -25,4 +31,10 @@ HEADERS += \
     lightbutton.h \
     daisychaininterface.h \
     uninterruptiblepowersupply.h \
-    operatingsystemcontrol.h
+    operatingsystemcontrol.h \
+    remotecontroller.h \
+    remoteclienthandler.h \
+    ffu.h \
+    ffudatabase.h \
+    logentry.h \
+    loghandler.h
