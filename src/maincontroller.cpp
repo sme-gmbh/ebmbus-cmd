@@ -8,6 +8,7 @@ MainController::MainController(QObject *parent) :
     printf("ebmBus main controller startup...\n");
 
     m_loghandler = new Loghandler(this);
+    connect(m_loghandler, SIGNAL(signal_newError()), this, SLOT(slot_newError()));
 
     m_speed = 170;
 
