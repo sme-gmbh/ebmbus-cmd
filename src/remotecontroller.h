@@ -14,7 +14,7 @@ class RemoteController : public QObject
 {
     Q_OBJECT
 public:
-    explicit RemoteController(QObject *parent, FFUdatabase* m_ffuDB);
+    explicit RemoteController(QObject *parent, FFUdatabase* ffuDB);
     ~RemoteController();
 
     bool isConnected(); // Returns true if at least one server is connected

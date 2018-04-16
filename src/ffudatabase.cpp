@@ -42,6 +42,11 @@ QString FFUdatabase::deleteFFU(int id)
     return "Warning[FFUdatabase]: Unable to remove ID " + QString().setNum(id) + " from db.";
 }
 
+QList<FFU *> FFUdatabase::getFFUs()
+{
+    return m_ffus;
+}
+
 FFU *FFUdatabase::getFFUbyID(int id)
 {
     foreach (FFU* ffu, m_ffus)

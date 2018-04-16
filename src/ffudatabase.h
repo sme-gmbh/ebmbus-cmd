@@ -17,6 +17,7 @@ public:
     QString addFFU(int id);
     QString deleteFFU(int id);
 
+    QList<FFU*> getFFUs();
     FFU* getFFUbyID(int id);
 
     QString getFFUdata(int id, QString key);

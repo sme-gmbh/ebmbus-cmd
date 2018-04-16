@@ -1,9 +1,9 @@
 #include "remoteclienthandler.h"
 
-RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket) : QObject(parent)
+RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB) : QObject(parent)
 {
     this->socket = socket;
-    //this->lv_database = lv_database;
+    m_ffuDB = ffuDB;
 
 #ifdef DEBUG
     QString debugStr;
@@ -32,30 +32,20 @@ void RemoteClientHandler::slot_read_ready()
     while (socket->canReadLine())
     {
         // Data format:
-        // COMMAND id [$parentId] [key]>[value];[key]>[value];...
+        // COMMAND [--key][=value] [--key][=value]...
         QString line = QString::fromUtf8(this->socket->readLine());
         line.remove(QRegExp("[\\r\\n]"));      // Strip newlines at the beginning and at the end
         int commandLength = line.indexOf(' ');
         if (commandLength == -1) commandLength = line.length();
         QString command = line.left(commandLength);
         line.remove(0, commandLength + 1);  // Remove command and optional space
-        //line = line.trimmed();      // Strip paces and newlines at the beginning and at the end
-        int idLength = line.indexOf(' ');
-        if (idLength == -1)
-            idLength = line.length();
+
 #ifdef DEBUG
         printf("Received data: \r\n");
 #endif
 
-        quint64 id = 0;
-        bool idValid = true;
-
-        id = line.left(idLength).toULongLong(&idValid);
-
-        line.remove(0, idLength + 1);       // Remove id and optional space
-
         // Parse key/value pairs now
-        QStringList commandChunks = line.split(';', QString::SkipEmptyParts);
+        QStringList commandChunks = line.split(' ', QString::SkipEmptyParts);
         QMap<QString, QString> data;
 
         foreach(QString commandChunk, commandChunks)
@@ -63,76 +53,86 @@ void RemoteClientHandler::slot_read_ready()
 #ifdef DEBUG
             printf("Decoding chunk: %s\r\n", commandChunk.toLatin1().data());
 #endif
-            QStringList key_value_pair = commandChunk.split('>');
+            QStringList key_value_pair = commandChunk.split('=');
             if (key_value_pair.length() != 2)
             {
                 socket->write("ERROR: key_value_pair length invalid\r\n");
                 continue;
             }
-            // key and value are base64 encoded.
-            QString key = QString::fromUtf8(QByteArray::fromBase64(key_value_pair.at(0).toUtf8()));
-            QString value = QString::fromUtf8(QByteArray::fromBase64(key_value_pair.at(1).toUtf8()));
+//            // key and value are base64 encoded.
+//            QString key = QString::fromUtf8(QByteArray::fromBase64(key_value_pair.at(0).toUtf8()));
+//            QString value = QString::fromUtf8(QByteArray::fromBase64(key_value_pair.at(1).toUtf8()));
+            QString key = key_value_pair.at(0);
+            key.remove(0, 2);   // Remove leading "--"
+            QString value = key_value_pair.at(1);
             data.insert(key, value);
         }
-
-        // The following code is taken from the sme lv_server and must be changed accordingly for the openFFUcontrol remote protocol.
 
         // message is distributed to other clients in this way
         //emit signal_broadcast(this->socket, line);
 
-//        if (command == "GET") // Get a set of data
-//        {
-//            if (!idValid)
-//            {
-//                socket->write("ERROR: unable to decode id\r\n");
-//                continue;
-//            }
-//            socket->write(lv_database->get(id));    // This is the only function returning QByteArray instead of QString
-//            continue;
-//        }
+        if (command == "help")
+        {
+            socket->write("This is the commandset of the openFFUcontrol remote unit:\r\n"
+                          "\r\n"
+                          "<COMMAND> [--key[=value]]\r\n"
+                          "\r\n"
+                          "COMMANDS:\r\n"
+                          "    list\r\n"
+                          "        Show the list of currently configured ffus from the controller database.\r\n"
+                          "\r\n"
+                          "    broadcast\r\n"
+                          "        Broadcast data to all buses and all units.\r\n"
+                          "        Possible keys: speed, ...tbd.r\n"
+                          "\r\n"
+                          "    dci-address --bus=BUSNR\r\n"
+                          "        Start daisy-chain addressing of bus-line BUSNR.\r\n"
+                          "\r\n"
+                          "    raw-set --bus=BUSNR --KEY=VALUE\r\n"
+                          "\r\n"
+                          "    raw-get --bus=BUSNR --KEY1 [--KEY2 ...]\r\n");
+        }
+        else if (command == "list")
+        {
+            QList<FFU*> ffus = m_ffuDB->getFFUs();
+            foreach(FFU* ffu, ffus)
+            {
+                QString line;
 
-//        if (command == "CREATE") // Creates a new set of data in the parent identified by id
-//        {
-//            QByteArray response = lv_database->create(data).toUtf8();
-//            socket->write(response);
-//            if (!response.startsWith("ERROR"))
-//                emit signal_broadcast(this->socket, response);
-//            continue;
-//        }
+                line.sprintf("FFU id=%i busID=%i rpm=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getSpeed());
 
-//        if (command == "SET") // Set a set of data, overwrites all keys
-//        {
-//            if (!idValid)
-//            {
-//                socket->write("ERROR: unable to decode id\r\n");
-//                continue;
-//            }
-//            socket->write(lv_database->set(id, data).toUtf8());
-//            continue;
-//        }
-
-//        if (command == "CHANGE") // Change a set of data, overwrites the given keys
-//        {
-//            if (!idValid)
-//            {
-//                socket->write("ERROR: unable to decode id\r\n");
-//                continue;
-//            }
-//            QByteArray response = lv_database->change(id, data).toUtf8();
-//            socket->write(response);
-//            if (!response.startsWith("ERROR"))
-//                emit signal_broadcast(this->socket, response);
-//            continue;
-//        }
-
-        //    if (command == "REMOVE") // Delete a set of data, actually no deletion, but removes this node from the parent subnode list (data is kept on hdd)
-        //    {
-        //        socket->write(lv_database->remove(id).toUtf8());
-        //        continue;
-        //    }
-
-        // If control reaches this point, we have an unsupported command
-        socket->write("ERROR: Command not supported: " + command.toUtf8() + "\r\n");
+                socket->write(line.toUtf8());
+            }
+        }
+        else if (command == "broadcast")
+        {
+            socket->write("Not implemented yet.\r\n");
+        }
+        else if (command == "dci-address")
+        {
+            socket->write("Not implemented yet.");
+        }
+        else if (command == "raw-set")
+        {
+            socket->write("Not implemented yet.");
+        }
+        else if (command == "raw-get")
+        {
+            socket->write("Not implemented yet.");
+        }
+        else if (command == "set")
+        {
+            socket->write("Not implemented yet.");
+        }
+        else if (command == "get")
+        {
+            socket->write("Not implemented yet.");
+        }
+        else
+        {
+            // If control reaches this point, we have an unsupported command
+            socket->write("ERROR: Command not supported: " + command.toUtf8() + "\r\n");
+        }
     }
 }
 

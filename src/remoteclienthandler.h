@@ -10,15 +10,17 @@
 #include <QByteArray>
 #include <QRegExp>
 
+#include "ffudatabase.h"
+
 class RemoteClientHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit RemoteClientHandler(QObject *parent, QTcpSocket* socket);
+    explicit RemoteClientHandler(QObject *parent, QTcpSocket* socket, FFUdatabase* ffuDB);
 
 private:
     QTcpSocket* socket;
-    // keep some kind of DB pointer?
+    FFUdatabase* m_ffuDB;
 
 signals:
     void signal_broadcast(QTcpSocket* fromClient, QByteArray data);
