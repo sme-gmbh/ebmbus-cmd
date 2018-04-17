@@ -23,7 +23,7 @@ private:
     FFUdatabase* m_ffuDB;
 
 signals:
-    void signal_broadcast(QTcpSocket* fromClient, QByteArray data);
+    void signal_broadcast(QByteArray data);
     void signal_connectionClosed(QTcpSocket* socket, RemoteClientHandler* remoteClientHandler);
 
 public slots:

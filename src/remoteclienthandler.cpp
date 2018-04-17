@@ -69,7 +69,7 @@ void RemoteClientHandler::slot_read_ready()
         }
 
         // message is distributed to other clients in this way
-        //emit signal_broadcast(this->socket, line);
+        //emit signal_broadcast(QByteArray);
 
         if (command == "help")
         {
