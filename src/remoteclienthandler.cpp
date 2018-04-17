@@ -81,6 +81,9 @@ void RemoteClientHandler::slot_read_ready()
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "\r\n"
+                          "    add-ffu\r\n"
+                          "        Add a new ffu to the controller database.\r\n"
+                          "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
                           "        Possible keys: speed, ...tbd.r\n"
@@ -103,6 +106,30 @@ void RemoteClientHandler::slot_read_ready()
 
                 socket->write(line.toUtf8());
             }
+        }
+        else if (command == "add-ffu")
+        {
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString bus = data.value("bus");
+            if (bus.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            bool ok;
+            QString idString = data.value("id");
+            int id = idString.toInt(&ok);
+            if (idString.isEmpty() || !ok)
+            {
+                socket->write("Error[Commandparser]: parameter \"id\" not specified or id can not be parsed. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("add-ffu bus=" + bus.toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
+            QString response = m_ffuDB->addFFU(id);
+            socket->write(response.toUtf8());
         }
         else if (command == "broadcast")
         {
