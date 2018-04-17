@@ -53,7 +53,7 @@ void RemoteController::slot_new_connection()
 
     RemoteClientHandler* remoteClientHandler = new RemoteClientHandler(this, newSocket, m_ffuDB);
     connect(remoteClientHandler, SIGNAL(signal_broadcast(QTcpSocket*,QByteArray)),
-            this, SLOT(slot_broadcast(QTcpSocket*,QByteArray)));
+            this, SLOT(slot_broadcast(QByteArray)));
     connect(remoteClientHandler, SIGNAL(signal_connectionClosed(QTcpSocket*,RemoteClientHandler*)),
             this, SLOT(slot_connectionClosed(QTcpSocket*,RemoteClientHandler*)));
 
