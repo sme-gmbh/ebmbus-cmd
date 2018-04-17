@@ -51,7 +51,7 @@ void RemoteClientHandler::slot_read_ready()
         foreach(QString commandChunk, commandChunks)
         {
 #ifdef DEBUG
-            printf("Decoding chunk: %s\r\n", commandChunk.toLatin1().data());
+            printf("Decoding chunk: %s\r\n", commandChunk.toUtf8().data());
 #endif
             QStringList key_value_pair = commandChunk.split('=');
             if (key_value_pair.length() != 2)
@@ -81,7 +81,7 @@ void RemoteClientHandler::slot_read_ready()
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "\r\n"
-                          "    broadcast\r\n"
+                          "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
                           "        Possible keys: speed, ...tbd.r\n"
                           "\r\n"
@@ -106,27 +106,95 @@ void RemoteClientHandler::slot_read_ready()
         }
         else if (command == "broadcast")
         {
-            socket->write("Not implemented yet.\r\n");
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString bus = data.value("bus");
+            if (bus.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            QString speed = data.value("speed");
+            if (speed.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"speed\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("broadcast bus=" + bus.toUtf8() + " speed=" + speed.toUtf8() + "\r\n");
         }
         else if (command == "dci-address")
         {
-            socket->write("Not implemented yet.");
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString bus = data.value("bus");
+            if (bus.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            QString startAdr = data.value("startAdr");
+            if (startAdr.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"startAdr\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("dci-address bus=" + bus.toUtf8() + " startAdr=" + startAdr.toUtf8() + "\r\n");
         }
         else if (command == "raw-set")
         {
-            socket->write("Not implemented yet.");
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString bus = data.value("bus");
+            if (bus.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("raw-set bus=" + bus.toUtf8() + "\r\n");
         }
         else if (command == "raw-get")
         {
-            socket->write("Not implemented yet.");
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString bus = data.value("bus");
+            if (bus.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("raw-get bus=" + bus.toUtf8() + "\r\n");
         }
         else if (command == "set")
         {
-            socket->write("Not implemented yet.");
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString id = data.value("id");
+            if (id.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"id\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("set id=" + id.toUtf8() + "\r\n");
         }
         else if (command == "get")
         {
-            socket->write("Not implemented yet.");
+            socket->write("Not implemented yet. Running in echo mode.\r\n");
+
+            QString id = data.value("id");
+            if (id.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"id\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            socket->write("get id=" + id.toUtf8() + "\r\n");
         }
         else
         {
