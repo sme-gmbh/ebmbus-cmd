@@ -130,7 +130,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("add-ffu bus=" + bus.toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
+#endif
             QString response = m_ffuDB->addFFU(id);
             socket->write(response.toUtf8() + "\r\n");
         }
@@ -152,7 +154,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("broadcast bus=" + bus.toUtf8() + " speed=" + speed.toUtf8() + "\r\n");
+#endif
         }
         else if (command == "dci-address")
         {
@@ -172,7 +176,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("dci-address bus=" + bus.toUtf8() + " startAdr=" + startAdr.toUtf8() + "\r\n");
+#endif
         }
         else if (command == "raw-set")
         {
@@ -185,7 +191,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("raw-set bus=" + bus.toUtf8() + "\r\n");
+#endif
         }
         else if (command == "raw-get")
         {
@@ -198,7 +206,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("raw-get bus=" + bus.toUtf8() + "\r\n");
+#endif
         }
         else if (command == "set")
         {
@@ -213,7 +223,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("set id=" + id.toUtf8() + "\r\n");
+#endif
             QString response = m_ffuDB->setFFUdata(id, data);
             socket->write(response.toUtf8() + "\r\n");
         }
@@ -230,7 +242,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+#ifdef DEBUG
             socket->write("get id=" + id.toUtf8() + "\r\n");
+#endif
             socket->write("Data from id=" + QString().setNum(id).toUtf8());
             QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, data.keys());
             foreach(QString key, responseData.keys())
