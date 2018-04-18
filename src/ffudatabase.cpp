@@ -18,10 +18,11 @@ void FFUdatabase::saveToHdd()
     }
 }
 
-QString FFUdatabase::addFFU(int id)
+QString FFUdatabase::addFFU(int id, int busID)
 {
     FFU* newFFU = new FFU(this);
     newFFU->setId(id);
+    newFFU->setBusID(busID);
     m_ffus.append(newFFU);
 
     return "OK[FFUdatabase]: Added FFU ID " + QString().setNum(id);
@@ -100,9 +101,15 @@ QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
     if (ffu == NULL)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
+    QString dataString;
+
     foreach(QString key, dataMap.keys())
     {
         QString value = dataMap.value(key);
         ffu->setData(key, value);
+
+        dataString.append(" " + key + ":" + value);
     }
+
+    return "OK[FFUdatabase]: Setting data:" + dataString;
 }

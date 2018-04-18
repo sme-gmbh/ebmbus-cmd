@@ -114,14 +114,16 @@ void RemoteClientHandler::slot_read_ready()
         {
             socket->write("Not implemented yet. Running in echo mode.\r\n");
 
-            QString bus = data.value("bus");
-            if (bus.isEmpty())
+            bool ok;
+
+            QString busString = data.value("bus");
+            int bus = busString.toInt(&ok);
+            if (busString.isEmpty() || !ok)
             {
-                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified or bus cannot be parsed. Abort.\r\n");
                 continue;
             }
 
-            bool ok;
             QString idString = data.value("id");
             int id = idString.toInt(&ok);
             if (idString.isEmpty() || !ok)
@@ -131,9 +133,9 @@ void RemoteClientHandler::slot_read_ready()
             }
 
 #ifdef DEBUG
-            socket->write("add-ffu bus=" + bus.toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
+            socket->write("add-ffu bus=" + QString().setNum(bus).toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
 #endif
-            QString response = m_ffuDB->addFFU(id);
+            QString response = m_ffuDB->addFFU(id, bus);
             socket->write(response.toUtf8() + "\r\n");
         }
         else if (command == "broadcast")
