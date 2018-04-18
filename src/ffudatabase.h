@@ -2,8 +2,10 @@
 #define FFUDATABASE_H
 
 #include <QObject>
+#include <QStringList>
 #include <QList>
 #include <QVariant>
+#include <QMap>
 #include "ffu.h"
 
 class FFUdatabase : public QObject
@@ -21,7 +23,9 @@ public:
     FFU* getFFUbyID(int id);
 
     QString getFFUdata(int id, QString key);
+    QMap<QString,QString> getFFUdata(int id, QStringList keys);
     QString setFFUdata(int id, QString key, QString value);
+    QString setFFUdata(int id, QMap<QString,QString> dataMap);
 
 private:
     QList<FFU*> m_ffus;

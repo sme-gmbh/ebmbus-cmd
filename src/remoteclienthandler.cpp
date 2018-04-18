@@ -63,9 +63,12 @@ void RemoteClientHandler::slot_read_ready()
 //            QString key = QString::fromUtf8(QByteArray::fromBase64(key_value_pair.at(0).toUtf8()));
 //            QString value = QString::fromUtf8(QByteArray::fromBase64(key_value_pair.at(1).toUtf8()));
             QString key = key_value_pair.at(0);
-            key.remove(0, 2);   // Remove leading "--"
-            QString value = key_value_pair.at(1);
-            data.insert(key, value);
+            if (key.startsWith("--"))
+            {
+                key.remove(0, 2);   // Remove leading "--"
+                QString value = key_value_pair.at(1);
+                data.insert(key, value);
+            }
         }
 
         // message is distributed to other clients in this way
@@ -81,8 +84,8 @@ void RemoteClientHandler::slot_read_ready()
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "\r\n"
-                          "    add-ffu\r\n"
-                          "        Add a new ffu to the controller database.\r\n"
+                          "    add-ffu --bus=BUSNR --id=ID\r\n"
+                          "        Add a new ffu with ID to the controller database at BUSNR.\r\n"
                           "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
@@ -129,7 +132,7 @@ void RemoteClientHandler::slot_read_ready()
 
             socket->write("add-ffu bus=" + bus.toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
             QString response = m_ffuDB->addFFU(id);
-            socket->write(response.toUtf8());
+            socket->write(response.toUtf8() + "\r\n");
         }
         else if (command == "broadcast")
         {
@@ -201,27 +204,40 @@ void RemoteClientHandler::slot_read_ready()
         {
             socket->write("Not implemented yet. Running in echo mode.\r\n");
 
-            QString id = data.value("id");
-            if (id.isEmpty())
+            bool ok;
+            QString idString = data.value("id");
+            int id = idString.toInt(&ok);
+            if (idString.isEmpty() || !ok)
             {
-                socket->write("Error[Commandparser]: parameter \"id\" not specified. Abort.\r\n");
+                socket->write("Error[Commandparser]: parameter \"id\" not specified or id can not be parsed. Abort.\r\n");
                 continue;
             }
 
             socket->write("set id=" + id.toUtf8() + "\r\n");
+            QString response = m_ffuDB->setFFUdata(id, data);
+            socket->write(response.toUtf8() + "\r\n");
         }
         else if (command == "get")
         {
             socket->write("Not implemented yet. Running in echo mode.\r\n");
 
-            QString id = data.value("id");
-            if (id.isEmpty())
+            bool ok;
+            QString idString = data.value("id");
+            int id = idString.toInt(&ok);
+            if (idString.isEmpty() || !ok)
             {
-                socket->write("Error[Commandparser]: parameter \"id\" not specified. Abort.\r\n");
+                socket->write("Error[Commandparser]: parameter \"id\" not specified or id can not be parsed. Abort.\r\n");
                 continue;
             }
 
             socket->write("get id=" + id.toUtf8() + "\r\n");
+            socket->write("Data from id=" + QString().setNum(id).toUtf8());
+            QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, data.keys());
+            foreach(QString key, responseData.keys())
+            {
+                socket->write(" " + key.toUtf8() + "=" + responseData.value(key).toUtf8());
+            }
+            socket->write("\r\n");
         }
         else
         {

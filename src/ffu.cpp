@@ -2,7 +2,10 @@
 
 FFU::FFU(QObject *parent) : QObject(parent)
 {
-
+    m_id = -1;
+    m_speedRaw = 0;
+    m_speedMaxRPM = 0.0;
+    m_busID = -1;
 }
 
 FFU::~FFU()

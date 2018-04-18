@@ -66,6 +66,24 @@ QString FFUdatabase::getFFUdata(int id, QString key)
     return ffu->getData(key);
 }
 
+QMap<QString,QString> FFUdatabase::getFFUdata(int id, QStringList keys)
+{
+    QMap<QString,QString> response;
+
+    FFU* ffu = getFFUbyID(id);
+    if (ffu == NULL)
+    {
+        return response;
+    }
+
+    foreach (QString key, keys)
+    {
+        response.insert(key, ffu->getData(key));
+    }
+
+    return response;
+}
+
 QString FFUdatabase::setFFUdata(int id, QString key, QString value)
 {
     FFU* ffu = getFFUbyID(id);
@@ -74,4 +92,17 @@ QString FFUdatabase::setFFUdata(int id, QString key, QString value)
 
     ffu->setData(key, value);
     return "OK[FFUdatabase]: Setting " + key + " to " + value;
+}
+
+QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
+{
+    FFU* ffu = getFFUbyID(id);
+    if (ffu == NULL)
+        return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
+
+    foreach(QString key, dataMap.keys())
+    {
+        QString value = dataMap.value(key);
+        ffu->setData(key, value);
+    }
 }

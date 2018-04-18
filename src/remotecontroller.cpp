@@ -1,12 +1,13 @@
 #include "remotecontroller.h"
 
-RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB) : QObject(parent)
+RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, Loghandler *loghandler) : QObject(parent)
 {
 #ifdef DEBUG
     printf("Server started\n");
 #endif
 
     m_ffuDB = ffuDB;
+    m_loghandler = loghandler;
     m_activated = false;
     m_noConnection = true;
 
@@ -68,7 +69,7 @@ void RemoteController::slot_broadcast(QByteArray data)
 {
     foreach(QTcpSocket* socket, this->m_socket_list)
     {
-        socket->write(data);
+        socket->write(data + "\r\n");
     }
 }
 
@@ -83,6 +84,7 @@ void RemoteController::slot_connectionClosed(QTcpSocket *socket, RemoteClientHan
     if (m_socket_list.isEmpty())
     {
         m_noConnection = true;
+        m_loghandler->slot_newEntry(LogEntry::Error, "Remotecontroller", "No connection to server.");
         emit signal_disconnected();
     }
 }
