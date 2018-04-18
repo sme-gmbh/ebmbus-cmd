@@ -53,7 +53,7 @@ MainController::MainController(QObject *parent) :
     m_ffudatabase = new FFUdatabase(this);
     m_ffudatabase->loadFromHdd();
 
-    m_remotecontroller = new RemoteController(this, m_ffudatabase);
+    m_remotecontroller = new RemoteController(this, m_ffudatabase, m_loghandler);
     connect(m_remotecontroller, SIGNAL(signal_activated()), this, SLOT(slot_remoteControlActivated()));
     connect(m_remotecontroller, SIGNAL(signal_deactivated()), this, SLOT(slot_remoteControlDeactivated()));
     connect(m_remotecontroller, SIGNAL(signal_connected()), this, SLOT(slot_remoteControlConnected()));
