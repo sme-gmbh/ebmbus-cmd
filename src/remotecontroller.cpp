@@ -12,7 +12,7 @@ RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, Loghandl
     m_noConnection = true;
 
     connect(&m_server, SIGNAL(newConnection()),  this, SLOT(slot_new_connection()));
-    m_server.listen(QHostAddress::AnyIPv4, 16001);    // Todo: Restrict to localhost (ssh tunnel)
+    m_server.listen(QHostAddress::LocalHost, 16001);    // Restrict to localhost (ssh tunnel endpoint)
 }
 
 RemoteController::~RemoteController()
