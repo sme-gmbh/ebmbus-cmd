@@ -90,7 +90,11 @@ int FFU::rpmToRawSpeed(double rpm)
 
 QString FFU::getData(QString key)
 {
-    if (key == "rpm")
+    if (key == "id")
+    {
+        return (QString().setNum(m_id));
+    }
+    else if (key == "rpm")
     {
         return (QString().setNum(getSpeed()));
     }
