@@ -1,6 +1,8 @@
 #include "ffu.h"
 
 #include <QFile>
+#include <QString>
+#include <QStringList>
 
 FFU::FFU(QObject *parent) : QObject(parent)
 {
