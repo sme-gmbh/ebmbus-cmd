@@ -25,6 +25,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
 
     connect(socket, SIGNAL(readyRead()), this, SLOT(slot_read_ready()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(slot_disconnected()));
+    connect(m_ffuDB, SIGNAL(signal_DCIaddressingFinished(int)), this, SLOT(slot_DCIaddressingFinished(int)));
 }
 
 void RemoteClientHandler::slot_read_ready()
@@ -181,6 +182,9 @@ void RemoteClientHandler::slot_read_ready()
 #ifdef DEBUG
             socket->write("dci-address bus=" + bus.toUtf8() + " startAdr=" + startAdr.toUtf8() + "\r\n");
 #endif
+
+
+
         }
         else if (command == "raw-set")
         {
@@ -282,4 +286,9 @@ void RemoteClientHandler::slot_disconnected()
     printf("%s", debugStr.toLatin1().data());
 #endif
     emit signal_connectionClosed(this->socket, this);
+}
+
+void RemoteClientHandler::slot_DCIaddressingFinished(int busID)
+{
+    socket->write("dci-address successful on bus=" + QByteArray().setNum(busID) + "\r\n");
 }
