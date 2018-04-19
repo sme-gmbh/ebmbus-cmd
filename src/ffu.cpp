@@ -1,9 +1,11 @@
 #include "ffu.h"
 
+#include <QFile>
+
 FFU::FFU(QObject *parent) : QObject(parent)
 {
     m_id = -1;
-    m_speedRaw = 0;
+    m_setpointSpeedRaw = 0;
     m_speedMaxRPM = 0.0;
     m_busID = -1;
 }
@@ -25,12 +27,12 @@ void FFU::setId(int id)
 
 void FFU::setSpeed(int rpm)
 {
-    m_speedRaw = this->rpmToRawSpeed(rpm);
+    m_setpointSpeedRaw = this->rpmToRawSpeed(rpm);
 }
 
 void FFU::setSpeedRaw(int value)
 {
-    m_speedRaw = value;
+    m_setpointSpeedRaw = value;
 }
 
 void FFU::setMaxRPM(int maxRpm)
@@ -40,12 +42,12 @@ void FFU::setMaxRPM(int maxRpm)
 
 int FFU::getSpeed()
 {
-    return (rawSpeedToRPM(m_speedRaw));
+    return (rawSpeedToRPM(m_setpointSpeedRaw));
 }
 
 int FFU::getSpeedRaw()
 {
-    return m_speedRaw;
+    return m_setpointSpeedRaw;
 }
 
 double FFU::rawSpeedToRPM(int rawSpeed)
@@ -90,6 +92,60 @@ void FFU::setData(QString key, QString value)
     {
         setBusID(value.toInt());
     }
+}
+
+void FFU::save(QString path)
+{
+    QString filename = QString().sprintf("ffu-%06i.csv", m_id);
+
+    if (!path.endsWith("/"))
+        path.append("/");
+    QFile file(path + filename);
+    if (!file.open(QIODevice::WriteOnly))
+        return;
+
+    QString wdata;
+
+    wdata.sprintf("id=%i bus=%i speedMaxRPM=%8.2lf setpointSpeedRaw=%i\n", m_id, m_busID, m_speedMaxRPM, m_setpointSpeedRaw);
+
+    file.write(wdata.toUtf8());
+
+    file.close();
+}
+
+void FFU::load(QString filename)
+{
+    QFile file(filename);
+
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+
+    QString rdata = QString().fromUtf8(file.readLine());
+
+    QStringList dataList = rdata.split(" ");
+    foreach (QString data, dataList)
+    {
+        QStringList pair = data.split("=");
+        if (pair.count() != 2)
+            continue;
+
+        QString key = pair.at(0);
+        QString value = pair.at(1);
+
+        if (key == "id")
+            m_id = value.toInt();
+
+        if (key == "bus")
+            m_busID = value.toInt();
+
+        if (key == "speedMaxRPM")
+            m_speedMaxRPM = value.toDouble();
+
+        if (key == "setpointSpeedRaw")
+            m_setpointSpeedRaw = value.toInt();
+    }
+
+    file.close();
 }
 
 int FFU::getBusID() const

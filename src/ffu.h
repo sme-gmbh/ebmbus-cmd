@@ -29,10 +29,13 @@ public:
     QString getData(QString key);
     void setData(QString key, QString value);
 
+    void save(QString path);
+    void load(QString filename);
+
 
 private:
     int m_id;
-    int m_speedRaw;
+    int m_setpointSpeedRaw;
     double m_speedMaxRPM;
     int m_busID;
 
