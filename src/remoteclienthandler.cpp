@@ -55,7 +55,7 @@ void RemoteClientHandler::slot_read_ready()
             printf("Decoding chunk: %s\r\n", commandChunk.toUtf8().data());
 #endif
             QStringList key_value_pair = commandChunk.split('=');
-            if (key_value_pair.length() != 2)
+            if ((key_value_pair.length() > 2) || (key_value_pair.length() < 1))
             {
                 socket->write("ERROR: key_value_pair length invalid\r\n");
                 continue;
@@ -67,8 +67,15 @@ void RemoteClientHandler::slot_read_ready()
             if (key.startsWith("--"))
             {
                 key.remove(0, 2);   // Remove leading "--"
-                QString value = key_value_pair.at(1);
-                data.insert(key, value);
+                if (key_value_pair.length() == 2)
+                {
+                    QString value = key_value_pair.at(1);
+                    data.insert(key, value);
+                }
+                else
+                {
+                    data.insert(key, "query");
+                }
             }
         }
 
@@ -253,12 +260,21 @@ void RemoteClientHandler::slot_read_ready()
             socket->write("get id=" + id.toUtf8() + "\r\n");
 #endif
             socket->write("Data from id=" + QString().setNum(id).toUtf8());
-            QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, data.keys());
+            QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, data.keys("query"));
+            QString errors;
             foreach(QString key, responseData.keys())
             {
-                socket->write(" " + key.toUtf8() + "=" + responseData.value(key).toUtf8());
+                QString response = responseData.value(key);
+                if (!response.startsWith("Error[FFU]:"))
+                    socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
+                else
+                    errors.append(response + "\r\n");
             }
             socket->write("\r\n");
+            if (!errors.isEmpty())
+            {
+                socket->write(errors.toUtf8());
+            }
         }
         else
         {
