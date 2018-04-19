@@ -145,6 +145,25 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress)
     return "OK[FFUdatabase]: Starting DCI addressing at bus " + QString().setNum(busID) + ". Ignoring startAddress at the moment. Will be fixed later.";
 }
 
+QString FFUdatabase::broadcast(int busID, QMap<QString, QString> dataMap)
+{
+    if (busID >= m_ebmbuslist->count())
+        return "Warning[FFUdatabase]: busID " + QString().setNum(busID) + " invalid";
+
+    EbmBus* ebmBus = m_ebmbuslist->at(busID);
+    QString response;
+
+    foreach (QString key, dataMap.keys()) {
+        if (key == "rawspeed")
+        {
+            ebmBus->setSpeedSetpoint(0, 0, dataMap.value("rawspeed").toInt());
+            response.append("OK[FFUdatabase]: Broadcasting speed at bus "+ QString().setNum(busID) + ".\r\n");
+        }
+    }
+
+    return response;
+}
+
 void FFUdatabase::slot_DaisyChainAdressingFinished()
 {
     int i = 0;

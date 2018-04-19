@@ -97,7 +97,7 @@ void RemoteClientHandler::slot_read_ready()
                           "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
-                          "        Possible keys: speed, ...tbd.r\n"
+                          "        Possible keys: rawspeed, ...tbd.r\n"
                           "\r\n"
                           "    dci-address --bus=BUSNR\r\n"
                           "        Start daisy-chain addressing of bus-line BUSNR.\r\n"
@@ -148,25 +148,23 @@ void RemoteClientHandler::slot_read_ready()
         }
         else if (command == "broadcast")
         {
-            socket->write("Not implemented yet. Running in echo mode.\r\n");
+            bool ok;
 
-            QString bus = data.value("bus");
-            if (bus.isEmpty())
+            QString busString = data.value("bus");
+            int bus = busString.toInt(&ok);
+            if (busString.isEmpty() || !ok)
             {
-                socket->write("Error[Commandparser]: parameter \"bus\" not specified. Abort.\r\n");
-                continue;
-            }
-
-            QString speed = data.value("speed");
-            if (speed.isEmpty())
-            {
-                socket->write("Error[Commandparser]: parameter \"speed\" not specified. Abort.\r\n");
+                socket->write("Error[Commandparser]: parameter \"bus\" not specified or bus cannot be parsed. Abort.\r\n");
                 continue;
             }
 
 #ifdef DEBUG
-            socket->write("broadcast bus=" + bus.toUtf8() + " speed=" + speed.toUtf8() + "\r\n");
+            socket->write("broadcast bus=" + QString().setNum(bus).toUtf8() + " speed=" + speed.toUtf8() + "\r\n");
 #endif
+
+            data.remove("bus"); // busNr should no be passed to broadcast, so we remove it here.
+            QString response = m_ffuDB->broadcast(bus, data);
+            socket->write(response.toUtf8() + "\r\n");
         }
         else if (command == "dci-address")
         {
@@ -191,8 +189,8 @@ void RemoteClientHandler::slot_read_ready()
             socket->write("dci-address bus=" + QString().setNum(bus).toUtf8() + " startAdr=" + startAdr.toUtf8() + "\r\n");
 #endif
 
-            m_ffuDB->startDCIaddressing(bus, "tbd.");
-
+            QString response = m_ffuDB->startDCIaddressing(bus, "tbd.");
+            socket->write(response.toUtf8() + "\r\n");
         }
         else if (command == "raw-set")
         {
@@ -245,8 +243,6 @@ void RemoteClientHandler::slot_read_ready()
         }
         else if (command == "get")
         {
-            socket->write("Not implemented yet. Running in echo mode.\r\n");
-
             bool ok;
             QString idString = data.value("id");
             int id = idString.toInt(&ok);

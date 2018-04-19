@@ -32,6 +32,8 @@ public:
 
     QString startDCIaddressing(int busID, QString startAddress);
 
+    QString broadcast(int busID, QMap<QString,QString> dataMap);
+
 private:
     QList<EbmBus*>* m_ebmbuslist;
     QList<FFU*> m_ffus;
