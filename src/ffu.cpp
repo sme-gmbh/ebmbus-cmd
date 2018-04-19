@@ -133,7 +133,7 @@ void FFU::save()
 
     QString wdata;
 
-    wdata.sprintf("id=%i bus=%i speedMaxRPM=%8.2lf setpointSpeedRaw=%i\n", m_id, m_busID, m_speedMaxRPM, m_setpointSpeedRaw);
+    wdata.sprintf("id=%i bus=%i speedMaxRPM=%.2lf setpointSpeedRaw=%i\n", m_id, m_busID, m_speedMaxRPM, m_setpointSpeedRaw);
 
     file.write(wdata.toUtf8());
 
