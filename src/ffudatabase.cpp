@@ -1,8 +1,13 @@
 #include "ffudatabase.h"
 
-FFUdatabase::FFUdatabase(QObject *parent) : QObject(parent)
+FFUdatabase::FFUdatabase(QObject *parent, QList<EbmBus *> *ebmbuslist) : QObject(parent)
 {
+    m_ebmbuslist = ebmbuslist;
 
+    foreach (EbmBus* ebmBus, *ebmbuslist)
+    {
+        connect(ebmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_DaisyChainAdressingFinished()));
+    }
 }
 
 void FFUdatabase::loadFromHdd()
@@ -129,4 +134,26 @@ QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
     }
 
     return "OK[FFUdatabase]: Setting data:" + dataString;
+}
+
+QString FFUdatabase::startDCIaddressing(int busID, QString startAddress)
+{
+    if (m_ebmbuslist->count() > busID)
+    {
+        m_ebmbuslist->at(busID)->startDaisyChainAddressing();
+    }
+    return "OK[FFUdatabase]: Starting DCI addressing at bus " + QString().setNum(busID) + ". Ignoring startAddress at the moment. Will be fixed later.";
+}
+
+void FFUdatabase::slot_DaisyChainAdressingFinished()
+{
+    int i = 0;
+    QObject* obj = sender();    // Look up who sent that signal
+    foreach (EbmBus* ebmBus, *m_ebmbuslist) {
+        if (ebmBus == qobject_cast<EbmBus*>(obj))
+        {
+            emit signal_DCIaddressingFinished(i);   // And now globally tell everybody which bus finished addressing
+        }
+        i++;
+    }
 }

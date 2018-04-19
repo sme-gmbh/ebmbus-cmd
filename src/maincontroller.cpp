@@ -50,7 +50,7 @@ MainController::MainController(QObject *parent) :
     connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
 
-    m_ffudatabase = new FFUdatabase(this);
+    m_ffudatabase = new FFUdatabase(this, &m_ebmbuslist);
     m_ffudatabase->loadFromHdd();
 
     m_remotecontroller = new RemoteController(this, m_ffudatabase, m_loghandler);

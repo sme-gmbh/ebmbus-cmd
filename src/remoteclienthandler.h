@@ -31,6 +31,7 @@ public slots:
 private slots:
     void slot_read_ready();
     void slot_disconnected();
+    void slot_DCIaddressingFinished(int busID);
 };
 
 #endif // REMOTECLIENTHANDLER_H
