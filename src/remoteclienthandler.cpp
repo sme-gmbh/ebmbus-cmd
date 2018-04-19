@@ -163,6 +163,8 @@ void RemoteClientHandler::slot_read_ready()
         }
         else if (command == "dci-address")
         {
+            bool ok;
+
             QString busString = data.value("bus");
             int bus = busString.toInt(&ok);
             if (busString.isEmpty() || !ok)
