@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QString>
 #include <QStringList>
+#include <QDir>
 
 FFU::FFU(QObject *parent) : QObject(parent)
 {
@@ -144,6 +145,9 @@ void FFU::setFiledirectory(QString path)
     if (!path.endsWith("/"))
         path.append("/");
     m_filepath = path;
+
+    QDir dir;
+    dir.mkpath(path);
 }
 
 void FFU::load(QString filename)

@@ -22,8 +22,7 @@ void FFUdatabase::loadFromHdd()
 void FFUdatabase::saveToHdd()
 {
     QString path = "/tmp/openffucontrol/ffus/";
-    QDir dir;
-    dir.mkpath(path);
+
     foreach (FFU* ffu, m_ffus)
     {
         ffu->setFiledirectory(path);
