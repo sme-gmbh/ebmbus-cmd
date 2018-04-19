@@ -4,6 +4,9 @@
 
 FFU::FFU(QObject *parent) : QObject(parent)
 {
+    m_dataChanged = false;
+    setAutoSave(true);
+
     m_id = -1;
     m_setpointSpeedRaw = 0;
     m_speedMaxRPM = 0.0;
@@ -22,21 +25,43 @@ int FFU::getId() const
 
 void FFU::setId(int id)
 {
+    if (id != m_id)
+    {
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
+
     m_id = id;
 }
 
 void FFU::setSpeed(int rpm)
 {
-    m_setpointSpeedRaw = this->rpmToRawSpeed(rpm);
+    int setpointSpeedRaw = this->rpmToRawSpeed(rpm);
+    if (m_setpointSpeedRaw != setpointSpeedRaw)
+    {
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
+    m_setpointSpeedRaw = setpointSpeedRaw;
 }
 
 void FFU::setSpeedRaw(int value)
 {
+    if (value != m_setpointSpeedRaw)
+    {
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
     m_setpointSpeedRaw = value;
 }
 
 void FFU::setMaxRPM(int maxRpm)
 {
+    if (maxRpm != m_speedMaxRPM)
+    {
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
     m_speedMaxRPM = maxRpm;
 }
 
@@ -94,13 +119,12 @@ void FFU::setData(QString key, QString value)
     }
 }
 
-void FFU::save(QString path)
+void FFU::save()
 {
-    QString filename = QString().sprintf("ffu-%06i.csv", m_id);
+    if (!m_dataChanged)
+        return;
 
-    if (!path.endsWith("/"))
-        path.append("/");
-    QFile file(path + filename);
+    QFile file(myFilename());
     if (!file.open(QIODevice::WriteOnly))
         return;
 
@@ -111,6 +135,13 @@ void FFU::save(QString path)
     file.write(wdata.toUtf8());
 
     file.close();
+}
+
+void FFU::setFiledirectory(QString path)
+{
+    if (!path.endsWith("/"))
+        path.append("/");
+    m_filepath = path;
 }
 
 void FFU::load(QString filename)
@@ -148,6 +179,31 @@ void FFU::load(QString filename)
     file.close();
 }
 
+void FFU::setAutoSave(bool on)
+{
+    m_autosave = on;
+    if (m_autosave)
+        connect(this, SIGNAL(signal_needsSaving()), this, SLOT(slot_save()));
+    else
+        disconnect(this, SIGNAL(signal_needsSaving()), this, SLOT(slot_save()));
+}
+
+void FFU::deleteFromHdd()
+{
+    QFile file(myFilename());
+    file.remove();
+}
+
+QString FFU::myFilename()
+{
+    return (m_filepath + QString().sprintf("ffu-%06i.csv", m_id));
+}
+
+void FFU::slot_save()
+{
+    save();
+}
+
 int FFU::getBusID() const
 {
     return m_busID;
@@ -155,6 +211,11 @@ int FFU::getBusID() const
 
 void FFU::setBusID(int busID)
 {
+    if (busID != m_busID)
+    {
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
     m_busID = busID;
 }
 

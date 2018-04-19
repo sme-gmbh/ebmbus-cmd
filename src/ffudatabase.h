@@ -6,6 +6,8 @@
 #include <QList>
 #include <QVariant>
 #include <QMap>
+#include <QDir>
+#include <QDirIterator>
 #include "ffu.h"
 
 class FFUdatabase : public QObject

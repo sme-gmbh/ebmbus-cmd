@@ -7,22 +7,39 @@ FFUdatabase::FFUdatabase(QObject *parent) : QObject(parent)
 
 void FFUdatabase::loadFromHdd()
 {
-    // tbd.
+    QString directory = "/tmp/openffucontrol/ffus/";
+    QDirIterator iterator(directory, QStringList() << "*.csv", QDir::Files, QDirIterator::NoIteratorFlags);
+    while(iterator.hasNext())
+    {
+        QString filepath = iterator.next();
+        FFU* newFFU = new FFU(this);
+        newFFU->load(filepath);
+        newFFU->setFiledirectory(directory);
+        m_ffus.append(newFFU);
+    }
 }
 
 void FFUdatabase::saveToHdd()
 {
+    QString path = "/tmp/openffucontrol/ffus/";
+    QDir dir;
+    dir.mkpath(path);
     foreach (FFU* ffu, m_ffus)
     {
-        // tbd.
+        ffu->setFiledirectory(path);
+        ffu->save();
     }
 }
 
 QString FFUdatabase::addFFU(int id, int busID)
 {
     FFU* newFFU = new FFU(this);
+    newFFU->setFiledirectory("/tmp/openffucontrol/ffus/");
+    newFFU->setAutoSave(false);
     newFFU->setId(id);
     newFFU->setBusID(busID);
+    newFFU->setAutoSave(true);
+    newFFU->save();
     m_ffus.append(newFFU);
 
     return "OK[FFUdatabase]: Added FFU ID " + QString().setNum(id);
@@ -37,6 +54,7 @@ QString FFUdatabase::deleteFFU(int id)
     bool ok = m_ffus.removeOne(ffu);
     if (ok)
     {
+        ffu->deleteFromHdd();
         delete ffu;
         return "OK[FFUdatabase]: Removed ID " + QString().setNum(id);
     }

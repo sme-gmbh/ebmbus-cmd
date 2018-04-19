@@ -29,8 +29,13 @@ public:
     QString getData(QString key);
     void setData(QString key, QString value);
 
-    void save(QString path);
+    void save();
+    void setFiledirectory(QString path);
     void load(QString filename);
+
+    void setAutoSave(bool on);
+
+    void deleteFromHdd();
 
 
 private:
@@ -39,9 +44,19 @@ private:
     double m_speedMaxRPM;
     int m_busID;
 
+    bool m_dataChanged;
+    bool m_autosave;
+    QString m_filepath;
+
+    QString myFilename();
+
 signals:
+    void signal_needsSaving();
 
 public slots:
+
+private slots:
+    void slot_save();
 };
 
 #endif // FFU_H
