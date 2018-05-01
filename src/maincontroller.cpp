@@ -23,7 +23,7 @@ MainController::MainController(QObject *parent) :
         connect(newEbmBus, SIGNAL(signal_setDCIoutput(bool)), newDCI, SLOT(slot_setDCIoutput(bool)));
         connect(newDCI, SIGNAL(signal_DCIloopResponse(bool)), newEbmBus, SLOT(slot_DCIloopResponse(bool)));
 
-        connect(newEbmBus, SIGNAL(signal_response(quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponse(quint8,quint8,quint8,QByteArray)));
+        connect(newEbmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
         //connect(newEbmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_daisyChainAddressingFinished()));
 
         newEbmBus->open();
@@ -233,9 +233,9 @@ void MainController::slot_newError()
 }
 
 // This slot is called if one of the ebmbus interfaces received a telegram as response from an FFU
-void MainController::slot_showResponse(quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
+void MainController::slot_showResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
 {
-    printf("PRE: %02X  commandAndFanaddress: %02X  fanGroup: %02X  data: ", preamble, commandAndFanaddress, fanGroup);
+    printf("ID: %llu PRE: %02X  commandAndFanaddress: %02X  fanGroup: %02X  data: ", telegramID, preamble, commandAndFanaddress, fanGroup);
     foreach (quint8 byte, data)
     {
         printf("%02X ", byte);

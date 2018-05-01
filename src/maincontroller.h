@@ -63,7 +63,7 @@ private slots:
 
     void slot_newError();
 
-    void slot_showResponse(quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
+    void slot_showResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
 
     void slot_shutdownNOW();
 };

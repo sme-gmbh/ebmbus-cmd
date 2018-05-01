@@ -16,6 +16,12 @@ public:
     int getBusID() const;
     void setBusID(int busID);
 
+    int getFanAddress() const;
+    void setFanAddress(int fanAddress);
+
+    int getFanGroup() const;
+    void setFanGroup(int fanGroup);
+
     void setSpeed(int rpm);
     void setSpeedRaw(int value);
     void setMaxRPM(int maxRpm);
@@ -37,12 +43,13 @@ public:
 
     void deleteFromHdd();
 
-
 private:
     int m_id;
     int m_setpointSpeedRaw;
     double m_speedMaxRPM;
     int m_busID;
+    int m_fanAddress;
+    int m_fanGroup;
 
     bool m_dataChanged;
     bool m_autosave;
@@ -52,6 +59,7 @@ private:
 
 signals:
     void signal_needsSaving();
+    void signal_sendToBus(int busID, quint8 fanAddress, quint8 fanGroup, quint8 speed);
 
 public slots:
 

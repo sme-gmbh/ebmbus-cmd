@@ -99,8 +99,8 @@ void RemoteClientHandler::slot_read_ready()
                           "        Broadcast data to all buses and all units.\r\n"
                           "        Possible keys: rawspeed, ...tbd.r\n"
                           "\r\n"
-                          "    dci-address --bus=BUSNR\r\n"
-                          "        Start daisy-chain addressing of bus-line BUSNR.\r\n"
+                          "    dci-address --bus=BUSNR --startAdr=ADR\r\n"
+                          "        Start daisy-chain addressing of bus-line BUSNR beginning at ADR.\r\n"
                           "\r\n"
                           "    raw-set --bus=BUSNR --KEY=VALUE\r\n"
                           "\r\n"
@@ -118,10 +118,9 @@ void RemoteClientHandler::slot_read_ready()
                 socket->write(line.toUtf8());
             }
         }
+        // ************************************************** add-ffu **************************************************
         else if (command == "add-ffu")
         {
-            socket->write("Not implemented yet. Running in echo mode.\r\n");
-
             bool ok;
 
             QString busString = data.value("bus");
@@ -146,6 +145,7 @@ void RemoteClientHandler::slot_read_ready()
             QString response = m_ffuDB->addFFU(id, bus);
             socket->write(response.toUtf8() + "\r\n");
         }
+        // ************************************************** broadcast **************************************************
         else if (command == "broadcast")
         {
             bool ok;
@@ -166,6 +166,7 @@ void RemoteClientHandler::slot_read_ready()
             QString response = m_ffuDB->broadcast(bus, data);
             socket->write(response.toUtf8() + "\r\n");
         }
+        // ************************************************** dci-address **************************************************
         else if (command == "dci-address")
         {
             bool ok;
@@ -192,6 +193,7 @@ void RemoteClientHandler::slot_read_ready()
             QString response = m_ffuDB->startDCIaddressing(bus, "tbd.");
             socket->write(response.toUtf8() + "\r\n");
         }
+        // ************************************************** raw-set **************************************************
         else if (command == "raw-set")
         {
             socket->write("Not implemented yet. Running in echo mode.\r\n");
@@ -207,6 +209,7 @@ void RemoteClientHandler::slot_read_ready()
             socket->write("raw-set bus=" + bus.toUtf8() + "\r\n");
 #endif
         }
+        // ************************************************** raw-get **************************************************
         else if (command == "raw-get")
         {
             socket->write("Not implemented yet. Running in echo mode.\r\n");
@@ -222,6 +225,7 @@ void RemoteClientHandler::slot_read_ready()
             socket->write("raw-get bus=" + bus.toUtf8() + "\r\n");
 #endif
         }
+        // ************************************************** set **************************************************
         else if (command == "set")
         {
             socket->write("Not implemented yet. Running in echo mode.\r\n");
@@ -241,6 +245,7 @@ void RemoteClientHandler::slot_read_ready()
             QString response = m_ffuDB->setFFUdata(id, data);
             socket->write(response.toUtf8() + "\r\n");
         }
+        // ************************************************** get **************************************************
         else if (command == "get")
         {
             bool ok;
@@ -272,6 +277,7 @@ void RemoteClientHandler::slot_read_ready()
                 socket->write(errors.toUtf8());
             }
         }
+        // ************************************************** UNSUPPORTED COMMAND **************************************************
         else
         {
             // If control reaches this point, we have an unsupported command

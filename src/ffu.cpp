@@ -14,6 +14,8 @@ FFU::FFU(QObject *parent) : QObject(parent)
     m_setpointSpeedRaw = 0;
     m_speedMaxRPM = 0.0;
     m_busID = -1;
+    m_fanAddress = -1;   // Invalid Address
+    m_fanGroup = -1;     // Invalid Address
 }
 
 FFU::~FFU()
@@ -42,10 +44,8 @@ void FFU::setSpeed(int rpm)
     int setpointSpeedRaw = this->rpmToRawSpeed(rpm);
     if (m_setpointSpeedRaw != setpointSpeedRaw)
     {
-        m_dataChanged = true;
-        emit signal_needsSaving();
+        setSpeedRaw(setpointSpeedRaw);
     }
-    m_setpointSpeedRaw = setpointSpeedRaw;
 }
 
 void FFU::setSpeedRaw(int value)
@@ -54,6 +54,12 @@ void FFU::setSpeedRaw(int value)
     {
         m_dataChanged = true;
         emit signal_needsSaving();
+        if ((m_busID >= 0) && (m_fanAddress >= 1) && (m_fanGroup >= 1))
+            signal_sendToBus(m_busID, m_fanAddress, m_fanGroup, m_setpointSpeedRaw);    // Todo: connect this to the bus!
+        else
+        {
+            // Some error handling here!
+        }
     }
     m_setpointSpeedRaw = value;
 }
@@ -204,6 +210,7 @@ void FFU::deleteFromHdd()
     file.remove();
 }
 
+
 QString FFU::myFilename()
 {
     return (m_filepath + QString().sprintf("ffu-%06i.csv", m_id));
@@ -229,4 +236,22 @@ void FFU::setBusID(int busID)
     m_busID = busID;
 }
 
+int FFU::getFanAddress() const
+{
+    return m_fanAddress;
+}
 
+void FFU::setFanAddress(int fanAddress)
+{
+    m_fanAddress = fanAddress;
+}
+
+int FFU::getFanGroup() const
+{
+    return m_fanGroup;
+}
+
+void FFU::setFanGroup(int fanGroup)
+{
+    m_fanGroup = fanGroup;
+}
