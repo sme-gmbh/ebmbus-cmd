@@ -12,7 +12,7 @@ FFUdatabase::FFUdatabase(QObject *parent, QList<EbmBus *> *ebmbuslist) : QObject
 
 void FFUdatabase::loadFromHdd()
 {
-    QString directory = "/tmp/openffucontrol/ffus/";
+    QString directory = "/var/openffucontrol/ffus/";
     QDirIterator iterator(directory, QStringList() << "*.csv", QDir::Files, QDirIterator::NoIteratorFlags);
     while(iterator.hasNext())
     {
@@ -26,7 +26,7 @@ void FFUdatabase::loadFromHdd()
 
 void FFUdatabase::saveToHdd()
 {
-    QString path = "/tmp/openffucontrol/ffus/";
+    QString path = "/var/openffucontrol/ffus/";
 
     foreach (FFU* ffu, m_ffus)
     {
@@ -38,7 +38,7 @@ void FFUdatabase::saveToHdd()
 QString FFUdatabase::addFFU(int id, int busID)
 {
     FFU* newFFU = new FFU(this);
-    newFFU->setFiledirectory("/tmp/openffucontrol/ffus/");
+    newFFU->setFiledirectory("/var/openffucontrol/ffus/");
     newFFU->setAutoSave(false);
     newFFU->setId(id);
     newFFU->setBusID(busID);
