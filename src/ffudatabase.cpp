@@ -100,6 +100,19 @@ FFU *FFUdatabase::getFFUbyID(int id)
     return NULL;    // Not found
 }
 
+FFU *FFUdatabase::getFFUbyTelegramID(quint64 telegramID)
+{
+    foreach (FFU* ffu, m_ffus) {
+        bool found = ffu->isThisYourTelegram(telegramID);
+        if (found)
+        {
+            return ffu;
+        }
+    }
+
+    return NULL;    // TransactioID not initiated by ffu requests, so it came frome somebody else
+}
+
 QString FFUdatabase::getFFUdata(int id, QString key)
 {
     FFU* ffu = getFFUbyID(id);
@@ -185,7 +198,14 @@ void FFUdatabase::slot_DaisyChainAdressingFinished()
 
 void FFUdatabase::slot_gotResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
 {
+    Q_UNUSED(telegramID);
+    Q_UNUSED(preamble);
+    Q_UNUSED(commandAndFanaddress);
+    Q_UNUSED(fanGroup);
+    Q_UNUSED(data);
 
+    // Dont care about raw responses at the moment
+    // These will be parsed by libebmbus anyway and sent to the right highlevel slot
 }
 
 void FFUdatabase::slot_transactionFinished()
@@ -193,48 +213,81 @@ void FFUdatabase::slot_transactionFinished()
 
 }
 
-void FFUdatabase::slot_transactionLost(quint64 id)
+void FFUdatabase::slot_transactionLost(quint64 telegramID)
 {
-
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_transactionLost(telegramID);
 }
 
 void FFUdatabase::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
 {
-
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_simpleStatus(telegramID, fanAddress, fanGroup, status);
 }
 
 void FFUdatabase::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue)
 {
-
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_status(telegramID, fanAddress, fanGroup, statusAddress, status, rawValue);
 }
 
 void FFUdatabase::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
 {
-
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_actualSpeed(telegramID, fanAddress, fanGroup, actualRawSpeed);
 }
 
 void FFUdatabase::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
-
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_setPointHasBeenSet(telegramID, fanAddress, fanGroup);
 }
 
 void FFUdatabase::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
-
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_EEPROMhasBeenWritten(telegramID, fanAddress, fanGroup);
 }
 
 void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte)
 {
-
-}
-
-void FFUdatabase::slot_sendToBus(int busID, quint8 fanAddress, quint8 fanGroup, quint8 speed)
-{
-    EbmBus* bus = m_ebmbusSystem->getBusByID(busID);
-    if (bus == NULL)
-        return;     // Drop requests for non existing bus ids
-
-    bus->setSpeedSetpoint(fanAddress, fanGroup, speed);
+    FFU* ffu = getFFUbyTelegramID(telegramID);
+    if (ffu == NULL)
+    {
+        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        return;
+    }
+    ffu->slot_EEPROMdata(telegramID, fanAddress, fanGroup, eepromAddress, dataByte);
 }
 
 void FFUdatabase::slot_timer_pollStatus_fired()

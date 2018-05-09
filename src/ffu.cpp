@@ -34,11 +34,10 @@ void FFU::setId(int id)
 {
     if (id != m_id)
     {
+        m_id = id;
         m_dataChanged = true;
         emit signal_needsSaving();
     }
-
-    m_id = id;
 }
 
 void FFU::setSpeed(int rpm)
@@ -54,26 +53,33 @@ void FFU::setSpeedRaw(int value)
 {
     if (value != m_setpointSpeedRaw)
     {
+        m_setpointSpeedRaw = value;
         m_dataChanged = true;
         emit signal_needsSaving();
         if ((m_busID >= 0) && (m_fanAddress >= 1) && (m_fanGroup >= 1))
-            signal_sendToBus(m_busID, m_fanAddress, m_fanGroup, m_setpointSpeedRaw);    // Todo: connect this to the bus!
+        {
+            EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
+            if (bus == NULL)
+                return;     // Drop requests for non existing bus ids
+
+            bus->setSpeedSetpoint(m_fanAddress, m_fanGroup, m_setpointSpeedRaw);
+        }
         else
         {
             // Some error handling here!
         }
     }
-    m_setpointSpeedRaw = value;
 }
 
 void FFU::setMaxRPM(int maxRpm)
 {
     if (maxRpm != m_speedMaxRPM)
     {
+        m_speedMaxRPM = maxRpm;
         m_dataChanged = true;
         emit signal_needsSaving();
     }
-    m_speedMaxRPM = maxRpm;
+
 }
 
 int FFU::getSpeedSetpoint()
@@ -134,9 +140,24 @@ void FFU::setData(QString key, QString value)
     }
 }
 
+FFU::ActualData FFU::getActualData() const
+{
+    return m_actualData;
+}
+
 void FFU::requestStatus()
 {
+    EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
+    if (bus == NULL)
+        return;
 
+    m_transactionIDs.append(bus->getActualSpeed(m_fanAddress, m_fanGroup));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusLowByte));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusHighByte));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::Warnings));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCvoltage));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCcurrent));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::TemperatureOfPowerModule));
 }
 
 void FFU::save()
@@ -217,6 +238,16 @@ void FFU::deleteFromHdd()
     file.remove();
 }
 
+bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
+{
+    bool found = m_transactionIDs.contains(telegramID);
+
+    if (found && deleteID)
+        m_transactionIDs.removeOne(telegramID);
+
+    return found;
+}
+
 QString FFU::myFilename()
 {
     return (m_filepath + QString().sprintf("ffu-%06i.csv", m_id));
@@ -236,10 +267,10 @@ void FFU::setBusID(int busID)
 {
     if (busID != m_busID)
     {
+        m_busID = busID;
         m_dataChanged = true;
         emit signal_needsSaving();
     }
-    m_busID = busID;
 }
 
 int FFU::getFanAddress() const
@@ -260,4 +291,139 @@ int FFU::getFanGroup() const
 void FFU::setFanGroup(int fanGroup)
 {
     m_fanGroup = fanGroup;
+}
+
+// ************************************************** Bus response handling **************************************************
+
+void FFU::slot_transactionLost(quint64 id)
+{
+    // Set some kind of error here!
+}
+
+void FFU::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
+{
+    Q_UNUSED(telegramID);
+    Q_UNUSED(fanAddress);
+    Q_UNUSED(fanGroup);
+    Q_UNUSED(status);
+    // We don't request the simple status, so we don't care about that response
+}
+
+void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue)
+{
+    Q_UNUSED(telegramID);
+
+    if (fanAddress != m_fanAddress)
+        return;
+    if (fanGroup != m_fanGroup)
+        return;
+
+    switch (statusAddress)
+    {
+    case EbmBusStatus::MotorStatusLowByte:
+        m_actualData.statusRaw_LSB = rawValue;
+        m_actualData.statusString_LSB = status;
+        break;
+    case EbmBusStatus::MotorStatusHighByte:
+        m_actualData.statusRaw_MSB = rawValue;
+        m_actualData.statusString_MSB = status;
+        break;
+    case EbmBusStatus::Warnings:
+        m_actualData.warnings = rawValue;
+        break;
+    case EbmBusStatus::DCvoltage:
+        m_actualData.dcVoltage = rawValue;
+        break;
+    case EbmBusStatus::DCcurrent:
+        m_actualData.dcCurrent = rawValue;
+        break;
+    case EbmBusStatus::TemperatureOfPowerModule:
+        m_actualData.temperatureOfPowerModule = rawValue;
+        break;
+    case EbmBusStatus::SetPoint:
+        m_actualData.speedSetpoint = rawValue;
+        break;
+    case EbmBusStatus::ActualValue:
+        break;
+    case EbmBusStatus::ModeOfControl:
+        break;
+    case EbmBusStatus::DirectionOfRotation:
+        break;
+    case EbmBusStatus::PWMdutyCycle:
+        break;
+    case EbmBusStatus::SteppingSwitch_1_2:
+        break;
+    case EbmBusStatus::SteppingSwitch_3_4:
+        break;
+    case EbmBusStatus::TemperatureOfMotor:
+        break;
+    case EbmBusStatus::LineVoltage:
+        break;
+    case EbmBusStatus::LineCurrent:
+        break;
+    case EbmBusStatus::MaxVolumetricFlowRate:
+        break;
+    case EbmBusStatus::MinVolumericFlowRate:
+        break;
+    case EbmBusStatus::MaxPressure:
+        break;
+    case EbmBusStatus::MinPressure:
+        break;
+    case EbmBusStatus::ElectronicBoxTemperature:
+        break;
+    case EbmBusStatus::EEPROMchecksumLSB:
+        break;
+    case EbmBusStatus::EEPROMchecksumMSB:
+        break;
+    }
+}
+
+void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
+{
+    Q_UNUSED(telegramID);
+
+    if (fanAddress != m_fanAddress)
+        return;
+    if (fanGroup != m_fanGroup)
+        return;
+
+    m_actualData.speedReading = actualRawSpeed;
+}
+
+void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
+{
+    Q_UNUSED(telegramID);
+
+    if (fanAddress != m_fanAddress)
+        return;
+    if (fanGroup != m_fanGroup)
+        return;
+
+    // At the moment we dont do anything with that information.
+    // Setpoint has been set - so far so good.
+}
+
+void FFU::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
+{
+    Q_UNUSED(telegramID);
+
+    if (fanAddress != m_fanAddress)
+        return;
+    if (fanGroup != m_fanGroup)
+        return;
+
+    // At the moment we dont do anything with that information.
+    // EEPROM has been written - so far so good.
+}
+
+void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte)
+{
+    Q_UNUSED(telegramID);
+
+    if (fanAddress != m_fanAddress)
+        return;
+    if (fanGroup != m_fanGroup)
+        return;
+
+    // Todo: do something here with the data from the EEPROM...
 }

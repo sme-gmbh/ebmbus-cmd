@@ -42,6 +42,8 @@ private:
     QList<FFU*> m_ffus;
     QTimer m_timer_pollStatus;
 
+    FFU* getFFUbyTelegramID(quint64 telegramID);
+
 signals:
     void signal_DCIaddressingFinished(int busID);
 
@@ -56,16 +58,13 @@ private slots:
 
     // High level bus response slots
     void slot_transactionFinished();
-    void slot_transactionLost(quint64 id);
+    void slot_transactionLost(quint64 telegramID);
     void slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status);
     void slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue);
     void slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed);
     void slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup);
     void slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint8 fanGroup);
     void slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte);
-
-    // High level bus outgoing data slots
-    void slot_sendToBus(int busID, quint8 fanAddress, quint8 fanGroup, quint8 speed);
 
     // Timer slots
     void slot_timer_pollStatus_fired();
