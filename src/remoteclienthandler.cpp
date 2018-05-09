@@ -105,6 +105,11 @@ void RemoteClientHandler::slot_read_ready()
                           "    dci-address --bus=BUSNR --startAdr=ADR\r\n"
                           "        Start daisy-chain addressing of bus-line BUSNR beginning at ADR.\r\n"
                           "\r\n"
+                          "    set --parameter=VALUE\r\n"
+                          "\r\n"
+                          "    get --parameter\r\n"
+                          "        parameter 'actual' lists all actual values of the selected ffu.\r\n"
+                          "\r\n"
                           "    raw-set --bus=BUSNR --KEY=VALUE\r\n"
                           "\r\n"
                           "    raw-get --bus=BUSNR --KEY1 [--KEY2 ...]\r\n");
