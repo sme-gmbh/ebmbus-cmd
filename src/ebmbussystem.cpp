@@ -16,6 +16,7 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
         connect(newDCI, SIGNAL(signal_DCIloopResponse(bool)), newEbmBus, SLOT(slot_DCIloopResponse(bool)));
 
         connect(newEbmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
+        connect(newEbmBus, SIGNAL(signal_transactionLost(quint64)), this, SLOT(slot_transactionLost(quint64)));
 
         newEbmBus->open();
     }
@@ -72,4 +73,9 @@ void EbmBusSystem::slot_showResponseRaw(quint64 telegramID, quint8 preamble, qui
         printf("%02X ", byte);
     }
     printf("\n");
+}
+
+void EbmBusSystem::slot_transactionLost(quint64 telegramID)
+{
+    printf("ID: %llu Transaction lost.\n", telegramID);
 }

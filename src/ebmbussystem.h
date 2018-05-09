@@ -32,6 +32,7 @@ public slots:
 
 private slots:
     void slot_showResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
+    void slot_transactionLost(quint64 telegramID);
 };
 
 #endif // EBMBUSSYSTEM_H
