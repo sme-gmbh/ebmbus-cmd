@@ -256,8 +256,6 @@ void RemoteClientHandler::slot_read_ready()
         // ************************************************** set **************************************************
         else if (command == "set")
         {
-            socket->write("Not implemented yet. Running in echo mode.\r\n");
-
             bool ok;
             QString idString = data.value("id");
             int id = idString.toInt(&ok);

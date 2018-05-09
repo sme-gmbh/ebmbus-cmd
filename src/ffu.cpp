@@ -132,15 +132,15 @@ QString FFU::getData(QString key)
     {
         QString response;
 
-        response.sprintf("speedReading=%i ", m_actualData.speedReading);
-        response.sprintf("speedSetpoint=%i ", m_actualData.speedSetpoint);
-        response.sprintf("statusRaw_LSB=%02x ", m_actualData.statusRaw_LSB);
-        response.sprintf("statusRaw_MSB=%02x ", m_actualData.statusRaw_MSB);
+        response += QString().sprintf("speedReading=%i ", m_actualData.speedReading);
+        response += QString().sprintf("speedSetpoint=%i ", m_actualData.speedSetpoint);
+        response += QString().sprintf("statusRaw_LSB=%02x ", m_actualData.statusRaw_LSB);
+        response += QString().sprintf("statusRaw_MSB=%02x ", m_actualData.statusRaw_MSB);
         response += "statusString=" + m_actualData.statusString_LSB + m_actualData.statusString_MSB;
-        response.sprintf("warnings=%02x ", m_actualData.warnings);
-        response.sprintf("dcVoltage=%i ", m_actualData.dcVoltage);
-        response.sprintf("dcCurrent=%i ", m_actualData.dcCurrent);
-        response.sprintf("temperatureOfPowerModule=%i ", m_actualData.temperatureOfPowerModule);
+        response += QString().sprintf("warnings=%02x ", m_actualData.warnings);
+        response += QString().sprintf("dcVoltage=%i ", m_actualData.dcVoltage);
+        response += QString().sprintf("dcCurrent=%i ", m_actualData.dcCurrent);
+        response += QString().sprintf("temperatureOfPowerModule=%i ", m_actualData.temperatureOfPowerModule);
 
         return response;
     }
