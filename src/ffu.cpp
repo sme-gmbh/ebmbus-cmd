@@ -120,6 +120,14 @@ QString FFU::getData(QString key)
     {
         return (QString().setNum(getBusID()));
     }
+    else if (key == "fanAddress")
+    {
+        return (QString().setNum(getFanAddress()));
+    }
+    else if (key == "fanGroup")
+    {
+        return (QString().setNum(getFanGroup()));
+    }
 
     return "Error[FFU]: Key " + key + " not available";
 }
@@ -137,6 +145,14 @@ void FFU::setData(QString key, QString value)
     else if (key == "busID")
     {
         setBusID(value.toInt());
+    }
+    else if (key == "fanAddress")
+    {
+        setFanAddress(value.toInt());
+    }
+    else if (key == "fanGroup")
+    {
+        setFanGroup(value.toInt());
     }
 }
 
@@ -171,7 +187,14 @@ void FFU::save()
 
     QString wdata;
 
-    wdata.sprintf("id=%i bus=%i speedMaxRPM=%.2lf setpointSpeedRaw=%i\n", m_id, m_busID, m_speedMaxRPM, m_setpointSpeedRaw);
+    //wdata.sprintf("id=%i bus=%i speedMaxRPM=%.2lf setpointSpeedRaw=%i\n", m_id, m_busID, m_speedMaxRPM, m_setpointSpeedRaw);
+    wdata.append(QString().sprintf("id=%i ", m_id));
+    wdata.append(QString().sprintf("bus=%i ", m_busID));
+    wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
+    wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
+    wdata.append(QString().sprintf("speedMaxRPM=%.2lf ", m_speedMaxRPM));
+    wdata.append(QString().sprintf("setpointSpeedRaw=%i\n", m_setpointSpeedRaw));
+
 
     file.write(wdata.toUtf8());
 
@@ -212,6 +235,12 @@ void FFU::load(QString filename)
 
         if (key == "bus")
             m_busID = value.toInt();
+
+        if (key == "fanAddress")
+            m_fanAddress = value.toInt();
+
+        if (key == "fanGroup")
+            m_fanGroup = value.toInt();
 
         if (key == "speedMaxRPM")
             m_speedMaxRPM = value.toDouble();

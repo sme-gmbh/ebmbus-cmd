@@ -95,6 +95,9 @@ void RemoteClientHandler::slot_read_ready()
                           "    add-ffu --bus=BUSNR --id=ID\r\n"
                           "        Add a new ffu with ID to the controller database at BUSNR.\r\n"
                           "\r\n"
+                          "    delete-ffu --id=ID\r\n"
+                          "        Delete ffu with ID from the controller database.\r\n"
+                          "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
                           "        Possible keys: rawspeed, ...tbd.r\n"
@@ -106,6 +109,7 @@ void RemoteClientHandler::slot_read_ready()
                           "\r\n"
                           "    raw-get --bus=BUSNR --KEY1 [--KEY2 ...]\r\n");
         }
+        // ************************************************** list **************************************************
         else if (command == "list")
         {
             QList<FFU*> ffus = m_ffuDB->getFFUs();
@@ -113,7 +117,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 QString line;
 
-                line.sprintf("FFU id=%i busID=%i rpm=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getSpeedSetpoint());
+                line.sprintf("FFU id=%i busID=%i fanAddress=%i fanGroup=%i rpm=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getFanAddress(), ffu->getFanGroup(), ffu->getSpeedSetpoint());
 
                 socket->write(line.toUtf8());
             }
@@ -143,6 +147,25 @@ void RemoteClientHandler::slot_read_ready()
             socket->write("add-ffu bus=" + QString().setNum(bus).toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
 #endif
             QString response = m_ffuDB->addFFU(id, bus);
+            socket->write(response.toUtf8() + "\r\n");
+        }
+        // ************************************************** delete-ffu **************************************************
+        else if (command == "delete-ffu")
+        {
+            bool ok;
+
+            QString idString = data.value("id");
+            int id = idString.toInt(&ok);
+            if (idString.isEmpty() || !ok)
+            {
+                socket->write("Error[Commandparser]: parameter \"id\" not specified or id can not be parsed. Abort.\r\n");
+                continue;
+            }
+
+#ifdef DEBUG
+            socket->write("delete-ffu id=" + QString().setNum(id).toUtf8() + "\r\n");
+#endif
+            QString response = m_ffuDB->deleteFFU(id);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** broadcast **************************************************

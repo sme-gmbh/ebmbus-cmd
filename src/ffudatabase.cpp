@@ -26,7 +26,7 @@ FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem) : QObject(
 
     // Timer for cyclic poll task to get the status of ffus
     connect(&m_timer_pollStatus, SIGNAL(timeout()), this, SLOT(slot_timer_pollStatus_fired()));
-    m_timer_pollStatus.setInterval(1000);
+    m_timer_pollStatus.setInterval(10000);
     m_timer_pollStatus.start();
 }
 
