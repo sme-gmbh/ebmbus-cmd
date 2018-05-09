@@ -113,7 +113,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 QString line;
 
-                line.sprintf("FFU id=%i busID=%i rpm=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getSpeed());
+                line.sprintf("FFU id=%i busID=%i rpm=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getSpeedSetpoint());
 
                 socket->write(line.toUtf8());
             }

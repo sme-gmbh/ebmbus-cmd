@@ -6,7 +6,7 @@
 #include <QList>
 #include <libebmbus/ebmbus.h>
 #include "revpidio.h"
-#include "daisychaininterface.h"
+#include "ebmbussystem.h"
 #include "lightbutton.h"
 #include "uninterruptiblepowersupply.h"
 #include "operatingsystemcontrol.h"
@@ -24,9 +24,6 @@ public:
 
 private:
     Loghandler* m_loghandler;
-    QList<EbmBus*> m_ebmbuslist;
-
-    QList<DaisyChainInterface*> m_dcilist;
 
     RevPiDIO m_io;
 
@@ -35,6 +32,8 @@ private:
     LightButton* m_lightbutton_speed_0;
     LightButton* m_lightbutton_speed_50;
     LightButton* m_lightbutton_speed_100;
+
+    EbmBusSystem* m_ebmbusSystem;
 
     UninterruptiblePowerSupply* m_ups;
     OperatingSystemControl* m_osControl;
@@ -62,8 +61,6 @@ private slots:
     void slot_remoteControlDisconnected();
 
     void slot_newError();
-
-    void slot_showResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
 
     void slot_shutdownNOW();
 };

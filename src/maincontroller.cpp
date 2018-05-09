@@ -12,23 +12,7 @@ MainController::MainController(QObject *parent) :
 
     m_speed = 170;
 
-    for (int i=0; i<=3; i++)
-    {
-        EbmBus* newEbmBus = new EbmBus(this, QString("/dev/ttyUSB").append(QString().setNum(i)));
-        m_ebmbuslist.append(newEbmBus);
-
-        DaisyChainInterface* newDCI = new DaisyChainInterface(this, &m_io, i, i);
-        m_dcilist.append(newDCI);
-
-        connect(newEbmBus, SIGNAL(signal_setDCIoutput(bool)), newDCI, SLOT(slot_setDCIoutput(bool)));
-        connect(newDCI, SIGNAL(signal_DCIloopResponse(bool)), newEbmBus, SLOT(slot_DCIloopResponse(bool)));
-
-        connect(newEbmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
-        //connect(newEbmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_daisyChainAddressingFinished()));
-
-        newEbmBus->open();
-    }
-
+    m_ebmbusSystem = new EbmBusSystem(this, &m_io);
 
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
@@ -50,7 +34,7 @@ MainController::MainController(QObject *parent) :
     connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
 
-    m_ffudatabase = new FFUdatabase(this, &m_ebmbuslist);
+    m_ffudatabase = new FFUdatabase(this, m_ebmbusSystem);
     m_ffudatabase->loadFromHdd();
 
     m_remotecontroller = new RemoteController(this, m_ffudatabase, m_loghandler);
@@ -91,10 +75,7 @@ void MainController::slot_timer_fired()
     {
         if (m_speed != currentManualSpeed)
         {
-            foreach (EbmBus* ebmbus, m_ebmbuslist)
-            {
-                ebmbus->setSpeedSetpoint(0, 0, m_speed);
-            }
+            m_ebmbusSystem->broadcastSpeed(m_speed);
             currentManualSpeed = m_speed;
         }
     }
@@ -129,25 +110,6 @@ void MainController::slot_timer_fired()
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
     }
-
-
-//    // Test DCI-Adressing
-//    if (m_io.getBit(4) && !m_ebmbuslist.at(0)->isDaisyChainInProgress())
-//    {
-//        printf("Start DCI Addressing...\n");
-//        m_lightbutton_operation->slot_setLight(LightButton::LED_ON);
-//        m_lightbutton_error->slot_setLight(LightButton::LED_OFF);
-//        m_ebmbuslist.at(0)->startDaisyChainAddressing();
-//    }
-
-//    // Test DCI-DeAdressing
-//    if (m_io.getBit(5) && !m_ebmbuslist.at(0)->isDaisyChainInProgress())
-//    {
-//        printf("Start DCI Addressing...\n");
-//        m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
-//        m_lightbutton_error->slot_setLight(LightButton::LED_ON);
-//        m_ebmbuslist.at(0)->clearAllAddresses();
-    //    }
 }
 
 // This slot is called if the operator clicked (=== pressed for less than 1 second) the operation mode button locally
@@ -185,20 +147,14 @@ void MainController::slot_button_speed_0_clicked()
 void MainController::slot_button_speed_50_clicked()
 {
     m_speed = 170;
-    foreach (EbmBus* ebmbus, m_ebmbuslist)
-    {
-        ebmbus->setSpeedSetpoint(0, 0, m_speed);
-    }
+    m_ebmbusSystem->broadcastSpeed(m_speed);
 }
 
 // This slot is called if the operator clicked (=== pressed for less than 1 second) the 100 % speed button locally
 void MainController::slot_button_speed_100_clicked()
 {
     m_speed = 255;
-    foreach (EbmBus* ebmbus, m_ebmbuslist)
-    {
-        ebmbus->setSpeedSetpoint(0, 0, m_speed);
-    }
+    m_ebmbusSystem->broadcastSpeed(m_speed);
 }
 
 // This slot is called if remote control by a server is possible and intentionally activated by an operator
@@ -230,17 +186,6 @@ void MainController::slot_remoteControlDisconnected()
 void MainController::slot_newError()
 {
     m_lightbutton_error->slot_setLight(LightButton::LED_BLINK);
-}
-
-// This slot is called if one of the ebmbus interfaces received a telegram as response from an FFU
-void MainController::slot_showResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
-{
-    printf("ID: %llu PRE: %02X  commandAndFanaddress: %02X  fanGroup: %02X  data: ", telegramID, preamble, commandAndFanaddress, fanGroup);
-    foreach (quint8 byte, data)
-    {
-        printf("%02X ", byte);
-    }
-    printf("\n");
 }
 
 // This slot is called if the system is going down for poweroff

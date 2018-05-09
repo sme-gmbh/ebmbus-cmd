@@ -5,8 +5,10 @@
 #include <QStringList>
 #include <QDir>
 
-FFU::FFU(QObject *parent) : QObject(parent)
+FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
 {
+    m_ebmbusSystem = ebmbusSystem;
+
     m_dataChanged = false;
     setAutoSave(true);
 
@@ -74,12 +76,12 @@ void FFU::setMaxRPM(int maxRpm)
     m_speedMaxRPM = maxRpm;
 }
 
-int FFU::getSpeed()
+int FFU::getSpeedSetpoint()
 {
     return (rawSpeedToRPM(m_setpointSpeedRaw));
 }
 
-int FFU::getSpeedRaw()
+int FFU::getSpeedSetpointRaw()
 {
     return m_setpointSpeedRaw;
 }
@@ -102,11 +104,11 @@ QString FFU::getData(QString key)
     }
     else if (key == "rpm")
     {
-        return (QString().setNum(getSpeed()));
+        return (QString().setNum(getSpeedSetpoint()));
     }
     else if (key == "rawspeed")
     {
-        return (QString().setNum(getSpeedRaw()));
+        return (QString().setNum(getSpeedSetpointRaw()));
     }
     else if (key == "busID")
     {
@@ -130,6 +132,11 @@ void FFU::setData(QString key, QString value)
     {
         setBusID(value.toInt());
     }
+}
+
+void FFU::requestStatus()
+{
+
 }
 
 void FFU::save()
@@ -209,7 +216,6 @@ void FFU::deleteFromHdd()
     QFile file(myFilename());
     file.remove();
 }
-
 
 QString FFU::myFilename()
 {

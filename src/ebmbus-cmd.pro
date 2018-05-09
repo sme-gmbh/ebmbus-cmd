@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     ffu.cpp \
     ffudatabase.cpp \
     logentry.cpp \
-    loghandler.cpp
+    loghandler.cpp \
+    ebmbussystem.cpp
 
 LIBS     += -lebmbus
 
@@ -37,4 +38,5 @@ HEADERS += \
     ffu.h \
     ffudatabase.h \
     logentry.h \
-    loghandler.h
+    loghandler.h \
+    ebmbussystem.h

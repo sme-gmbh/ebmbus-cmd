@@ -2,12 +2,13 @@
 #define FFU_H
 
 #include <QObject>
+#include "ebmbussystem.h"
 
 class FFU : public QObject
 {
     Q_OBJECT
 public:
-    explicit FFU(QObject *parent = 0);
+    explicit FFU(QObject *parent, EbmBusSystem *ebmbusSystem);
     ~FFU();
 
     int getId() const;
@@ -26,14 +27,17 @@ public:
     void setSpeedRaw(int value);
     void setMaxRPM(int maxRpm);
 
-    int getSpeed();
-    int getSpeedRaw();
+    int getSpeedSetpoint();
+    int getSpeedSetpointRaw();
 
     double rawSpeedToRPM(int rawSpeed);
     int rpmToRawSpeed(double rpm);
 
     QString getData(QString key);
     void setData(QString key, QString value);
+
+    // This function triggers bus requests to get actual values, status, warnings ans errors
+    void requestStatus();
 
     void save();
     void setFiledirectory(QString path);
@@ -44,6 +48,8 @@ public:
     void deleteFromHdd();
 
 private:
+    EbmBusSystem* m_ebmbusSystem;
+
     int m_id;
     int m_setpointSpeedRaw;
     double m_speedMaxRPM;
@@ -60,6 +66,7 @@ private:
 signals:
     void signal_needsSaving();
     void signal_sendToBus(int busID, quint8 fanAddress, quint8 fanGroup, quint8 speed);
+    void signal_requestFromBus();
 
 public slots:
 

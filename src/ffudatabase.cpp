@@ -1,13 +1,33 @@
 #include "ffudatabase.h"
 
-FFUdatabase::FFUdatabase(QObject *parent, QList<EbmBus *> *ebmbuslist) : QObject(parent)
+FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem) : QObject(parent)
 {
-    m_ebmbuslist = ebmbuslist;
+    m_ebmbusSystem = ebmbusSystem;
+    m_ebmbuslist = ebmbusSystem->ebmbuslist();  // Try to eliminate the use of ebmbuslist here later!
 
-    foreach (EbmBus* ebmBus, *ebmbuslist)
+    foreach (EbmBus* ebmBus, *m_ebmbuslist)
     {
+        // Bus management connections
         connect(ebmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_DaisyChainAdressingFinished()));
+
+        // Low level bus response connections
+        connect (ebmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_gotResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
+
+        // High level bus response connections
+        connect (ebmBus, SIGNAL(signal_actualSpeed(quint64,quint8,quint8,quint8)), this, SLOT(slot_actualSpeed(quint64,quint8,quint8,quint8)));
+        connect (ebmBus, SIGNAL(signal_EEPROMdata(quint64,quint8,quint8,EbmBusEEPROM::EEPROMaddress,quint8)), this, SLOT(slot_EEPROMdata(quint64,quint8,quint8,EbmBusEEPROM::EEPROMaddress,quint8)));
+        connect (ebmBus, SIGNAL(signal_EEPROMhasBeenWritten(quint64,quint8,quint8)), this, SLOT(slot_EEPROMhasBeenWritten(quint64,quint8,quint8)));
+        connect (ebmBus, SIGNAL(signal_setPointHasBeenSet(quint64,quint8,quint8)), this, SLOT(slot_setPointHasBeenSet(quint64,quint8,quint8)));
+        connect (ebmBus, SIGNAL(signal_simpleStatus(quint64,quint8,quint8,QString)), this, SLOT(slot_simpleStatus(quint64,quint8,quint8,QString)));
+        connect (ebmBus, SIGNAL(signal_status(quint64,quint8,quint8,quint8,QString,quint8)), this, SLOT(slot_status(quint64,quint8,quint8,quint8,QString,quint8)));
+        connect (ebmBus, SIGNAL(signal_transactionFinished()), this, SLOT(slot_transactionFinished()));
+        connect (ebmBus, SIGNAL(signal_transactionLost(quint64)), this, SLOT(slot_transactionLost(quint64)));
     }
+
+    // Timer for cyclic poll task to get the status of ffus
+    connect(&m_timer_pollStatus, SIGNAL(timeout()), this, SLOT(slot_timer_pollStatus_fired()));
+    m_timer_pollStatus.setInterval(1000);
+    m_timer_pollStatus.start();
 }
 
 void FFUdatabase::loadFromHdd()
@@ -17,7 +37,7 @@ void FFUdatabase::loadFromHdd()
     while(iterator.hasNext())
     {
         QString filepath = iterator.next();
-        FFU* newFFU = new FFU(this);
+        FFU* newFFU = new FFU(this, m_ebmbusSystem);
         newFFU->load(filepath);
         newFFU->setFiledirectory(directory);
         m_ffus.append(newFFU);
@@ -37,7 +57,7 @@ void FFUdatabase::saveToHdd()
 
 QString FFUdatabase::addFFU(int id, int busID)
 {
-    FFU* newFFU = new FFU(this);
+    FFU* newFFU = new FFU(this, m_ebmbusSystem);
     newFFU->setFiledirectory("/var/openffucontrol/ffus/");
     newFFU->setAutoSave(false);
     newFFU->setId(id);
@@ -147,21 +167,7 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress)
 
 QString FFUdatabase::broadcast(int busID, QMap<QString, QString> dataMap)
 {
-    if (busID >= m_ebmbuslist->count())
-        return "Warning[FFUdatabase]: busID " + QString().setNum(busID) + " invalid";
-
-    EbmBus* ebmBus = m_ebmbuslist->at(busID);
-    QString response;
-
-    foreach (QString key, dataMap.keys()) {
-        if (key == "rawspeed")
-        {
-            ebmBus->setSpeedSetpoint(0, 0, dataMap.value("rawspeed").toInt());
-            response.append("OK[FFUdatabase]: Broadcasting speed at bus "+ QString().setNum(busID) + ".\r\n");
-        }
-    }
-
-    return response;
+    return m_ebmbusSystem->broadcast(busID, dataMap);
 }
 
 void FFUdatabase::slot_DaisyChainAdressingFinished()
@@ -175,4 +181,73 @@ void FFUdatabase::slot_DaisyChainAdressingFinished()
         }
         i++;
     }
+}
+
+void FFUdatabase::slot_gotResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
+{
+
+}
+
+void FFUdatabase::slot_transactionFinished()
+{
+
+}
+
+void FFUdatabase::slot_transactionLost(quint64 id)
+{
+
+}
+
+void FFUdatabase::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
+{
+
+}
+
+void FFUdatabase::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue)
+{
+
+}
+
+void FFUdatabase::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
+{
+
+}
+
+void FFUdatabase::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
+{
+
+}
+
+void FFUdatabase::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
+{
+
+}
+
+void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte)
+{
+
+}
+
+void FFUdatabase::slot_sendToBus(int busID, quint8 fanAddress, quint8 fanGroup, quint8 speed)
+{
+    EbmBus* bus = m_ebmbusSystem->getBusByID(busID);
+    if (bus == NULL)
+        return;     // Drop requests for non existing bus ids
+
+    bus->setSpeedSetpoint(fanAddress, fanGroup, speed);
+}
+
+void FFUdatabase::slot_timer_pollStatus_fired()
+{
+    static int currentFFUid = 0;
+
+    if (m_ffus.count() > currentFFUid)
+    {
+        FFU* ffu = m_ffus.at(currentFFUid);
+        ffu->requestStatus();
+    }
+
+    currentFFUid++;
+    if (m_ffus.count() <= currentFFUid)
+        currentFFUid = 0;
 }
