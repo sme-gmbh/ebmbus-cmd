@@ -18,6 +18,8 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
     m_busID = -1;
     m_fanAddress = -1;   // Invalid Address
     m_fanGroup = -1;     // Invalid Address
+
+    m_remoteControlled = true;
 }
 
 FFU::~FFU()
@@ -49,13 +51,16 @@ void FFU::setSpeed(int rpm)
     }
 }
 
-void FFU::setSpeedRaw(int value)
+void FFU::setSpeedRaw(int value, bool refreshOnly)
 {
-    if (value != m_setpointSpeedRaw)
+    if ((value != m_setpointSpeedRaw) || refreshOnly)
     {
-        m_setpointSpeedRaw = value;
-        m_dataChanged = true;
-        emit signal_needsSaving();
+        if (!refreshOnly)
+        {
+            m_setpointSpeedRaw = value;
+            m_dataChanged = true;
+            emit signal_needsSaving();
+        }
         if ((m_busID >= 0) && (m_fanAddress >= 1) && (m_fanGroup >= 1))
         {
             EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
@@ -79,7 +84,6 @@ void FFU::setMaxRPM(int maxRpm)
         m_dataChanged = true;
         emit signal_needsSaving();
     }
-
 }
 
 int FFU::getSpeedSetpoint()
@@ -132,11 +136,15 @@ QString FFU::getData(QString key)
     {
         QString response;
 
+        response += QString().sprintf("online=%i", m_actualData.online);
+        response += QString().sprintf("lostTelegrams=%lli", m_actualData.lostTelegrams);
+        response += "lastSeen=" + m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz");
+        response += QString().sprintf("speedSettingLostCount=%i", m_actualData.speedSettingLostCount);
         response += QString().sprintf("speedReading=%i ", m_actualData.speedReading);
         response += QString().sprintf("speedSetpoint=%i ", m_actualData.speedSetpoint);
         response += QString().sprintf("statusRaw_LSB=%02x ", m_actualData.statusRaw_LSB);
         response += QString().sprintf("statusRaw_MSB=%02x ", m_actualData.statusRaw_MSB);
-        response += "statusString=" + m_actualData.statusString_LSB + m_actualData.statusString_MSB;
+        response += "statusString=" + (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB).toHtmlEscaped();
         response += QString().sprintf("warnings=%02x ", m_actualData.warnings);
         response += QString().sprintf("dcVoltage=%i ", m_actualData.dcVoltage);
         response += QString().sprintf("dcCurrent=%i ", m_actualData.dcCurrent);
@@ -172,6 +180,16 @@ void FFU::setData(QString key, QString value)
     }
 }
 
+void FFU::setRemoteControlled(bool remoteControlled)
+{
+    m_remoteControlled = remoteControlled;
+}
+
+bool FFU::isRemoteControlled() const
+{
+    return m_remoteControlled;
+}
+
 FFU::ActualData FFU::getActualData() const
 {
     return m_actualData;
@@ -184,6 +202,7 @@ void FFU::requestStatus()
         return;
 
     m_transactionIDs.append(bus->getActualSpeed(m_fanAddress, m_fanGroup));
+    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::SetPoint));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusLowByte));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusHighByte));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::Warnings));
@@ -203,13 +222,13 @@ void FFU::save()
 
     QString wdata;
 
-    //wdata.sprintf("id=%i bus=%i speedMaxRPM=%.2lf setpointSpeedRaw=%i\n", m_id, m_busID, m_speedMaxRPM, m_setpointSpeedRaw);
     wdata.append(QString().sprintf("id=%i ", m_id));
     wdata.append(QString().sprintf("bus=%i ", m_busID));
     wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
     wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
     wdata.append(QString().sprintf("speedMaxRPM=%.2lf ", m_speedMaxRPM));
-    wdata.append(QString().sprintf("setpointSpeedRaw=%i\n", m_setpointSpeedRaw));
+    wdata.append(QString().sprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
+    wdata.append(QString().sprintf("speedSettingLostCount=%i\n", m_actualData.speedSettingLostCount));    // Todo: decide when to save this. Do not write flash to dead!
 
 
     file.write(wdata.toUtf8());
@@ -263,6 +282,9 @@ void FFU::load(QString filename)
 
         if (key == "setpointSpeedRaw")
             m_setpointSpeedRaw = value.toInt();
+
+        if (key == "speedSettingLostCount")
+            m_actualData.speedSettingLostCount = value.toInt();
     }
 
     file.close();
@@ -288,7 +310,12 @@ bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
     bool found = m_transactionIDs.contains(telegramID);
 
     if (found && deleteID)
+    {
         m_transactionIDs.removeOne(telegramID);
+        // If we reach this point we are going to parse a telegram for this ffu, so mark it as online
+        m_actualData.online = true;
+        m_actualData.lastSeen = QDateTime::currentDateTime();
+    }
 
     return found;
 }
@@ -342,7 +369,11 @@ void FFU::setFanGroup(int fanGroup)
 
 void FFU::slot_transactionLost(quint64 id)
 {
-    // Set some kind of error here!
+    Q_UNUSED(id);
+
+    // If the ffu has a lost telegram, mark it as offline and increment error counter
+    m_actualData.lostTelegrams++;
+    m_actualData.online = false;
 }
 
 void FFU::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
@@ -387,6 +418,14 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         break;
     case EbmBusStatus::SetPoint:
         m_actualData.speedSetpoint = rawValue;
+        // If the setpoint in the ffu does not match the setpoint in the controller, write the setpoint from the controller
+        // to the ffu.
+        if ((m_actualData.speedSetpoint != m_setpointSpeedRaw) && m_remoteControlled)
+        {
+            if (m_actualData.speedSettingLostCount < 20)    // EEPROM wear limiter
+                setSpeedRaw(m_setpointSpeedRaw, true);
+            m_actualData.speedSettingLostCount++;
+        }
         break;
     case EbmBusStatus::ActualValue:
         break;

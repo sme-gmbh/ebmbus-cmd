@@ -60,9 +60,11 @@ private slots:
     void slot_remoteControlConnected();
     void slot_remoteControlDisconnected();
 
-    void slot_newError();
-
     void slot_shutdownNOW();
+
+    void slot_newError();
+    void slot_allErrorsQuit();
+    void slot_allErrorsGone();
 };
 
 #endif // MAINCONTROLLER_H

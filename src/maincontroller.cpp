@@ -9,8 +9,10 @@ MainController::MainController(QObject *parent) :
 
     m_loghandler = new Loghandler(this);
     connect(m_loghandler, SIGNAL(signal_newError()), this, SLOT(slot_newError()));
+    connect(m_loghandler, SIGNAL(signal_allErrorsQuit()), this, SLOT(slot_allErrorsQuit()));
+    connect(m_loghandler, SIGNAL(signal_allErrorsGone()), this, SLOT(slot_allErrorsGone()));
 
-    m_speed = 170;
+    m_speed = 127;
 
     m_ebmbusSystem = new EbmBusSystem(this, &m_io);
 
@@ -39,12 +41,13 @@ MainController::MainController(QObject *parent) :
 
     m_remotecontroller = new RemoteController(this, m_ffudatabase, m_loghandler);
     connect(m_remotecontroller, SIGNAL(signal_activated()), this, SLOT(slot_remoteControlActivated()));
+    connect(m_remotecontroller, SIGNAL(signal_activated()), m_ffudatabase, SLOT(slot_remoteControlActivated()));
     connect(m_remotecontroller, SIGNAL(signal_deactivated()), this, SLOT(slot_remoteControlDeactivated()));
+    connect(m_remotecontroller, SIGNAL(signal_deactivated()), m_ffudatabase, SLOT(slot_remoteControlDeactivated()));
     connect(m_remotecontroller, SIGNAL(signal_connected()), this, SLOT(slot_remoteControlConnected()));
     connect(m_remotecontroller, SIGNAL(signal_disconnected()), this, SLOT(slot_remoteControlDisconnected()));
 
     m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
-
 }
 
 MainController::~MainController()
@@ -54,61 +57,70 @@ MainController::~MainController()
 // This is a periodic timer function for visualisation and operation
 void MainController::slot_timer_fired()
 {
-    static int currentManualSpeed = 0;
+    static int currentManualSpeed = 127;
 
-    if ((m_lightbutton_speed_100->pressed_milliseconds() > 1000) && (m_speed < 255))
+    if (!m_remotecontroller->isEnabled())
     {
-        m_speed++;
-    }
 
-    if ((m_lightbutton_speed_50->pressed_milliseconds() > 1000) && (m_speed > 0))
-    {
-        m_speed--;
-    }
+        if ((m_lightbutton_speed_100->pressed_milliseconds() > 1000) && (m_speed < 255))
+        {
+            m_speed++;
+        }
 
-    if ((m_lightbutton_speed_0->pressed_milliseconds() > 5000) && (m_speed != 0))
-    {
-        m_speed = 0;
-    }
+        if ((m_lightbutton_speed_50->pressed_milliseconds() > 1000) && (m_speed > 0))
+        {
+            m_speed--;
+        }
 
-    if (m_remotecontroller->isActive() == false)
-    {
+        if ((m_lightbutton_speed_0->pressed_milliseconds() > 5000) && (m_speed != 0))
+        {
+            m_speed = 0;
+        }
+
         if (m_speed != currentManualSpeed)
         {
             m_ebmbusSystem->broadcastSpeed(m_speed);
             currentManualSpeed = m_speed;
         }
-    }
 
-    if (m_speed == 0)
-    {
-        m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
-        m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
-        m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
-    }
-    else if (m_speed < 170)
-    {
-        m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
-        m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
-        m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
-    }
-    else if (m_speed == 170)
-    {
-        m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
-        m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
-        m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
-    }
-    else if (m_speed < 255)
-    {
-        m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
-        m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
-        m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
+        if (m_speed == 0)
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
+        }
+        else if (m_speed < 127)
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
+        }
+        else if (m_speed == 127)
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
+        }
+        else if (m_speed < 255)
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
+        }
+        else
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
+        }
     }
     else
     {
+        m_speed = 127;
+        currentManualSpeed = m_speed;
         m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
-        m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
+        m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
     }
 }
 
@@ -131,10 +143,6 @@ void MainController::slot_button_operation_clicked()
 void MainController::slot_button_error_clicked()
 {
     m_loghandler->slot_quitErrors();
-    if (m_loghandler->hasActiveErrors())
-        m_lightbutton_error->slot_setLight(LightButton::LED_ON);
-    else
-        m_lightbutton_error->slot_setLight(LightButton::LED_OFF);
 }
 
 // This slot is called if the operator clicked (=== pressed for less than 1 second) the 0 % speed button locally
@@ -146,15 +154,21 @@ void MainController::slot_button_speed_0_clicked()
 // This slot is called if the operator clicked (=== pressed for less than 1 second) the 50 % speed button locally
 void MainController::slot_button_speed_50_clicked()
 {
-    m_speed = 170;
-    m_ebmbusSystem->broadcastSpeed(m_speed);
+    if (!m_remotecontroller->isEnabled())
+    {
+        m_speed = 170;
+        m_ebmbusSystem->broadcastSpeed(m_speed);
+    }
 }
 
 // This slot is called if the operator clicked (=== pressed for less than 1 second) the 100 % speed button locally
 void MainController::slot_button_speed_100_clicked()
 {
-    m_speed = 255;
-    m_ebmbusSystem->broadcastSpeed(m_speed);
+    if (!m_remotecontroller->isEnabled())
+    {
+        m_speed = 255;
+        m_ebmbusSystem->broadcastSpeed(m_speed);
+    }
 }
 
 // This slot is called if remote control by a server is possible and intentionally activated by an operator
@@ -193,4 +207,14 @@ void MainController::slot_shutdownNOW()
 {
     m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
     m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+}
+
+void MainController::slot_allErrorsQuit()
+{
+    m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+}
+
+void MainController::slot_allErrorsGone()
+{
+    m_lightbutton_error->slot_setLight(LightButton::LED_OFF);
 }

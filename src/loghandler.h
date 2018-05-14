@@ -21,6 +21,8 @@ private:
 signals:
 
     void signal_newError();
+    void signal_allErrorsQuit();
+    void signal_allErrorsGone();
 
 public slots:
     void slot_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text);

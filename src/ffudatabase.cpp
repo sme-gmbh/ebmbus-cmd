@@ -113,6 +113,20 @@ FFU *FFUdatabase::getFFUbyTelegramID(quint64 telegramID)
     return NULL;    // TransactioID not initiated by ffu requests, so it came frome somebody else
 }
 
+void FFUdatabase::slot_remoteControlActivated()
+{
+    foreach (FFU* ffu, m_ffus) {
+        ffu->setRemoteControlled(true);
+    }
+}
+
+void FFUdatabase::slot_remoteControlDeactivated()
+{
+    foreach (FFU* ffu, m_ffus) {
+        ffu->setRemoteControlled(false);
+    }
+}
+
 QString FFUdatabase::getFFUdata(int id, QString key)
 {
     FFU* ffu = getFFUbyID(id);

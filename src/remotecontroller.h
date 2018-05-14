@@ -19,7 +19,8 @@ public:
     ~RemoteController();
 
     bool isConnected(); // Returns true if at least one server is connected
-    bool isActive();    // Returns true if remote controller is supposed to control ffus remotely
+    bool isActive();    // Returns true if remote controller is supposed to control ffus remotely and remote connecton is established
+    bool isEnabled();   // Returns true if remote controller is supposed to control ffus remotely
 
 private:
     QTcpServer m_server;

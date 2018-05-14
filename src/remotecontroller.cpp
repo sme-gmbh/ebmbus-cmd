@@ -30,6 +30,11 @@ bool RemoteController::isActive()
     return (m_activated && !m_noConnection);
 }
 
+bool RemoteController::isEnabled()
+{
+    return m_activated;
+}
+
 void RemoteController::slot_activate()
 {
     if (m_noConnection)

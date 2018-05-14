@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QDateTime>
 #include "ebmbussystem.h"
 
 class FFU : public QObject
@@ -13,6 +14,10 @@ public:
     ~FFU();
 
     typedef struct {
+        bool online = false;
+        quint64 lostTelegrams = 0;
+        QDateTime lastSeen;
+        quint32 speedSettingLostCount = 0;
         quint8 speedReading;
         quint8 speedSetpoint;
         quint8 statusRaw_LSB;
@@ -38,7 +43,7 @@ public:
     void setFanGroup(int fanGroup);
 
     void setSpeed(int rpm);
-    void setSpeedRaw(int value);
+    void setSpeedRaw(int value, bool refreshOnly = false);
     void setMaxRPM(int maxRpm);
 
     int getSpeedSetpoint();
@@ -49,6 +54,9 @@ public:
 
     QString getData(QString key);
     void setData(QString key, QString value);
+
+    void setRemoteControlled(bool remoteControlled);
+    bool isRemoteControlled() const;
 
     ActualData getActualData() const;
 
@@ -65,6 +73,7 @@ public:
 
     bool isThisYourTelegram(quint64 telegramID, bool deleteID = true);
 
+
 private:
     EbmBusSystem* m_ebmbusSystem;
     QList<quint64> m_transactionIDs;
@@ -75,6 +84,8 @@ private:
     int m_busID;
     int m_fanAddress;
     int m_fanGroup;
+
+    bool m_remoteControlled;
 
     ActualData m_actualData;
 

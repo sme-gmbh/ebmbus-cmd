@@ -29,4 +29,9 @@ void Loghandler::slot_quitErrors()
     {
         e->quit();
     }
+
+    if (this->hasActiveErrors())
+        emit signal_allErrorsQuit();
+    else
+        emit signal_allErrorsGone();
 }

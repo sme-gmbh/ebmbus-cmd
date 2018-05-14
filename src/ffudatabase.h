@@ -48,6 +48,8 @@ signals:
     void signal_DCIaddressingFinished(int busID);
 
 public slots:
+    void slot_remoteControlActivated();
+    void slot_remoteControlDeactivated();
 
 private slots:
     // Bus management response slots
