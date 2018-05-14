@@ -8,7 +8,7 @@ RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, Loghandl
 
     m_ffuDB = ffuDB;
     m_loghandler = loghandler;
-    m_activated = false;
+    m_activated = true;
     m_noConnection = true;
 
     connect(&m_server, SIGNAL(newConnection()),  this, SLOT(slot_new_connection()));

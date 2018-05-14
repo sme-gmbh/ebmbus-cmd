@@ -83,7 +83,13 @@ void MainController::slot_timer_fired()
             currentManualSpeed = m_speed;
         }
 
-        if (m_speed == 0)
+        if (m_speed == -1)
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_BLINK);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_BLINK);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_BLINK);
+        }
+        else if (m_speed == 0)
         {
             m_lightbutton_speed_0->slot_setLight(LightButton::LED_ON);
             m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
@@ -112,12 +118,6 @@ void MainController::slot_timer_fired()
             m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
             m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
             m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
-        }
-        else
-        {
-            m_lightbutton_speed_0->slot_setLight(LightButton::LED_BLINK);
-            m_lightbutton_speed_50->slot_setLight(LightButton::LED_BLINK);
-            m_lightbutton_speed_100->slot_setLight(LightButton::LED_BLINK);
         }
     }
     else
