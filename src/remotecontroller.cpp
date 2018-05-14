@@ -37,8 +37,8 @@ bool RemoteController::isEnabled()
 
 void RemoteController::slot_activate()
 {
-    if (m_noConnection)
-        return;
+//    if (m_noConnection)
+//        return;
 
     m_activated = true;
     slot_broadcast(QString("Status[RemoteController]: Activated").toUtf8());
