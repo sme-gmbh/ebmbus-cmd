@@ -143,10 +143,9 @@ void MainController::slot_button_operation_clicked()
     if (!m_remotecontroller->isConnected())
     {
         m_loghandler->slot_newEntry(LogEntry::Error, "Maincontroller", "Server link is down");
-        return;
     }
 
-    if (m_remotecontroller->isActive())
+    if (m_remotecontroller->isEnabled())
         m_remotecontroller->slot_deactivate();
     else
         m_remotecontroller->slot_activate();
