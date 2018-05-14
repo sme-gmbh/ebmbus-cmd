@@ -12,7 +12,7 @@ MainController::MainController(QObject *parent) :
     connect(m_loghandler, SIGNAL(signal_allErrorsQuit()), this, SLOT(slot_allErrorsQuit()));
     connect(m_loghandler, SIGNAL(signal_allErrorsGone()), this, SLOT(slot_allErrorsGone()));
 
-    m_speed = 127;
+    m_speed = -1;
 
     m_ebmbusSystem = new EbmBusSystem(this, &m_io);
 
@@ -57,7 +57,7 @@ MainController::~MainController()
 // This is a periodic timer function for visualisation and operation
 void MainController::slot_timer_fired()
 {
-    static int currentManualSpeed = 127;
+    static int currentManualSpeed = -1;
 
     if (!m_remotecontroller->isEnabled())
     {
@@ -77,7 +77,7 @@ void MainController::slot_timer_fired()
             m_speed = 0;
         }
 
-        if (m_speed != currentManualSpeed)
+        if ((m_speed != currentManualSpeed) && (m_speed != -1))
         {
             m_ebmbusSystem->broadcastSpeed(m_speed);
             currentManualSpeed = m_speed;
@@ -107,16 +107,22 @@ void MainController::slot_timer_fired()
             m_lightbutton_speed_50->slot_setLight(LightButton::LED_ON);
             m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
         }
-        else
+        else if (m_speed == 255)
         {
             m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
             m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
             m_lightbutton_speed_100->slot_setLight(LightButton::LED_ON);
         }
+        else
+        {
+            m_lightbutton_speed_0->slot_setLight(LightButton::LED_BLINK);
+            m_lightbutton_speed_50->slot_setLight(LightButton::LED_BLINK);
+            m_lightbutton_speed_100->slot_setLight(LightButton::LED_BLINK);
+        }
     }
     else
     {
-        m_speed = 127;
+        m_speed = -1;
         currentManualSpeed = m_speed;
         m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);

@@ -136,15 +136,15 @@ QString FFU::getData(QString key)
     {
         QString response;
 
-        response += QString().sprintf("online=%i", m_actualData.online);
-        response += QString().sprintf("lostTelegrams=%lli", m_actualData.lostTelegrams);
-        response += "lastSeen=" + m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz");
-        response += QString().sprintf("speedSettingLostCount=%i", m_actualData.speedSettingLostCount);
+        response += QString().sprintf("online=%i ", m_actualData.online);
+        response += QString().sprintf("lostTelegrams=%lli ", m_actualData.lostTelegrams);
+        response += "lastSeen=" + m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz ");
+        response += QString().sprintf("speedSettingLostCount=%i ", m_actualData.speedSettingLostCount);
         response += QString().sprintf("speedReading=%i ", m_actualData.speedReading);
         response += QString().sprintf("speedSetpoint=%i ", m_actualData.speedSetpoint);
         response += QString().sprintf("statusRaw_LSB=%02x ", m_actualData.statusRaw_LSB);
         response += QString().sprintf("statusRaw_MSB=%02x ", m_actualData.statusRaw_MSB);
-        response += "statusString=" + (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB).toHtmlEscaped();
+        response += "statusString=" + (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB);    // Todo: convert string to base64
         response += QString().sprintf("warnings=%02x ", m_actualData.warnings);
         response += QString().sprintf("dcVoltage=%i ", m_actualData.dcVoltage);
         response += QString().sprintf("dcCurrent=%i ", m_actualData.dcCurrent);
