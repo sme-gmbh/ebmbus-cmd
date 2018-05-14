@@ -64,17 +64,24 @@ void MainController::slot_timer_fired()
 
         if ((m_lightbutton_speed_100->pressed_milliseconds() > 1000) && (m_speed < 255))
         {
-            m_speed++;
+            if (m_speed != -1)
+                m_speed++;
+            else
+                m_speed = 127;
         }
 
         if ((m_lightbutton_speed_50->pressed_milliseconds() > 1000) && (m_speed > 0))
         {
-            m_speed--;
+            if (m_speed != -1)
+                m_speed--;
+            else m_speed = 127;
         }
 
         if ((m_lightbutton_speed_0->pressed_milliseconds() > 5000) && (m_speed != 0))
         {
-            m_speed = 0;
+            if (m_speed != -1)
+                m_speed = 0;
+            else m_speed = 127;
         }
 
         if ((m_speed != currentManualSpeed) && (m_speed != -1))
@@ -162,7 +169,7 @@ void MainController::slot_button_speed_50_clicked()
 {
     if (!m_remotecontroller->isEnabled())
     {
-        m_speed = 170;
+        m_speed = 127;
         m_ebmbusSystem->broadcastSpeed(m_speed);
     }
 }
