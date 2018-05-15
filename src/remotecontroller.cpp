@@ -63,6 +63,12 @@ void RemoteController::slot_new_connection()
     connect(remoteClientHandler, SIGNAL(signal_connectionClosed(QTcpSocket*,RemoteClientHandler*)),
             this, SLOT(slot_connectionClosed(QTcpSocket*,RemoteClientHandler*)));
 
+    connect(remoteClientHandler, SIGNAL(signal_buttonSimulated_operation_clicked()), this, SIGNAL(signal_buttonSimulated_operation_clicked()));
+    connect(remoteClientHandler, SIGNAL(signal_buttonSimulated_error_clicked()), this, SIGNAL(signal_buttonSimulated_error_clicked()));
+    connect(remoteClientHandler, SIGNAL(signal_buttonSimulated_speed_0_clicked()), this, SIGNAL(signal_buttonSimulated_speed_0_clicked()));
+    connect(remoteClientHandler, SIGNAL(signal_buttonSimulated_speed_50_clicked()), this, SIGNAL(signal_buttonSimulated_speed_50_clicked()));
+    connect(remoteClientHandler, SIGNAL(signal_buttonSimulated_speed_100_clicked()), this, SIGNAL(signal_buttonSimulated_speed_100_clicked()));
+
     if (m_noConnection)
     {
         m_noConnection = false;

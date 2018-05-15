@@ -36,6 +36,12 @@ signals:
     void signal_connected();
     void signal_disconnected();
 
+    void signal_buttonSimulated_operation_clicked();
+    void signal_buttonSimulated_error_clicked();
+    void signal_buttonSimulated_speed_0_clicked();
+    void signal_buttonSimulated_speed_50_clicked();
+    void signal_buttonSimulated_speed_100_clicked();
+
 public slots:
     void slot_activate();
     void slot_deactivate();

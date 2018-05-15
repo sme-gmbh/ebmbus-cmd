@@ -47,6 +47,13 @@ MainController::MainController(QObject *parent) :
     connect(m_remotecontroller, SIGNAL(signal_connected()), this, SLOT(slot_remoteControlConnected()));
     connect(m_remotecontroller, SIGNAL(signal_disconnected()), this, SLOT(slot_remoteControlDisconnected()));
 
+    connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_operation_clicked()), this, SLOT(slot_button_operation_clicked()));
+    connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_error_clicked()), this, SLOT(slot_button_error_clicked()));
+    connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_speed_0_clicked()), this, SLOT(slot_button_speed_0_clicked()));
+    connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_speed_50_clicked()), this, SLOT(slot_button_speed_50_clicked()));
+    connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_speed_100_clicked()), this, SLOT(slot_button_speed_100_clicked()));
+
+
     m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
 }
 

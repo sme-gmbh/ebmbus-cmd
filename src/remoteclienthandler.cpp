@@ -92,6 +92,10 @@ void RemoteClientHandler::slot_read_ready()
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "\r\n"
+                          "    button --button=BUTTONNAME\r\n"
+                          "        Simulate a button click.\r\n"
+                          "        Possible BUTTONNAMEs: operation, error, speed0, speed50, speed100.r\n"
+                          "\r\n"
                           "    add-ffu --bus=BUSNR --id=ID\r\n"
                           "        Add a new ffu with ID to the controller database at BUSNR.\r\n"
                           "\r\n"
@@ -126,6 +130,27 @@ void RemoteClientHandler::slot_read_ready()
 
                 socket->write(line.toUtf8());
             }
+        }
+        // ************************************************** button **************************************************
+        else if (command == "button")
+        {
+            QString button = data.value("button");
+            if (button.isEmpty())
+            {
+                socket->write("Error[Commandparser]: parameter \"button\" not specified. Abort.\r\n");
+                continue;
+            }
+
+            if (button == "operation")
+                emit signal_buttonSimulated_operation_clicked();
+            else if (button == "error")
+                emit signal_buttonSimulated_error_clicked();
+            else if (button == "speed0")
+                emit signal_buttonSimulated_speed_0_clicked();
+            else if (button == "speed50")
+                emit signal_buttonSimulated_speed_50_clicked();
+            else if (button == "speed100")
+                emit signal_buttonSimulated_speed_100_clicked();
         }
         // ************************************************** add-ffu **************************************************
         else if (command == "add-ffu")

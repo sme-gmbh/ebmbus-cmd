@@ -26,6 +26,12 @@ signals:
     void signal_broadcast(QByteArray data);
     void signal_connectionClosed(QTcpSocket* socket, RemoteClientHandler* remoteClientHandler);
 
+    void signal_buttonSimulated_operation_clicked();
+    void signal_buttonSimulated_error_clicked();
+    void signal_buttonSimulated_speed_0_clicked();
+    void signal_buttonSimulated_speed_50_clicked();
+    void signal_buttonSimulated_speed_100_clicked();
+
 public slots:
 
 private slots:
