@@ -75,14 +75,17 @@ void EbmBusSystem::slot_showResponseRaw(quint64 telegramID, quint8 preamble, qui
         printf("%02X ", byte);
     }
     printf("\n");
+    fflush(stdout);
 }
 
 void EbmBusSystem::slot_transactionLost(quint64 telegramID)
 {
     printf("ID: %llu Transaction lost.\n", telegramID);
+    fflush(stdout);
 }
 
 void EbmBusSystem::slot_transactionFinished()
 {
     printf("Transaction finished.\n");
+    fflush(stdout);
 }
