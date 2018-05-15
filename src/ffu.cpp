@@ -20,6 +20,10 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
     m_fanGroup = -1;     // Invalid Address
 
     m_remoteControlled = true;
+
+    m_actualData.online = false;
+    m_actualData.lostTelegrams = 0;
+    m_actualData.speedSettingLostCount = 0;
 }
 
 FFU::~FFU()

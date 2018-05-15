@@ -14,10 +14,10 @@ public:
     ~FFU();
 
     typedef struct {
-        bool online = false;
-        quint64 lostTelegrams = 0;
+        bool online;
+        quint64 lostTelegrams;
         QDateTime lastSeen;
-        quint32 speedSettingLostCount = 0;
+        quint32 speedSettingLostCount;
         quint8 speedReading;
         quint8 speedSetpoint;
         quint8 statusRaw_LSB;
