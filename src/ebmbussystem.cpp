@@ -19,7 +19,8 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
         connect(newEbmBus, SIGNAL(signal_transactionLost(quint64)), this, SLOT(slot_transactionLost(quint64)));
         connect(newEbmBus, SIGNAL(signal_transactionFinished()), this, SLOT(slot_transactionFinished()));
 
-        newEbmBus->open();
+        if (!newEbmBus->open())
+            printf("Unable to open serial line!\n");
     }
 }
 
