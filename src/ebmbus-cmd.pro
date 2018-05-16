@@ -9,6 +9,21 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
+OBJECTS_DIR = .obj/
+MOC_DIR = .moc/
+UI_DIR = .ui/
+RCC_DIR = .rcc/
+
+# make install / make uninstall target
+unix {
+    target.path = /usr/bin/
+    systemdfiles.files += ../unix/ebmbus-cmd.service
+    systemdfiles.path = /lib/systemd/system/
+    INSTALLS += target
+    INSTALLS += systemdfiles
+}
+
+
 SOURCES += main.cpp \
     revpidio.cpp \
     maincontroller.cpp \
@@ -40,3 +55,6 @@ HEADERS += \
     logentry.h \
     loghandler.h \
     ebmbussystem.h
+
+DISTFILES += \
+    ../unix/ebmbus-cmd.service

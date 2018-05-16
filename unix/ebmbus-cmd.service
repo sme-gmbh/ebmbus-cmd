@@ -1,0 +1,13 @@
+[Unit]
+Description=openFFUcontrol remote bus interface service for ebmbus
+After=network.target ssh.service
+
+[Service]
+ExecStart=/usr/bin/ebmbus-cmd
+StandardOutput=null
+StandardError=journal
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
