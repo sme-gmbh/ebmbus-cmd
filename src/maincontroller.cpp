@@ -55,6 +55,9 @@ MainController::MainController(QObject *parent) :
 
 
     m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+
+    // Temporarily broadcast speed at startup - remove this later
+    m_ebmbusSystem->broadcastSpeed(170);
 }
 
 MainController::~MainController()
