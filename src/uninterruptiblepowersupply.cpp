@@ -30,7 +30,7 @@ void UninterruptiblePowerSupply::startPSUshutdownTimer()
     if ((ftdi = ftdi_new()) == 0)
     {
         fprintf(stderr, "ftdi_new failed\n");
-        return EXIT_FAILURE;
+        return;
     }
 
     version = ftdi_get_library_version();
@@ -42,7 +42,7 @@ void UninterruptiblePowerSupply::startPSUshutdownTimer()
     {
         fprintf(stderr, "unable to open ftdi device: %d (%s)\n", ret, ftdi_get_error_string(ftdi));
         ftdi_free(ftdi);
-        return EXIT_FAILURE;
+        return;
     }
 
     // Read out FTDIChip-ID of R type chips
@@ -119,7 +119,7 @@ void UninterruptiblePowerSupply::startPSUshutdownTimer()
     {
         fprintf(stderr, "unable to close ftdi device: %d (%s)\n", ret, ftdi_get_error_string(ftdi));
         ftdi_free(ftdi);
-        return EXIT_FAILURE;
+        return;
     }
 
     ftdi_free(ftdi);
