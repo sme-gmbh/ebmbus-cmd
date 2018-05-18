@@ -19,10 +19,12 @@ unix {
     target.path = /usr/bin/
     systemdfiles.files += ../unix/ebmbus-cmd.service
     systemdfiles.path = /lib/systemd/system/
+    udevfiles.files += ../unix/00-ups500s.rules
+    udevfiles.path = /etc/udev/rules.d/
     INSTALLS += target
     INSTALLS += systemdfiles
+    INSTALLS += udevfiles
 }
-
 
 SOURCES += main.cpp \
     revpidio.cpp \
@@ -57,4 +59,5 @@ HEADERS += \
     ebmbussystem.h
 
 DISTFILES += \
-    ../unix/ebmbus-cmd.service
+    ../unix/ebmbus-cmd.service \
+    ../unix/00-ups500s.rules

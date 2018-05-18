@@ -15,6 +15,8 @@ public:
     void setShutdownTimeout(int milliseconds);
     void setMainswitchDelay(int milliseconds);
 
+    void startPSUshutdownTimer();
+
 private:
     RevPiDIO* m_io;
     int m_address_mainswitch;
