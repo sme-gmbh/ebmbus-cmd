@@ -20,14 +20,14 @@ public:
 
     void setShutdownTimeout(int milliseconds);
     void setMainswitchDelay(int milliseconds);
-
-    void startPSUshutdownTimer();
+    void setPowerGoodDelay(int milliseconds);
 
 private:
     RevPiDIO* m_io;
     int m_address_mainswitch;
     QTimer m_timer;
     QTimer m_shutdownTimer;
+    QTimer m_powerGoodTimer;
     QDateTime m_dateTime_mainSwitchOff;
     QDateTime m_dateTime_powerfail;
     int m_shutdownTimeout;
@@ -53,6 +53,7 @@ private:
 signals:
     void signal_mainswitchOff();
     void signal_shutdownDueToPowerloss();
+    void signal_powerGoodAgain();
 
     void signal_warning_DCinputVoltageLow();
     void signal_info_DCinputVoltageOK();
@@ -64,6 +65,7 @@ signals:
     void signal_info_EnergyStorageFull();
 
 public slots:
+    void slot_startPSUshutdownTimer();
 
 private slots:
     void slot_timer_fired();

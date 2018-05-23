@@ -37,8 +37,7 @@ MainController::MainController(QObject *parent) :
     connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), this, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), m_osControl, SLOT(slot_shutdownNOW()));
-    connect(m_ups, SIGNAL(signal_info_DCinputVoltageOK()), this, SLOT(slot_mainsPowerRestored()));
-    connect(m_ups, SIGNAL(signal_info_EnergyStorageFull()), this, SLOT(slot_mainsPowerRestored()));
+    connect(m_ups, SIGNAL(signal_powerGoodAgain()), this, SLOT(slot_mainsPowerRestored()));
 
     m_ffudatabase = new FFUdatabase(this, m_ebmbusSystem);
     m_ffudatabase->loadFromHdd();

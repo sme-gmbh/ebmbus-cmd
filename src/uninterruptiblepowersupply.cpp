@@ -8,6 +8,7 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_address_mainswitch = address_mainswitch;
 
     setShutdownTimeout(30000);
+    setPowerGoodDelay(5000);
     m_mainswitchDelay = 500;
 
     m_old_mainswitchState = false;
@@ -16,7 +17,7 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_ups_bufferReady = false;
     m_ups_energyStorageHighLevel = false;
     m_ups_runningInIsland = false;
-    m_ups_supplyVoltageOK = false;
+    m_ups_supplyVoltageOK = true;
 
     connectToUPS();
 
@@ -30,7 +31,18 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     // Abort shutdown if necessary energy level could be restored due to restored mains power
     connect(this, SIGNAL(signal_info_EnergyStorageFull()), &m_shutdownTimer, SLOT(stop()));
     // Finally if timer fires, initiate system shutdown - now way back now - system going down
+    connect(&m_shutdownTimer, SIGNAL(timeout()), this, SLOT(slot_startPSUshutdownTimer()));
     connect(&m_shutdownTimer, SIGNAL(timeout()), this, SIGNAL(signal_shutdownDueToPowerloss()));
+
+    m_powerGoodTimer.setSingleShot(true);
+    // If power has returned, start wait timer to watch if power is ok
+    connect(this, SIGNAL(signal_info_DCinputVoltageOK()), &m_powerGoodTimer, SLOT(start()));
+    // If power was ok for that amount of time, signal powerGoodAgain
+    connect(&m_powerGoodTimer, SIGNAL(timeout()), this, SIGNAL(signal_powerGoodAgain()));
+    // And stop shutdown timer, if active
+    connect(&m_powerGoodTimer, SIGNAL(timeout()), &m_shutdownTimer, SLOT(stop()));
+    // If power fails again, stop powerGood timer in case
+    connect(this, SIGNAL(signal_warning_DCinputVoltageLow()), &m_powerGoodTimer, SLOT(stop()));
 }
 
 void UninterruptiblePowerSupply::setShutdownTimeout(int milliseconds)
@@ -43,9 +55,14 @@ void UninterruptiblePowerSupply::setMainswitchDelay(int milliseconds)
     m_mainswitchDelay = milliseconds;
 }
 
+void UninterruptiblePowerSupply::setPowerGoodDelay(int milliseconds)
+{
+    m_powerGoodTimer.setInterval(milliseconds);
+}
+
 // This tells the SITOP UPS500S to start its shutdown timer
 // Notice that USB polling must stop (== System must actually shut down) to start the shutdown of the ups after calling this method
-void UninterruptiblePowerSupply::startPSUshutdownTimer()
+void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
 {
     m_timer.stop();
     sleep(1);
@@ -233,7 +250,7 @@ void UninterruptiblePowerSupply::slot_timer_fired()
             (m_mainswitchOffSignaled == false) &&
             (m_dateTime_mainSwitchOff.msecsTo(QDateTime::currentDateTime()) > m_mainswitchDelay))
     {
-        startPSUshutdownTimer();
+        slot_startPSUshutdownTimer();
         emit signal_mainswitchOff();
         m_mainswitchOffSignaled = true;
     }
