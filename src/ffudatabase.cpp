@@ -218,7 +218,7 @@ void FFUdatabase::slot_DaisyChainAddressingGotSerialNumber(quint8 fanAddress, qu
     foreach (EbmBus* ebmBus, *m_ebmbuslist) {
         if (ebmBus == qobject_cast<EbmBus*>(obj))
         {
-            emit (i, fanAddress, fanGroup, serialNumber);   // And now globally tell everybody the serialnumber
+            emit signal_DCIaddressingGotSerialNumber(i, fanAddress, fanGroup, serialNumber);   // And now globally tell everybody the serialnumber
         }
         i++;
     }
