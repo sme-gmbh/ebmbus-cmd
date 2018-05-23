@@ -61,6 +61,7 @@ private slots:
     void slot_remoteControlDisconnected();
 
     void slot_shutdownNOW();
+    void slot_mainsPowerRestored();
 
     void slot_newError();
     void slot_allErrorsQuit();

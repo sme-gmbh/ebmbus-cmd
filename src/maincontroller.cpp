@@ -35,6 +35,10 @@ MainController::MainController(QObject *parent) :
     m_osControl = new OperatingSystemControl(this);
     connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
+    connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), this, SLOT(slot_shutdownNOW()));
+    connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), m_osControl, SLOT(slot_shutdownNOW()));
+    connect(m_ups, SIGNAL(signal_info_DCinputVoltageOK()), this, SLOT(slot_mainsPowerRestored()));
+    connect(m_ups, SIGNAL(signal_info_EnergyStorageFull()), this, SLOT(slot_mainsPowerRestored()));
 
     m_ffudatabase = new FFUdatabase(this, m_ebmbusSystem);
     m_ffudatabase->loadFromHdd();
@@ -229,6 +233,12 @@ void MainController::slot_shutdownNOW()
 {
     m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
     m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+}
+
+void MainController::slot_mainsPowerRestored()
+{
+    // Temporarily broadcast speed at startup - remove this later
+    m_ebmbusSystem->broadcastSpeed(170);
 }
 
 void MainController::slot_allErrorsQuit()
