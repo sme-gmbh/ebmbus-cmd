@@ -7,7 +7,7 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_io = io;
     m_address_mainswitch = address_mainswitch;
 
-    setShutdownTimeout(25000);
+    setShutdownTimeout(30000);
     m_mainswitchDelay = 500;
 
     m_old_mainswitchState = false;
@@ -47,6 +47,9 @@ void UninterruptiblePowerSupply::setMainswitchDelay(int milliseconds)
 // Notice that USB polling must stop (== System must actually shut down) to start the shutdown of the ups after calling this method
 void UninterruptiblePowerSupply::startPSUshutdownTimer()
 {
+    m_timer.stop();
+    sleep(1);
+
     unsigned char c[1];
     c[0] = 'R';
     ftdi_write_data(m_ftdi, c, 1);
