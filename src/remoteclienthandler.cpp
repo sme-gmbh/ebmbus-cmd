@@ -367,6 +367,6 @@ void RemoteClientHandler::slot_DCIaddressingFinished(int busID)
 void RemoteClientHandler::slot_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
 {
     QString response;
-    response.sprintf("dci-address bus=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, fanAddress, fanGroup, serialNumber);
+    response.sprintf("dci-address bus=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, serialNumber, fanAddress, fanGroup);
     socket->write(response.toUtf8());
 }
