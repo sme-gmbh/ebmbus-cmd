@@ -9,6 +9,7 @@ FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem) : QObject(
     {
         // Bus management connections
         connect(ebmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_DaisyChainAdressingFinished()));
+        connect(ebmBus, SIGNAL(signal_DaisyChainAddressingGotSerialNumber(quint8,quint8,quint32)), this, SLOT(slot_DaisyChainAddressingGotSerialNumber(quint8,quint8,quint32)));
 
         // Low level bus response connections
         connect (ebmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_gotResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
@@ -205,6 +206,19 @@ void FFUdatabase::slot_DaisyChainAdressingFinished()
         if (ebmBus == qobject_cast<EbmBus*>(obj))
         {
             emit signal_DCIaddressingFinished(i);   // And now globally tell everybody which bus finished addressing
+        }
+        i++;
+    }
+}
+
+void FFUdatabase::slot_DaisyChainAddressingGotSerialNumber(quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
+{
+    int i = 0;
+    QObject* obj = sender();    // Look up who sent that signal
+    foreach (EbmBus* ebmBus, *m_ebmbuslist) {
+        if (ebmBus == qobject_cast<EbmBus*>(obj))
+        {
+            emit (i, fanAddress, fanGroup, serialNumber);   // And now globally tell everybody the serialnumber
         }
         i++;
     }

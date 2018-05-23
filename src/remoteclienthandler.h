@@ -38,6 +38,7 @@ private slots:
     void slot_read_ready();
     void slot_disconnected();
     void slot_DCIaddressingFinished(int busID);
+    void slot_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
 };
 
 #endif // REMOTECLIENTHANDLER_H

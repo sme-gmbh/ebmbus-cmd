@@ -46,6 +46,7 @@ private:
 
 signals:
     void signal_DCIaddressingFinished(int busID);
+    void signal_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
 
 public slots:
     void slot_remoteControlActivated();
@@ -57,6 +58,7 @@ private slots:
 
     // Low level bus response slots
     void slot_gotResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
+    void slot_DaisyChainAddressingGotSerialNumber(quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
 
     // High level bus response slots
     void slot_transactionFinished();

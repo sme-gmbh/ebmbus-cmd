@@ -26,6 +26,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     connect(socket, SIGNAL(readyRead()), this, SLOT(slot_read_ready()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(slot_disconnected()));
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingFinished(int)), this, SLOT(slot_DCIaddressingFinished(int)));
+    connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint32)));
 }
 
 void RemoteClientHandler::slot_read_ready()
@@ -361,4 +362,11 @@ void RemoteClientHandler::slot_disconnected()
 void RemoteClientHandler::slot_DCIaddressingFinished(int busID)
 {
     socket->write("dci-address successful on bus=" + QByteArray().setNum(busID) + "\r\n");
+}
+
+void RemoteClientHandler::slot_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
+{
+    QString response;
+    response.sprintf("dci-address bus=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, fanAddress, fanGroup, serialNumber);
+    socket->write(response.toUtf8());
 }
