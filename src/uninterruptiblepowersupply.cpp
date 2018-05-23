@@ -1,7 +1,7 @@
 #include "uninterruptiblepowersupply.h"
 #include <stdio.h>
 #include <unistd.h>
-#include <libftdi1/ftdi.h>
+#include <ftdi.h>
 
 UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO *io, int address_mainswitch) : QObject(parent)
 {
@@ -26,17 +26,11 @@ void UninterruptiblePowerSupply::startPSUshutdownTimer()
 
     int ret;
     struct ftdi_context *ftdi;
-    struct ftdi_version_info version;
     if ((ftdi = ftdi_new()) == 0)
     {
         fprintf(stderr, "ftdi_new failed\n");
         return;
     }
-
-    version = ftdi_get_library_version();
-    printf("Initialized libftdi %s (major: %d, minor: %d, micro: %d, snapshot ver: %s)\n",
-           version.version_str, version.major, version.minor, version.micro,
-           version.snapshot_str);
 
     if ((ret = ftdi_usb_open(ftdi, 0x0403, 0xe0e4)) < 0)
     {

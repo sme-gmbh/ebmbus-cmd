@@ -41,7 +41,7 @@ SOURCES += main.cpp \
     loghandler.cpp \
     ebmbussystem.cpp
 
-LIBS     += -lebmbus -lftdi1
+LIBS     += -lebmbus -lftdi
 
 HEADERS += \
     revpidio.h \
