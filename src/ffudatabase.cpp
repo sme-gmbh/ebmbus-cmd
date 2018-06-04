@@ -57,7 +57,7 @@ void FFUdatabase::saveToHdd()
     }
 }
 
-QString FFUdatabase::addFFU(int id, int busID)
+QString FFUdatabase::addFFU(int id, int busID, int unit)
 {
     FFU* newFFU = new FFU(this, m_ebmbusSystem);
     newFFU->setFiledirectory("/var/openffucontrol/ffus/");

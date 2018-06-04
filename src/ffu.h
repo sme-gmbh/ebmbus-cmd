@@ -36,6 +36,9 @@ public:
     int getBusID() const;
     void setBusID(int busID);
 
+    int getUnit() const;
+    void setUnit(int unit);
+
     int getFanAddress() const;
     void setFanAddress(int fanAddress);
 
@@ -83,6 +86,7 @@ private:
     int m_setpointSpeedRaw;
     double m_speedMaxRPM;
     int m_busID;
+    int m_unit; // Position in busline counted from start of bus
     int m_fanAddress;
     int m_fanGroup;
 

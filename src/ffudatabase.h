@@ -21,7 +21,7 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
-    QString addFFU(int id, int busID);
+    QString addFFU(int id, int busID, int unit);
     QString deleteFFU(int id);
 
     QList<FFU*> getFFUs();

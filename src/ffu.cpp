@@ -16,6 +16,7 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
     m_setpointSpeedRaw = 0;
     m_speedMaxRPM = 0.0;
     m_busID = -1;
+    m_unit = -1;
     m_fanAddress = -1;   // Invalid Address
     m_fanGroup = -1;     // Invalid Address
 
@@ -129,6 +130,10 @@ QString FFU::getData(QString key)
     {
         return (QString().setNum(getBusID()));
     }
+    else if (key == "unit")
+    {
+        return (QString().setNum(getUnit()));
+    }
     else if (key == "fanAddress")
     {
         return (QString().setNum(getFanAddress()));
@@ -210,6 +215,10 @@ void FFU::setData(QString key, QString value)
     else if (key == "busID")
     {
         setBusID(value.toInt());
+    }
+    else if(key == "unit")
+    {
+        setUnit(value.toInt());
     }
     else if (key == "fanAddress")
     {
@@ -293,6 +302,7 @@ void FFU::save()
 
     wdata.append(QString().sprintf("id=%i ", m_id));
     wdata.append(QString().sprintf("bus=%i ", m_busID));
+    wdata.append(QString().sprintf("unit=%i ", m_unit));
     wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
     wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
     wdata.append(QString().sprintf("nmax=%.2lf ", m_speedMaxRPM));
@@ -339,6 +349,9 @@ void FFU::load(QString filename)
 
         if (key == "bus")
             m_busID = value.toInt();
+
+        if (key == "unit")
+            m_unit = value.toInt();
 
         if (key == "fanAddress")
             m_fanAddress = value.toInt();
@@ -430,6 +443,25 @@ void FFU::setBusID(int busID)
     }
 }
 
+int FFU::getUnit() const
+{
+    return m_unit;
+}
+
+void FFU::setUnit(int unit)
+{
+    if (unit != m_unit)
+    {
+        m_unit = unit;
+        m_dataChanged = true;
+        emit signal_needsSaving();
+
+        // Temporarily set to computed addresses derived from unit number, make this more beautiful later...
+        setFanAddress(2);
+        setFanGroup(2 + unit);
+    }
+}
+
 int FFU::getFanAddress() const
 {
     return m_fanAddress;
@@ -437,7 +469,12 @@ int FFU::getFanAddress() const
 
 void FFU::setFanAddress(int fanAddress)
 {
-    m_fanAddress = fanAddress;
+    if (m_fanAddress != fanAddress)
+    {
+        m_fanAddress = fanAddress;
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
 }
 
 int FFU::getFanGroup() const
@@ -447,7 +484,12 @@ int FFU::getFanGroup() const
 
 void FFU::setFanGroup(int fanGroup)
 {
-    m_fanGroup = fanGroup;
+    if (m_fanGroup != fanGroup)
+    {
+        m_fanGroup = fanGroup;
+        m_dataChanged = true;
+        emit signal_needsSaving();
+    }
 }
 
 // ************************************************** Bus response handling **************************************************

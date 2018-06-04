@@ -106,8 +106,8 @@ void RemoteClientHandler::slot_read_ready()
                           "        Simulate a button click.\r\n"
                           "        Possible BUTTONNAMEs: operation, error, speed0, speed50, speed100.r\n"
                           "\r\n"
-                          "    add-ffu --bus=BUSNR --id=ID\r\n"
-                          "        Add a new ffu with ID to the controller database at BUSNR.\r\n"
+                          "    add-ffu --bus=BUSNR --id=ID --unit=UNIT\r\n"
+                          "        Add a new ffu with ID to the controller database at BUSNR at position UNIT from start of bus.\r\n"
                           "\r\n"
                           "    delete-ffu --id=ID\r\n"
                           "        Delete ffu with ID from the controller database.\r\n"
@@ -206,10 +206,18 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+            QString unitString = data.value("unit");
+            int unit = unitString.toInt(&ok);
+            if (unitString.isEmpty() || !ok)
+            {
+                socket->write("Error[Commandparser]: parameter \"unit\" not specified or id can not be parsed. Abort.\r\n");
+                continue;
+            }
+
 #ifdef DEBUG
-            socket->write("add-ffu bus=" + QString().setNum(bus).toUtf8() + " id=" + QString().setNum(id).toUtf8() + "\r\n");
+            socket->write("add-ffu bus=" + QString().setNum(bus).toUtf8() + " id=" + QString().setNum(id).toUtf8() + " unit=" + QString().setNum(unit).toUtf8() + "\r\n");
 #endif
-            QString response = m_ffuDB->addFFU(id, bus);
+            QString response = m_ffuDB->addFFU(id, bus, unit);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** delete-ffu **************************************************
