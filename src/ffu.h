@@ -58,6 +58,7 @@ public:
     void setRemoteControlled(bool remoteControlled);
     bool isRemoteControlled() const;
 
+    QStringList getActualKeys();
     ActualData getActualData() const;
 
     // This function triggers bus requests to get actual values, status, warnings ans errors

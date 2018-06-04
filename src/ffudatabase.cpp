@@ -150,6 +150,12 @@ QMap<QString,QString> FFUdatabase::getFFUdata(int id, QStringList keys)
         return response;
     }
 
+    if (keys.contains("actual"))
+    {
+        keys.removeOne("actual");
+        keys.append(ffu->getActualKeys());
+    }
+
     foreach (QString key, keys)
     {
         response.insert(key, ffu->getData(key));

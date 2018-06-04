@@ -112,6 +112,7 @@ int FFU::rpmToRawSpeed(double rpm)
 
 QString FFU::getData(QString key)
 {
+    // ***** Static keys *****
     if (key == "id")
     {
         return (QString().setNum(m_id));
@@ -136,25 +137,58 @@ QString FFU::getData(QString key)
     {
         return (QString().setNum(getFanGroup()));
     }
-    else if (key == "actual")
+    // ***** Actual keys *****
+    else if (key == "online")
     {
-        QString response;
-
-        response += QString().sprintf("online=%i ", m_actualData.online);
-        response += QString().sprintf("lostTelegrams=%lli ", m_actualData.lostTelegrams);
-        response += "lastSeen=" + m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz ");
-        response += QString().sprintf("speedSettingLostCount=%i ", m_actualData.speedSettingLostCount);
-        response += QString().sprintf("speedReading=%i ", m_actualData.speedReading);
-        response += QString().sprintf("speedSetpoint=%i ", m_actualData.speedSetpoint);
-        response += QString().sprintf("statusRaw_LSB=%02x ", m_actualData.statusRaw_LSB);
-        response += QString().sprintf("statusRaw_MSB=%02x ", m_actualData.statusRaw_MSB);
-        response += "statusString=" + (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB + " ");    // Todo: convert string to base64
-        response += QString().sprintf("warnings=%02x ", m_actualData.warnings);
-        response += QString().sprintf("dcVoltage=%i ", m_actualData.dcVoltage);
-        response += QString().sprintf("dcCurrent=%i ", m_actualData.dcCurrent);
-        response += QString().sprintf("temperatureOfPowerModule=%i ", m_actualData.temperatureOfPowerModule);
-
-        return response;
+        return QString().sprintf("online=%i ", m_actualData.online);
+    }
+    else if (key == "lostTelegrams")
+    {
+        return QString().sprintf("lostTelegrams=%lli ", m_actualData.lostTelegrams);
+    }
+    else if (key == "lastSeen")
+    {
+        return "lastSeen=" + m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz ");
+    }
+    else if (key == "speedSettingLostCount")
+    {
+        return QString().sprintf("speedSettingLostCount=%i ", m_actualData.speedSettingLostCount);
+    }
+    else if (key == "speedReading")
+    {
+        return QString().sprintf("speedReading=%i ", m_actualData.speedReading);
+    }
+    else if (key == "speedSetpoint")
+    {
+        return QString().sprintf("speedSetpoint=%i ", m_actualData.speedSetpoint);
+    }
+    else if (key == "statusRaw_LSB")
+    {
+        return QString().sprintf("statusRaw_LSB=%02x ", m_actualData.statusRaw_LSB);
+    }
+    else if (key == "statusRaw_MSB")
+    {
+        return QString().sprintf("statusRaw_MSB=%02x ", m_actualData.statusRaw_MSB);
+    }
+    else if (key == "statusString")
+    {
+        return "statusString=" + (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB + " ").toHtmlEscaped();
+    }
+    else if (key == "warnings")
+    {
+        return QString().sprintf("warnings=%02x ", m_actualData.warnings);
+    }
+    else if (key == "dcVoltage")
+    {
+        return QString().sprintf("dcVoltage=%i ", m_actualData.dcVoltage);
+    }
+    else if (key == "dcCurrent")
+    {
+        return QString().sprintf("dcCurrent=%i ", m_actualData.dcCurrent);
+    }
+    else if (key == "temperatureOfPowerModule")
+    {
+        return QString().sprintf("temperatureOfPowerModule=%i ", m_actualData.temperatureOfPowerModule);
     }
 
     return "Error[FFU]: Key " + key + " not available";
@@ -196,6 +230,27 @@ void FFU::setRemoteControlled(bool remoteControlled)
 bool FFU::isRemoteControlled() const
 {
     return m_remoteControlled;
+}
+
+QStringList FFU::getActualKeys()
+{
+    QStringList keys;
+
+    keys += "online";
+    keys += "lostTelegrams";
+    keys += "lastSeen";
+    keys += "speedSettingLostCount";
+    keys += "speedReading";
+    keys += "speedSetpoint";
+    keys += "statusRaw_LSB";
+    keys += "statusRaw_MSB";
+    keys += "statusString";
+    keys += "warnings";
+    keys += "dcVoltage";
+    keys += "dcCurrent";
+    keys += "temperatureOfPowerModule";
+
+    return keys;
 }
 
 FFU::ActualData FFU::getActualData() const
