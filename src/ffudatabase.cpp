@@ -152,8 +152,9 @@ QMap<QString,QString> FFUdatabase::getFFUdata(int id, QStringList keys)
 
     if (keys.contains("actual"))
     {
-        keys.removeOne("actual");
+        keys.clear();   // Only show actual values, drop all other requests because the answer goes into a special processing later
         keys.append(ffu->getActualKeys());
+        response.insert("actualData", "1"); // And show the recipient that this is actualData
     }
 
     foreach (QString key, keys)
