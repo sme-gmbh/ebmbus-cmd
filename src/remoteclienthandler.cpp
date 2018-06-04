@@ -239,7 +239,7 @@ void RemoteClientHandler::slot_read_ready()
             }
             else
             {
-                response += m_ffuDB->deleteFFU(id);
+                response += m_ffuDB->deleteFFU(id) + "\n";
             }
 
             QString busString = data.value("bus");
@@ -252,7 +252,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 foreach (FFU* ffu, m_ffuDB->getFFUs(bus))
                 {
-                    response += m_ffuDB->deleteFFU(ffu->getId());
+                    response += m_ffuDB->deleteFFU(ffu->getId()) + "\n";
                 }
             }
 
