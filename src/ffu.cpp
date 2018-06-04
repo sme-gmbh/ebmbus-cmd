@@ -172,7 +172,7 @@ QString FFU::getData(QString key)
     }
     else if (key == "statusString")
     {
-        if ((m_actualData.statusRaw_LSB == 0x00) && (m_actualData.statusRaw_MSB = 0x00))
+        if ((m_actualData.statusRaw_LSB == 0x00) && (m_actualData.statusRaw_MSB == 0x00))
             return "healthy";
         else
             return (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB).toUtf8().toPercentEncoding();
