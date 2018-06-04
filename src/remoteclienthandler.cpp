@@ -361,9 +361,9 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
-#ifdef DEBUG
-            socket->write("set id=" + id.toUtf8() + "\r\n");
-#endif
+//#ifdef DEBUG
+            socket->write("set id=" + QString().setNum(id).toUtf8() + "\r\n");
+//#endif
             QString response = m_ffuDB->setFFUdata(id, data);
             socket->write(response.toUtf8() + "\r\n");
         }
