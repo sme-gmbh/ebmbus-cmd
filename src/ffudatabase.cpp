@@ -27,7 +27,7 @@ FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem) : QObject(
 
     // Timer for cyclic poll task to get the status of ffus
     connect(&m_timer_pollStatus, SIGNAL(timeout()), this, SLOT(slot_timer_pollStatus_fired()));
-    m_timer_pollStatus.setInterval(1000);
+    m_timer_pollStatus.setInterval(2000);
     m_timer_pollStatus.start();
 }
 
@@ -219,7 +219,7 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString
         {
             // Fill up 254 more units in list, just increment their number
             int id = parts.at(0).toInt();
-            for (int i = 1; i < 255; i++)
+            for (int i = 0; i < 255; i++)
             {
                 ids.append(id + i);
             }
@@ -229,6 +229,7 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString
         m_unitIdsPerBus.remove(busID);
         m_unitIdsPerBus.insert(busID, ids);
 
+        m_timer_pollStatus.stop();  // Stop polling units on bus while addressing is in progress
         m_ebmbuslist->at(busID)->startDaisyChainAddressing();
     }
     return "OK[FFUdatabase]: Starting DCI addressing at bus " + QString().setNum(busID) + ". Ignoring startAddress at the moment. Will be fixed later.";
@@ -251,6 +252,7 @@ void FFUdatabase::slot_DaisyChainAdressingFinished()
         }
         i++;
     }
+    m_timer_pollStatus.start();                     // Start polling again
 }
 
 void FFUdatabase::slot_DaisyChainAddressingGotSerialNumber(quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
