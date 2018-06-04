@@ -5,6 +5,8 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     this->socket = socket;
     m_ffuDB = ffuDB;
 
+    m_livemode = false;
+
 #ifdef DEBUG
     QString debugStr;
 
