@@ -92,9 +92,20 @@ QString FFUdatabase::deleteFFU(int id)
     return "Warning[FFUdatabase]: Unable to remove ID " + QString().setNum(id) + " from db.";
 }
 
-QList<FFU *> FFUdatabase::getFFUs()
+QList<FFU *> FFUdatabase::getFFUs(int busNr)
 {
-    return m_ffus;
+    QList<FFU *> ffuList;
+    if (busNr == -1)
+        return m_ffus;
+    else
+    {
+        foreach (FFU* ffu, m_ffus) {
+            if (ffu->getBusID() == busNr)
+                ffuList.append(ffu);
+        }
+    }
+
+    return ffuList;
 }
 
 FFU *FFUdatabase::getFFUbyID(int id)

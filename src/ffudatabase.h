@@ -25,7 +25,7 @@ public:
     QString addFFU(int id, int busID, int unit = -1, int fanAddress = -1, int fanGroup = -1);
     QString deleteFFU(int id);
 
-    QList<FFU*> getFFUs();
+    QList<FFU*> getFFUs(int busNr = -1);    // If busNr is specified only ffus of that bus are returned
     FFU* getFFUbyID(int id);
 
     QString getFFUdata(int id, QString key);
