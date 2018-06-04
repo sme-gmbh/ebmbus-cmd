@@ -80,7 +80,7 @@ void FFU::setSpeedRaw(int value, bool refreshOnly)
     }
 }
 
-void FFU::setMaxRPM(int maxRpm)
+void FFU::setNmax(int maxRpm)
 {
     if (maxRpm != m_speedMaxRPM)
     {
@@ -182,6 +182,10 @@ void FFU::setData(QString key, QString value)
     {
         setFanGroup(value.toInt());
     }
+    else if (key == "nmax")
+    {
+        setNmax(value.toInt());
+    }
 }
 
 void FFU::setRemoteControlled(bool remoteControlled)
@@ -233,7 +237,7 @@ void FFU::save()
     wdata.append(QString().sprintf("bus=%i ", m_busID));
     wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
     wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
-    wdata.append(QString().sprintf("speedMaxRPM=%.2lf ", m_speedMaxRPM));
+    wdata.append(QString().sprintf("nmax=%.2lf ", m_speedMaxRPM));
     wdata.append(QString().sprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
     wdata.append(QString().sprintf("speedSettingLostCount=%i\n", m_actualData.speedSettingLostCount));    // Todo: decide when to save this. Do not write flash to dead!
 
@@ -284,7 +288,7 @@ void FFU::load(QString filename)
         if (key == "fanGroup")
             m_fanGroup = value.toInt();
 
-        if (key == "speedMaxRPM")
+        if (key == "nmax")
             m_speedMaxRPM = value.toDouble();
 
         if (key == "setpointSpeedRaw")

@@ -44,7 +44,7 @@ public:
 
     void setSpeed(int rpm);
     void setSpeedRaw(int value, bool refreshOnly = false);
-    void setMaxRPM(int maxRpm);
+    void setNmax(int maxRpm);
 
     int getSpeedSetpoint();
     int getSpeedSetpointRaw();
