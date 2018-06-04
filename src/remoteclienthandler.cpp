@@ -27,6 +27,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     connect(socket, SIGNAL(disconnected()), this, SLOT(slot_disconnected()));
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingFinished(int)), this, SLOT(slot_DCIaddressingFinished(int)));
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint32)));
+    connect(m_ffuDB, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SLOT(slot_FFUactualDataHasChanged(int)));
 }
 
 void RemoteClientHandler::slot_read_ready()
@@ -92,6 +93,10 @@ void RemoteClientHandler::slot_read_ready()
                           "COMMANDS:\r\n"
                           "    hostname\r\n"
                           "        Show the hostname of the controller.\r\n"
+                          "    startlive\r\n"
+                          "        Show data of ffus in realtime. Can be stopped with stoplive\r\n"
+                          "    stoplive\r\n"
+                          "        Stop live showing of ffu data.\r\n"
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "\r\n"
@@ -125,8 +130,24 @@ void RemoteClientHandler::slot_read_ready()
         else if (command == "hostname")
         {
             QString line;
-            line = QHostInfo::localHostName();
+            line = "Hostname=" + QHostInfo::localHostName() + "\n";
             socket->write(line.toUtf8());
+        }
+        // ************************************************** startlive **************************************************
+        else if (command == "startlive")
+        {
+            QString line;
+            line = "Liveshow=on\n";
+            socket->write(line.toUtf8());
+            m_livemode = true;
+        }
+        // ************************************************** stoplive **************************************************
+        else if (command == "stoplive")
+        {
+            QString line;
+            line = "Liveshow=off\n";
+            socket->write(line.toUtf8());
+            m_livemode = false;
         }
         // ************************************************** list **************************************************
         else if (command == "list")
@@ -378,4 +399,20 @@ void RemoteClientHandler::slot_DCIaddressingGotSerialNumber(int busID, quint8 fa
     QString response;
     response.sprintf("dci-address bus=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, serialNumber, fanAddress, fanGroup);
     socket->write(response.toUtf8());
+}
+
+void RemoteClientHandler::slot_FFUactualDataHasChanged(int id)
+{
+    if (m_livemode)
+    {
+        socket->write("Data from id=" + QString().setNum(id).toUtf8());
+        QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, QStringList() << "actual");;
+        foreach(QString key, responseData.keys())
+        {
+            QString response = responseData.value(key);
+            if (!response.startsWith("Error[FFU]:"))
+                socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
+        }
+        socket->write("\r\n");
+    }
 }

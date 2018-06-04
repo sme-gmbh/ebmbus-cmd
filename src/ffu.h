@@ -97,6 +97,7 @@ private:
 
 signals:
     void signal_needsSaving();
+    void signal_FFUactualDataHasChanged(int id);
 
 public slots:
     // High level bus response slots

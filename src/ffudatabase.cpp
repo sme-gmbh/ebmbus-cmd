@@ -41,6 +41,7 @@ void FFUdatabase::loadFromHdd()
         FFU* newFFU = new FFU(this, m_ebmbusSystem);
         newFFU->load(filepath);
         newFFU->setFiledirectory(directory);
+        connect(newFFU, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SIGNAL(signal_FFUactualDataHasChanged(int)));
         m_ffus.append(newFFU);
     }
 }
@@ -65,6 +66,7 @@ QString FFUdatabase::addFFU(int id, int busID)
     newFFU->setBusID(busID);
     newFFU->setAutoSave(true);
     newFFU->save();
+    connect(newFFU, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SIGNAL(signal_FFUactualDataHasChanged(int)));
     m_ffus.append(newFFU);
 
     return "OK[FFUdatabase]: Added FFU ID " + QString().setNum(id);
@@ -79,6 +81,7 @@ QString FFUdatabase::deleteFFU(int id)
     bool ok = m_ffus.removeOne(ffu);
     if (ok)
     {
+        disconnect(ffu, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SIGNAL(signal_FFUactualDataHasChanged(int)));
         ffu->deleteFromHdd();
         delete ffu;
         return "OK[FFUdatabase]: Removed ID " + QString().setNum(id);
@@ -111,7 +114,7 @@ FFU *FFUdatabase::getFFUbyTelegramID(quint64 telegramID)
         }
     }
 
-    return NULL;    // TransactioID not initiated by ffu requests, so it came frome somebody else
+    return NULL;    // TransactionID not initiated by ffu requests, so it came frome somebody else
 }
 
 void FFUdatabase::slot_remoteControlActivated()

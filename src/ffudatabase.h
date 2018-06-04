@@ -47,6 +47,7 @@ private:
 signals:
     void signal_DCIaddressingFinished(int busID);
     void signal_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
+    void signal_FFUactualDataHasChanged(int id);
 
 public slots:
     void slot_remoteControlActivated();

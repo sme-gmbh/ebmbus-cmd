@@ -288,7 +288,10 @@ void FFU::load(QString filename)
             m_setpointSpeedRaw = value.toInt();
 
         if (key == "speedSettingLostCount")
+        {
             m_actualData.speedSettingLostCount = value.toInt();
+            emit signal_FFUactualDataHasChanged(m_id);
+        }
     }
 
     file.close();
@@ -319,6 +322,7 @@ bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
         // If we reach this point we are going to parse a telegram for this ffu, so mark it as online
         m_actualData.online = true;
         m_actualData.lastSeen = QDateTime::currentDateTime();
+        emit signal_FFUactualDataHasChanged(m_id);
     }
 
     return found;
@@ -378,6 +382,7 @@ void FFU::slot_transactionLost(quint64 id)
     // If the ffu has a lost telegram, mark it as offline and increment error counter
     m_actualData.lostTelegrams++;
     m_actualData.online = false;
+    emit signal_FFUactualDataHasChanged(m_id);
 }
 
 void FFU::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
@@ -464,6 +469,8 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
     case EbmBusStatus::EEPROMchecksumMSB:
         break;
     }
+
+    emit signal_FFUactualDataHasChanged(m_id);
 }
 
 void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
@@ -476,6 +483,7 @@ void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGrou
         return;
 
     m_actualData.speedReading = actualRawSpeed;
+    emit signal_FFUactualDataHasChanged(m_id);
 }
 
 void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
