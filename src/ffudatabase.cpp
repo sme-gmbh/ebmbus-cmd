@@ -9,7 +9,7 @@ FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem) : QObject(
     {
         // Bus management connections
         connect(ebmBus, SIGNAL(signal_DaisyChainAdressingFinished()), this, SLOT(slot_DaisyChainAdressingFinished()));
-        connect(ebmBus, SIGNAL(signal_DaisyChainAddressingGotSerialNumber(quint8,quint8,quint32)), this, SLOT(slot_DaisyChainAddressingGotSerialNumber(quint8,quint8,quint32)));
+        connect(ebmBus, SIGNAL(signal_DaisyChainAddressingGotSerialNumber(quint8,quint8,quint8,quint32)), this, SLOT(slot_DaisyChainAddressingGotSerialNumber(quint8,quint8,quint8,quint32)));
 
         // Low level bus response connections
         connect (ebmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_gotResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
@@ -57,13 +57,16 @@ void FFUdatabase::saveToHdd()
     }
 }
 
-QString FFUdatabase::addFFU(int id, int busID, int unit)
+QString FFUdatabase::addFFU(int id, int busID, int unit, int fanAddress, int fanGroup)
 {
     FFU* newFFU = new FFU(this, m_ebmbusSystem);
     newFFU->setFiledirectory("/var/openffucontrol/ffus/");
     newFFU->setAutoSave(false);
     newFFU->setId(id);
     newFFU->setBusID(busID);
+    newFFU->setUnit(unit);
+    newFFU->setFanAddress(fanAddress);
+    newFFU->setFanGroup(fanGroup);
     newFFU->setAutoSave(true);
     newFFU->save();
     connect(newFFU, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SIGNAL(signal_FFUactualDataHasChanged(int)));
@@ -194,10 +197,38 @@ QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
     return "OK[FFUdatabase]: Setting data:" + dataString;
 }
 
-QString FFUdatabase::startDCIaddressing(int busID, QString startAddress)
+QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString idsString)
 {
     if (m_ebmbuslist->count() > busID)
     {
+        QList<int> ids;
+
+        QStringList parts = idsString.split(",", QString::SkipEmptyParts);
+        if (parts.count() > 1)
+        {
+            foreach(QString part, parts)
+            {
+                bool ok;
+                int id = part.toInt(&ok);
+                if (!ok)
+                    continue;
+                ids.append(id);
+            }
+        }
+        else if (parts.count() == 1)
+        {
+            // Fill up 254 more units in list, just increment their number
+            int id = parts.at(0).toInt();
+            for (int i = 1; i < 255; i++)
+            {
+                ids.append(id + i);
+            }
+        }
+
+        // Now remember which ids belong to which bus segment
+        m_unitIdsPerBus.remove(busID);
+        m_unitIdsPerBus.insert(busID, ids);
+
         m_ebmbuslist->at(busID)->startDaisyChainAddressing();
     }
     return "OK[FFUdatabase]: Starting DCI addressing at bus " + QString().setNum(busID) + ". Ignoring startAddress at the moment. Will be fixed later.";
@@ -216,19 +247,31 @@ void FFUdatabase::slot_DaisyChainAdressingFinished()
         if (ebmBus == qobject_cast<EbmBus*>(obj))
         {
             emit signal_DCIaddressingFinished(i);   // And now globally tell everybody which bus finished addressing
+            m_unitIdsPerBus.remove(i);              // And clean up temporary storage for new unit ids
         }
         i++;
     }
 }
 
-void FFUdatabase::slot_DaisyChainAddressingGotSerialNumber(quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
+void FFUdatabase::slot_DaisyChainAddressingGotSerialNumber(quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
 {
     int i = 0;
     QObject* obj = sender();    // Look up who sent that signal
     foreach (EbmBus* ebmBus, *m_ebmbuslist) {
         if (ebmBus == qobject_cast<EbmBus*>(obj))
         {
-            emit signal_DCIaddressingGotSerialNumber(i, fanAddress, fanGroup, serialNumber);   // And now globally tell everybody the serialnumber
+            // Try to lookup unit id from given list
+            int id = -1;
+            QList<int> idList = m_unitIdsPerBus.value(i);
+            if (!idList.isEmpty())
+            {
+                id = idList.takeFirst();
+                m_unitIdsPerBus.insert(i, idList);
+                this->addFFU(id, i, unit, fanAddress, fanGroup);
+
+            }
+
+            emit signal_DCIaddressingGotSerialNumber(i, unit, fanAddress, fanGroup, serialNumber);   // And now globally tell everybody the serialnumber
         }
         i++;
     }

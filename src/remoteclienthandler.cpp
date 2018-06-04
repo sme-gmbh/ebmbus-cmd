@@ -28,7 +28,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     connect(socket, SIGNAL(readyRead()), this, SLOT(slot_read_ready()));
     connect(socket, SIGNAL(disconnected()), this, SLOT(slot_disconnected()));
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingFinished(int)), this, SLOT(slot_DCIaddressingFinished(int)));
-    connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint32)));
+    connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)));
     connect(m_ffuDB, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SLOT(slot_FFUactualDataHasChanged(int)));
 }
 
@@ -116,8 +116,10 @@ void RemoteClientHandler::slot_read_ready()
                           "        Broadcast data to all buses and all units.\r\n"
                           "        Possible keys: rawspeed, ...tbd.r\n"
                           "\r\n"
-                          "    dci-address --bus=BUSNR --startAdr=ADR\r\n"
+                          "    dci-address --bus=BUSNR --startAdr=ADR --ids=IDS\r\n"
                           "        Start daisy-chain addressing of bus-line BUSNR beginning at ADR.\r\n"
+                          "        If IDS is set, rbu will automatically insert new ffus with the given ids.\r\n"
+                          "        IDS are given in comma separated format or as just one id, in that case it is autoincremented for each unit.\r\n"
                           "\r\n"
                           "    set --parameter=VALUE\r\n"
                           "\r\n"
@@ -280,11 +282,13 @@ void RemoteClientHandler::slot_read_ready()
                 continue;
             }
 
+            QString idsString = data.value("ids");
+
 #ifdef DEBUG
             socket->write("dci-address bus=" + QString().setNum(bus).toUtf8() + " startAdr=" + startAdr.toUtf8() + "\r\n");
 #endif
 
-            QString response = m_ffuDB->startDCIaddressing(bus, "tbd.");
+            QString response = m_ffuDB->startDCIaddressing(bus, "tbd.", idsString);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** raw-set **************************************************
@@ -410,10 +414,10 @@ void RemoteClientHandler::slot_DCIaddressingFinished(int busID)
     socket->write("dci-address successful on bus=" + QByteArray().setNum(busID) + "\r\n");
 }
 
-void RemoteClientHandler::slot_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
+void RemoteClientHandler::slot_DCIaddressingGotSerialNumber(int busID, quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
 {
     QString response;
-    response.sprintf("dci-address bus=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, serialNumber, fanAddress, fanGroup);
+    response.sprintf("dci-address bus=%i unit=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, unit, serialNumber, fanAddress, fanGroup);
     socket->write(response.toUtf8());
 }
 

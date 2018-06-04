@@ -13,8 +13,8 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
     setAutoSave(true);
 
     m_id = -1;
-    m_setpointSpeedRaw = 0;
-    m_speedMaxRPM = 0.0;
+    m_setpointSpeedRaw = 170;
+    m_speedMaxRPM = 1280.0;     // Just some initial data, read back real values later from EEPROM
     m_busID = -1;
     m_unit = -1;
     m_fanAddress = -1;   // Invalid Address

@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QTimer>
+#include <QMap>
 #include <libebmbus/ebmbus.h>
 #include "ffu.h"
 #include "ebmbussystem.h"
@@ -21,7 +22,7 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
-    QString addFFU(int id, int busID, int unit);
+    QString addFFU(int id, int busID, int unit = -1, int fanAddress = -1, int fanGroup = -1);
     QString deleteFFU(int id);
 
     QList<FFU*> getFFUs();
@@ -32,7 +33,7 @@ public:
     QString setFFUdata(int id, QString key, QString value);
     QString setFFUdata(int id, QMap<QString,QString> dataMap);
 
-    QString startDCIaddressing(int busID, QString startAddress);
+    QString startDCIaddressing(int busID, QString startAddress, QString idsString);
 
     QString broadcast(int busID, QMap<QString,QString> dataMap);
 
@@ -41,12 +42,13 @@ private:
     QList<EbmBus*>* m_ebmbuslist;
     QList<FFU*> m_ffus;
     QTimer m_timer_pollStatus;
+    QMap<int,QList<int>> m_unitIdsPerBus;
 
     FFU* getFFUbyTelegramID(quint64 telegramID);
 
 signals:
     void signal_DCIaddressingFinished(int busID);
-    void signal_DCIaddressingGotSerialNumber(int busID, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
+    void signal_DCIaddressingGotSerialNumber(int busID, quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
     void signal_FFUactualDataHasChanged(int id);
 
 public slots:
@@ -59,7 +61,7 @@ private slots:
 
     // Low level bus response slots
     void slot_gotResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data);
-    void slot_DaisyChainAddressingGotSerialNumber(quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
+    void slot_DaisyChainAddressingGotSerialNumber(quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
 
     // High level bus response slots
     void slot_transactionFinished();
