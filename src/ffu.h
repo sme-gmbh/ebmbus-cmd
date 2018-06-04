@@ -95,6 +95,8 @@ private:
 
     QString myFilename();
 
+    bool isConfigured();    // Returns false if either fanAddress or fanGroup or busID is not set
+
 signals:
     void signal_needsSaving();
     void signal_FFUactualDataHasChanged(int id);

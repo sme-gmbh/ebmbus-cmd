@@ -65,7 +65,7 @@ void FFU::setSpeedRaw(int value, bool refreshOnly)
             m_dataChanged = true;
             emit signal_needsSaving();
         }
-        if ((m_busID >= 0) && (m_fanAddress >= 1) && (m_fanGroup >= 1))
+        if (isConfigured())
         {
             EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
             if (bus == NULL)
@@ -201,6 +201,9 @@ FFU::ActualData FFU::getActualData() const
 
 void FFU::requestStatus()
 {
+    if (!isConfigured())
+        return;
+
     EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
     if (bus == NULL)
         return;
@@ -331,6 +334,16 @@ bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
 QString FFU::myFilename()
 {
     return (m_filepath + QString().sprintf("ffu-%06i.csv", m_id));
+}
+
+bool FFU::isConfigured()
+{
+    bool configured = true;
+
+    if ((m_fanAddress == -1) || (m_fanGroup == -1) || (m_busID == -1))
+        configured = false;
+
+    return configured;
 }
 
 void FFU::slot_save()
