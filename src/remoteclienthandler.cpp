@@ -228,13 +228,14 @@ void RemoteClientHandler::slot_read_ready()
         {
             bool ok;
             QString response;
+            bool noID = false;
+            bool noBus = false;
 
             QString idString = data.value("id");
             int id = idString.toInt(&ok);
             if (idString.isEmpty() || !ok)
             {
-                socket->write("Error[Commandparser]: parameter \"id\" not specified or id can not be parsed. Abort.\r\n");
-                continue;
+                noID = true;
             }
             else
             {
@@ -245,8 +246,7 @@ void RemoteClientHandler::slot_read_ready()
             int bus = busString.toInt(&ok);
             if (busString.isEmpty() || !ok)
             {
-                socket->write("Error[Commandparser]: parameter \"bus\" not specified or bus cannot be parsed. Abort.\r\n");
-                continue;
+                noBus = true;
             }
             else
             {
@@ -255,6 +255,9 @@ void RemoteClientHandler::slot_read_ready()
                     response += m_ffuDB->deleteFFU(ffu->getId());
                 }
             }
+
+            if (noID && noBus)
+                response = "Error[Commandparser]: Neither parameter \"id\" nor parameter \"bus\" specified. Abort.\r\n";
 
 
 #ifdef DEBUG
