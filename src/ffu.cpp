@@ -117,7 +117,7 @@ QString FFU::getData(QString key)
     {
         return (QString().setNum(m_id));
     }
-    else if (key == "rpm")
+    else if (key == "nSet")
     {
         return (QString().setNum(getSpeedSetpoint()));
     }
@@ -199,7 +199,7 @@ QString FFU::getData(QString key)
 
 void FFU::setData(QString key, QString value)
 {
-    if (key == "rpm")
+    if (key == "nSet")
     {
         setSpeed(value.toDouble());
     }
