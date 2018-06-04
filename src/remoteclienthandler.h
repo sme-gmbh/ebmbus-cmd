@@ -9,6 +9,7 @@
 #include <QMap>
 #include <QByteArray>
 #include <QRegExp>
+#include <QHostInfo>
 
 #include "ffudatabase.h"
 

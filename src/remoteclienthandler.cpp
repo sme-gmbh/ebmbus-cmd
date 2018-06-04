@@ -90,6 +90,8 @@ void RemoteClientHandler::slot_read_ready()
                           "<COMMAND> [--key[=value]]\r\n"
                           "\r\n"
                           "COMMANDS:\r\n"
+                          "    hostname\r\n"
+                          "        Show the hostname of the controller.\r\n"
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "\r\n"
@@ -118,6 +120,13 @@ void RemoteClientHandler::slot_read_ready()
                           "    raw-set --bus=BUSNR --KEY=VALUE\r\n"
                           "\r\n"
                           "    raw-get --bus=BUSNR --KEY1 [--KEY2 ...]\r\n");
+        }
+        // ************************************************** hostname **************************************************
+        else if (command == "hostname")
+        {
+            QString line;
+            line = QHostInfo::localHostName();
+            socket->write(line.toUtf8());
         }
         // ************************************************** list **************************************************
         else if (command == "list")
