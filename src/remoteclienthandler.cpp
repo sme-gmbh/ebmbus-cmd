@@ -344,8 +344,14 @@ void RemoteClientHandler::slot_read_ready()
 #ifdef DEBUG
             socket->write("get id=" + id.toUtf8() + "\r\n");
 #endif
-            socket->write("Data from id=" + QString().setNum(id).toUtf8());
             QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, data.keys("query"));
+            if (responseData.value("actualData").toInt() == 1)
+            {
+                socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
+                responseData.remove("actualData");  // Remove special treatment marker
+            }
+            else
+                socket->write("Data from id=" + QString().setNum(id).toUtf8());
             QString errors;
             foreach(QString key, responseData.keys())
             {
@@ -407,8 +413,9 @@ void RemoteClientHandler::slot_FFUactualDataHasChanged(int id)
 {
     if (m_livemode)
     {
-        socket->write("Data from id=" + QString().setNum(id).toUtf8());
-        QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, QStringList() << "actual");;
+        socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
+        QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, QStringList() << "actual");
+        responseData.remove("actualData");  // Remove special treatment marker
         foreach(QString key, responseData.keys())
         {
             QString response = responseData.value(key);
