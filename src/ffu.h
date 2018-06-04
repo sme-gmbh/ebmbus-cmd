@@ -96,6 +96,7 @@ private:
     QString myFilename();
 
     bool isConfigured();    // Returns false if either fanAddress or fanGroup or busID is not set
+    void markAsOnline();
 
 signals:
     void signal_needsSaving();

@@ -293,7 +293,6 @@ void FFU::load(QString filename)
         if (key == "speedSettingLostCount")
         {
             m_actualData.speedSettingLostCount = value.toInt();
-            emit signal_FFUactualDataHasChanged(m_id);
         }
     }
 
@@ -322,10 +321,6 @@ bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
     if (found && deleteID)
     {
         m_transactionIDs.removeOne(telegramID);
-        // If we reach this point we are going to parse a telegram for this ffu, so mark it as online
-        m_actualData.online = true;
-        m_actualData.lastSeen = QDateTime::currentDateTime();
-        emit signal_FFUactualDataHasChanged(m_id);
     }
 
     return found;
@@ -344,6 +339,13 @@ bool FFU::isConfigured()
         configured = false;
 
     return configured;
+}
+
+void FFU::markAsOnline()
+{
+    // If we reach this point we are going to parse a telegram for this ffu, so mark it as online
+    m_actualData.online = true;
+    m_actualData.lastSeen = QDateTime::currentDateTime();
 }
 
 void FFU::slot_save()
@@ -405,6 +407,7 @@ void FFU::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGro
     Q_UNUSED(fanGroup);
     Q_UNUSED(status);
     // We don't request the simple status, so we don't care about that response
+    markAsOnline();
 }
 
 void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue)
@@ -415,6 +418,8 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         return;
     if (fanGroup != m_fanGroup)
         return;
+
+    markAsOnline();
 
     switch (statusAddress)
     {
@@ -437,6 +442,7 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         break;
     case EbmBusStatus::TemperatureOfPowerModule:
         m_actualData.temperatureOfPowerModule = rawValue;
+        emit signal_FFUactualDataHasChanged(m_id);          // TemperatureOfPowerModule is the last data we get from automatic query, so signal new data now
         break;
     case EbmBusStatus::SetPoint:
         m_actualData.speedSetpoint = rawValue;
@@ -482,8 +488,6 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
     case EbmBusStatus::EEPROMchecksumMSB:
         break;
     }
-
-    emit signal_FFUactualDataHasChanged(m_id);
 }
 
 void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
@@ -495,13 +499,17 @@ void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGrou
     if (fanGroup != m_fanGroup)
         return;
 
+    markAsOnline();
+
     m_actualData.speedReading = actualRawSpeed;
-    emit signal_FFUactualDataHasChanged(m_id);
+    //emit signal_FFUactualDataHasChanged(m_id);
 }
 
 void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
     Q_UNUSED(telegramID);
+
+    markAsOnline();
 
     if (fanAddress != m_fanAddress)
         return;
@@ -516,6 +524,8 @@ void FFU::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint
 {
     Q_UNUSED(telegramID);
 
+    markAsOnline();
+
     if (fanAddress != m_fanAddress)
         return;
     if (fanGroup != m_fanGroup)
@@ -528,6 +538,8 @@ void FFU::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint
 void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte)
 {
     Q_UNUSED(telegramID);
+
+    markAsOnline();
 
     if (fanAddress != m_fanAddress)
         return;
