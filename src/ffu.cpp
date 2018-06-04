@@ -140,55 +140,55 @@ QString FFU::getData(QString key)
     // ***** Actual keys *****
     else if (key == "online")
     {
-        return QString().sprintf("%i ", m_actualData.online);
+        return QString().sprintf("%i", m_actualData.online);
     }
     else if (key == "lostTelegrams")
     {
-        return QString().sprintf("%lli ", m_actualData.lostTelegrams);
+        return QString().sprintf("%lli", m_actualData.lostTelegrams);
     }
     else if (key == "lastSeen")
     {
-        return m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz ");
+        return m_actualData.lastSeen.toString("yyyy.MM.dd-hh:mm:ss.zzz");
     }
     else if (key == "speedSettingLostCount")
     {
-        return QString().sprintf("%i ", m_actualData.speedSettingLostCount);
+        return QString().sprintf("%i", m_actualData.speedSettingLostCount);
     }
     else if (key == "speedReading")
     {
-        return QString().sprintf("%i ", m_actualData.speedReading);
+        return QString().sprintf("%i", m_actualData.speedReading);
     }
     else if (key == "speedSetpoint")
     {
-        return QString().sprintf("%i ", m_actualData.speedSetpoint);
+        return QString().sprintf("%i", m_actualData.speedSetpoint);
     }
     else if (key == "statusRaw_LSB")
     {
-        return QString().sprintf("%02x ", m_actualData.statusRaw_LSB);
+        return QString().sprintf("%02x", m_actualData.statusRaw_LSB);
     }
     else if (key == "statusRaw_MSB")
     {
-        return QString().sprintf("%02x ", m_actualData.statusRaw_MSB);
+        return QString().sprintf("%02x", m_actualData.statusRaw_MSB);
     }
     else if (key == "statusString")
     {
-        return (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB + " ").toUtf8().toPercentEncoding();
+        return (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB).toUtf8().toPercentEncoding();
     }
     else if (key == "warnings")
     {
-        return QString().sprintf("%02x ", m_actualData.warnings);
+        return QString().sprintf("%02x", m_actualData.warnings);
     }
     else if (key == "dcVoltage")
     {
-        return QString().sprintf("%i ", m_actualData.dcVoltage);
+        return QString().sprintf("%i", m_actualData.dcVoltage);
     }
     else if (key == "dcCurrent")
     {
-        return QString().sprintf("%i ", m_actualData.dcCurrent);
+        return QString().sprintf("%i", m_actualData.dcCurrent);
     }
     else if (key == "temperatureOfPowerModule")
     {
-        return QString().sprintf("%i ", m_actualData.temperatureOfPowerModule);
+        return QString().sprintf("%i", m_actualData.temperatureOfPowerModule);
     }
 
     return "Error[FFU]: Key " + key + " not available";
