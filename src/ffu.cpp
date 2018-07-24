@@ -24,7 +24,18 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
 
     m_actualData.online = false;
     m_actualData.lostTelegrams = 0;
+    m_actualData.lastSeen = QDateTime();
     m_actualData.speedSettingLostCount = 0;
+    m_actualData.speedReading = 0;
+    m_actualData.speedSetpoint = 0;
+    m_actualData.statusRaw_LSB = 0;
+    m_actualData.statusRaw_MSB = 0;
+    m_actualData.statusString_LSB = QString();
+    m_actualData.statusString_MSB = QString();
+    m_actualData.warnings = 0;
+    m_actualData.dcCurrent = 0;
+    m_actualData.dcVoltage = 0;
+    m_actualData.temperatureOfPowerModule = 0;
 }
 
 FFU::~FFU()
@@ -103,12 +114,12 @@ int FFU::getSpeedSetpointRaw()
 
 double FFU::rawSpeedToRPM(int rawSpeed)
 {
-    return ((double)rawSpeed / 255.0 * m_speedMaxRPM);
+    return ((double)rawSpeed / 250.0 * m_speedMaxRPM);
 }
 
 int FFU::rpmToRawSpeed(double rpm)
 {
-    return (int)(rpm / m_speedMaxRPM * 255);
+    return (int)(rpm / m_speedMaxRPM * 250);
 }
 
 QString FFU::getData(QString key)
@@ -180,7 +191,7 @@ QString FFU::getData(QString key)
         if ((m_actualData.statusRaw_LSB == 0x00) && (m_actualData.statusRaw_MSB == 0x00))
             return "healthy";
         else
-            return (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB).toUtf8().toPercentEncoding();
+            return (m_actualData.statusString_LSB + " " + m_actualData.statusString_MSB).toUtf8().trimmed().toPercentEncoding();
     }
     else if (key == "warnings")
     {
@@ -554,7 +565,7 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         // to the ffu.
         if ((m_actualData.speedSetpoint != m_setpointSpeedRaw) && m_remoteControlled)
         {
-            if (m_actualData.speedSettingLostCount < 20)    // EEPROM wear limiter
+            if (m_actualData.speedSettingLostCount < 2000)    // EEPROM wear limiter
                 setSpeedRaw(m_setpointSpeedRaw, true);
             m_actualData.speedSettingLostCount++;
         }
