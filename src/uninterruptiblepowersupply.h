@@ -40,6 +40,9 @@ private:
     struct ftdi_context *m_ftdi;
     QByteArray m_upsResponseBuffer;
 
+    QTimer m_ups_communicationWatchdogTimer;
+    bool m_ups_communicationOK;
+
     bool m_ups_bufferReady;     // True if ups could take over load to island operation
     bool m_ups_supplyVoltageOK; // True if input voltage is ok
     bool m_ups_runningInIsland; // True if power is provided by internal energy storage
@@ -51,6 +54,9 @@ private:
     void tryToParseUPSresponse(QByteArray* buffer);
 
 signals:
+    void signal_ups_communicationHeartbeat();   // Triggers every time the ups sends a valid data string
+    void signal_ups_communicationFailure();     // Triggers if ups did not send a valid data string for some reasonable amount of time
+
     void signal_mainswitchOff();
     void signal_shutdownDueToPowerloss();
     void signal_powerGoodAgain();
@@ -69,6 +75,8 @@ public slots:
 
 private slots:
     void slot_timer_fired();
+    void slot_ups_communicationHeartbeat();
+    void slot_ups_communicationFailure();
 };
 
 #endif // UNINTERRUPTIBLEPOWERSUPPLY_H

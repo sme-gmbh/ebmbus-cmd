@@ -14,6 +14,8 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_old_mainswitchState = false;
     m_mainswitchOffSignaled = false;
 
+    m_ups_communicationOK = true;
+
     m_ups_bufferReady = false;
     m_ups_energyStorageHighLevel = false;
     m_ups_runningInIsland = false;
@@ -23,6 +25,11 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
 
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
+
+    connect(this, SIGNAL(signal_ups_communicationHeartbeat()), &m_ups_communicationWatchdogTimer, SLOT(start()));
+    connect(&m_ups_communicationWatchdogTimer, SIGNAL(timeout()), this, SIGNAL(signal_ups_communicationFailure()));
+    connect(&m_ups_communicationWatchdogTimer, SIGNAL(timeout()), this, SLOT(slot_ups_communicationFailure()));
+    m_ups_communicationWatchdogTimer.setInterval(5000);
 
     m_shutdownTimer.setSingleShot(true);
 
@@ -111,8 +118,14 @@ void UninterruptiblePowerSupply::connectToUPS()
         exit(-1);
     }
 
+    if (m_ups_communicationOK == false)
+    {
+        fprintf(stderr, "Successfully reconnected usb to UPS...\n");
+    }
+
     ftdi_setdtr(m_ftdi, 1);
     ftdi_setrts(m_ftdi, 1);
+    m_ups_communicationWatchdogTimer.start();
 }
 
 void UninterruptiblePowerSupply::disconnectFromUPS()
@@ -130,6 +143,7 @@ void UninterruptiblePowerSupply::disconnectFromUPS()
     }
 
     ftdi_free(m_ftdi);
+    m_ups_communicationWatchdogTimer.stop();
 }
 
 QByteArray UninterruptiblePowerSupply::readFromUPS()
@@ -165,6 +179,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_bufferReady = true;
                 emit signal_info_EnergyStorageReady();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("ALARM"))
@@ -173,6 +188,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_bufferReady = false;
                 emit signal_alarm_EnergyStorageLow();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("DC_OK"))
@@ -181,6 +197,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = true;
                 emit signal_info_DCinputVoltageOK();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("DC_LO"))
@@ -189,6 +206,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = false;
                 emit signal_warning_DCinputVoltageLow();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("*****"))
@@ -197,6 +215,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_runningInIsland = false;
                 emit signal_info_UPSonline();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("*BAT*"))
@@ -205,6 +224,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_runningInIsland = true;
                 emit signal_warning_UPSinIsland();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("BA>85"))
@@ -213,6 +233,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_energyStorageHighLevel = true;
                 emit signal_info_EnergyStorageFull();
+                emit signal_ups_communicationHeartbeat();
             }
         }
         else if (line.startsWith("BA<85"))
@@ -221,6 +242,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_energyStorageHighLevel = false;
                 emit signal_prewarning_EnergyStorageNotFull();
+                emit signal_ups_communicationHeartbeat();
             }
         }
     }while(posOfNewline >= 0);
@@ -257,4 +279,21 @@ void UninterruptiblePowerSupply::slot_timer_fired()
 
     m_upsResponseBuffer += readFromUPS();
     tryToParseUPSresponse(&m_upsResponseBuffer);
+}
+
+void UninterruptiblePowerSupply::slot_ups_communicationHeartbeat()
+{
+    if (m_ups_communicationOK == false)
+    {
+        fprintf(stderr, "Successfully reestablished communication to UPS.\n");
+    }
+    m_ups_communicationOK = true;
+}
+
+void UninterruptiblePowerSupply::slot_ups_communicationFailure()
+{
+    m_ups_communicationOK = false;
+    fprintf(stderr, "UPS communication failure - trying to reconnect...\n");
+    disconnectFromUPS();
+    connectToUPS();
 }
