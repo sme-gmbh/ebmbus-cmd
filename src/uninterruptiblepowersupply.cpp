@@ -179,8 +179,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_bufferReady = true;
                 emit signal_info_EnergyStorageReady();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("ALARM"))
         {
@@ -188,8 +188,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_bufferReady = false;
                 emit signal_alarm_EnergyStorageLow();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("DC_OK"))
         {
@@ -197,8 +197,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = true;
                 emit signal_info_DCinputVoltageOK();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("DC_LO"))
         {
@@ -206,8 +206,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = false;
                 emit signal_warning_DCinputVoltageLow();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("*****"))
         {
@@ -215,8 +215,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_runningInIsland = false;
                 emit signal_info_UPSonline();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("*BAT*"))
         {
@@ -224,8 +224,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_runningInIsland = true;
                 emit signal_warning_UPSinIsland();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("BA>85"))
         {
@@ -233,8 +233,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_energyStorageHighLevel = true;
                 emit signal_info_EnergyStorageFull();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
         else if (line.startsWith("BA<85"))
         {
@@ -242,8 +242,8 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_energyStorageHighLevel = false;
                 emit signal_prewarning_EnergyStorageNotFull();
-                emit signal_ups_communicationHeartbeat();
             }
+            emit signal_ups_communicationHeartbeat();
         }
     }while(posOfNewline >= 0);
 
