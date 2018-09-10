@@ -96,7 +96,7 @@ void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
         sleep(1);
         if (i>15)
         {
-            fprintf(stderr, "UPS: Abort remote timer start for shutdown, giving up and shutting down OS anyway!\n", i++);
+            fprintf(stderr, "UPS: Abort remote timer start for shutdown, giving up and shutting down OS anyway!\n");
             break;
         }
     } while (readFromUPS().count() > 0);
