@@ -102,6 +102,7 @@ void UninterruptiblePowerSupply::connectToUPS()
     {
         fprintf(stderr, "unable to open ftdi device: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
         ftdi_free(m_ftdi);
+        m_ftdi = NULL;
         return;
     }
 
