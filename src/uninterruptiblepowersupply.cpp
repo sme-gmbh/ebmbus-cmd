@@ -74,13 +74,32 @@ void UninterruptiblePowerSupply::setPowerGoodDelay(int milliseconds)
 void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
 {
     m_timer.stop();
-    sleep(1);
+    //sleep(1);
 
     unsigned char c[1];
-    c[0] = 'R';
-    ftdi_write_data(m_ftdi, c, 1);
+    int i = 1;
+    do
+    {
+        c[0] = 'R';
+        ftdi_write_data(m_ftdi, c, 1);
+        fprintf(stderr, "UPS: Sent remote timer start for shutdown, try #%i.\n", i++);
 
-    sleep(2);
+        sleep(1);
+
+        // WORKAROUND for UPS500S bug: UPS500S does not always recognise the "R" command.
+        // Check if ups has reacted to the command - if so it will stop sending status strings, so watch if it actually stops
+        // and resend command in case it does not stop to communicate (in that case it lost the command)
+
+        // First flush the rx buffer of the ftdi, so it is empty and we can see if it will fill up again
+        readFromUPS();
+        // Then wait a second to get new data an if nothing is there, the ups got the command
+        sleep(1);
+        if (i>15)
+        {
+            fprintf(stderr, "UPS: Abort remote timer start for shutdown, giving up and shutting down OS anyway!\n", i++);
+            break;
+        }
+    } while (readFromUPS().count() > 0);
 
     disconnectFromUPS();
 
@@ -293,10 +312,10 @@ void UninterruptiblePowerSupply::slot_timer_fired()
             (m_mainswitchOffSignaled == false) &&
             (m_dateTime_mainSwitchOff.msecsTo(QDateTime::currentDateTime()) > m_mainswitchDelay))
     {
-        slot_startPSUshutdownTimer();
-        emit signal_mainswitchOff();
         m_mainswitchOffSignaled = true;
         fprintf(stderr, "Mains power switch was operated to off position.\n");
+        slot_startPSUshutdownTimer();
+        emit signal_mainswitchOff();
     }
 
     m_upsResponseBuffer += readFromUPS();
