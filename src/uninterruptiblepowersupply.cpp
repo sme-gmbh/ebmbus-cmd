@@ -7,6 +7,8 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_io = io;
     m_address_mainswitch = address_mainswitch;
 
+    m_ftdi = NULL;
+
     setShutdownTimeout(30000);
     setPowerGoodDelay(5000);
     m_mainswitchDelay = 500;
@@ -92,6 +94,7 @@ void UninterruptiblePowerSupply::connectToUPS()
     if ((m_ftdi = ftdi_new()) == 0)
     {
         fprintf(stderr, "ftdi_new failed\n");
+        m_ftdi = NULL;
         return;
     }
 
@@ -107,7 +110,7 @@ void UninterruptiblePowerSupply::connectToUPS()
     if (ret < 0)
     {
         fprintf(stderr, "unable to set baudrate: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
-        exit(-1);
+        return;
     }
 
     // Set line parameters
@@ -115,7 +118,7 @@ void UninterruptiblePowerSupply::connectToUPS()
     if (ret < 0)
     {
         fprintf(stderr, "unable to set line parameters: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
-        exit(-1);
+        return;
     }
 
     if (m_ups_communicationOK == false)
@@ -131,6 +134,9 @@ void UninterruptiblePowerSupply::connectToUPS()
 void UninterruptiblePowerSupply::disconnectFromUPS()
 {
     int ret;
+
+    if (m_ftdi == NULL)
+        return;
 
     ftdi_setdtr(m_ftdi, 0);
     ftdi_setrts(m_ftdi, 0);
@@ -151,6 +157,10 @@ QByteArray UninterruptiblePowerSupply::readFromUPS()
     int ret;
     unsigned char buf[1024];
     QByteArray response;
+
+    if (m_ftdi == NULL)
+        return QByteArray();
+
     do
     {
         ret = ftdi_read_data(m_ftdi, buf, sizeof(buf));
