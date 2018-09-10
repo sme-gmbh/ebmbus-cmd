@@ -83,6 +83,8 @@ void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
     sleep(2);
 
     disconnectFromUPS();
+
+    fprintf(stderr, "System going down due to missing mains power.\n");
 }
 
 void UninterruptiblePowerSupply::connectToUPS()
@@ -93,14 +95,14 @@ void UninterruptiblePowerSupply::connectToUPS()
 
     if ((m_ftdi = ftdi_new()) == 0)
     {
-        fprintf(stderr, "ftdi_new failed\n");
+        fprintf(stderr, "UPS: ftdi_new failed\n");
         m_ftdi = NULL;
         return;
     }
 
     if ((ret = ftdi_usb_open(m_ftdi, 0x0403, 0xe0e4)) < 0)
     {
-        fprintf(stderr, "unable to open ftdi device: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
+        fprintf(stderr, "UPS: Unable to open ftdi device: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
         ftdi_free(m_ftdi);
         m_ftdi = NULL;
         return;
@@ -110,7 +112,7 @@ void UninterruptiblePowerSupply::connectToUPS()
     ret = ftdi_set_baudrate(m_ftdi, baudrate);
     if (ret < 0)
     {
-        fprintf(stderr, "unable to set baudrate: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
+        fprintf(stderr, "UPS: Unable to set baudrate: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
         return;
     }
 
@@ -118,13 +120,13 @@ void UninterruptiblePowerSupply::connectToUPS()
     ret = ftdi_set_line_property(m_ftdi, BITS_8, STOP_BIT_1, NONE);
     if (ret < 0)
     {
-        fprintf(stderr, "unable to set line parameters: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
+        fprintf(stderr, "UPS: Unable to set line parameters: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
         return;
     }
 
     if (m_ups_communicationOK == false)
     {
-        fprintf(stderr, "Successfully reconnected usb to UPS...\n");
+        fprintf(stderr, "UPS: Successfully reconnected usb to UPS...\n");
     }
 
     ftdi_setdtr(m_ftdi, 1);
@@ -144,7 +146,7 @@ void UninterruptiblePowerSupply::disconnectFromUPS()
 
     if ((ret = ftdi_usb_close(m_ftdi)) < 0)
     {
-        fprintf(stderr, "unable to close ftdi device: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
+        fprintf(stderr, "UPS: Unable to close ftdi device: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
         ftdi_free(m_ftdi);
         return;
     }
@@ -189,6 +191,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (!m_ups_bufferReady)
             {
                 m_ups_bufferReady = true;
+                fprintf(stderr, "UPS: Info: Energy storage is ready to take over load.\n");
                 emit signal_info_EnergyStorageReady();
             }
             emit signal_ups_communicationHeartbeat();
@@ -198,6 +201,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (m_ups_bufferReady)
             {
                 m_ups_bufferReady = false;
+                fprintf(stderr, "UPS: Alarm: Energy storage level is low!\n");
                 emit signal_alarm_EnergyStorageLow();
             }
             emit signal_ups_communicationHeartbeat();
@@ -207,6 +211,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (!m_ups_supplyVoltageOK)
             {
                 m_ups_supplyVoltageOK = true;
+                fprintf(stderr, "UPS: Info: DC input voltage is ok.\n");
                 emit signal_info_DCinputVoltageOK();
             }
             emit signal_ups_communicationHeartbeat();
@@ -216,6 +221,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (m_ups_supplyVoltageOK)
             {
                 m_ups_supplyVoltageOK = false;
+                fprintf(stderr, "UPS: Warning: DC input voltage is low!\n");
                 emit signal_warning_DCinputVoltageLow();
             }
             emit signal_ups_communicationHeartbeat();
@@ -225,6 +231,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (m_ups_runningInIsland)
             {
                 m_ups_runningInIsland = false;
+                fprintf(stderr, "UPS: Info: Running on mains power.\n");
                 emit signal_info_UPSonline();
             }
             emit signal_ups_communicationHeartbeat();
@@ -234,6 +241,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (!m_ups_runningInIsland)
             {
                 m_ups_runningInIsland = true;
+                fprintf(stderr, "UPS: Warning: Running in island!\n");
                 emit signal_warning_UPSinIsland();
             }
             emit signal_ups_communicationHeartbeat();
@@ -243,6 +251,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (!m_ups_energyStorageHighLevel)
             {
                 m_ups_energyStorageHighLevel = true;
+                fprintf(stderr, "UPS: Info: Energy storage fully charged.\n");
                 emit signal_info_EnergyStorageFull();
             }
             emit signal_ups_communicationHeartbeat();
@@ -252,6 +261,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             if (m_ups_energyStorageHighLevel)
             {
                 m_ups_energyStorageHighLevel = false;
+                fprintf(stderr, "UPS: Prewarning: Energy storage not full!\n");
                 emit signal_prewarning_EnergyStorageNotFull();
             }
             emit signal_ups_communicationHeartbeat();
@@ -286,6 +296,7 @@ void UninterruptiblePowerSupply::slot_timer_fired()
         slot_startPSUshutdownTimer();
         emit signal_mainswitchOff();
         m_mainswitchOffSignaled = true;
+        fprintf(stderr, "Mains power switch was operated to off position.\n");
     }
 
     m_upsResponseBuffer += readFromUPS();
@@ -296,7 +307,7 @@ void UninterruptiblePowerSupply::slot_ups_communicationHeartbeat()
 {
     if (m_ups_communicationOK == false)
     {
-        fprintf(stderr, "Successfully reestablished communication to UPS.\n");
+        fprintf(stderr, "UPS: Successfully reestablished communication to UPS.\n");
     }
     m_ups_communicationOK = true;
 }
@@ -304,7 +315,7 @@ void UninterruptiblePowerSupply::slot_ups_communicationHeartbeat()
 void UninterruptiblePowerSupply::slot_ups_communicationFailure()
 {
     m_ups_communicationOK = false;
-    fprintf(stderr, "UPS communication failure - trying to reconnect...\n");
+    fprintf(stderr, "UPS: Communication failure - trying to reconnect...\n");
     disconnectFromUPS();
     connectToUPS();
 }
