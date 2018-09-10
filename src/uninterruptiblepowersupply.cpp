@@ -101,6 +101,11 @@ void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
         }
     } while (readFromUPS().count() > 0);
 
+    // Now as the UPS has our attention, send the actual shutdown timer start command
+    c[0] = 'R';
+    ftdi_write_data(m_ftdi, c, 1);
+    // And it should shutdown now.
+
     disconnectFromUPS();
 
     fprintf(stderr, "System going down due to missing mains power.\n");
