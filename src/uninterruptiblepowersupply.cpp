@@ -106,6 +106,7 @@ void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
     ftdi_write_data(m_ftdi, c, 1);
     // And it should shutdown now.
 
+    sleep(1);
     disconnectFromUPS();
 
     fprintf(stderr, "System going down due to missing mains power.\n");
