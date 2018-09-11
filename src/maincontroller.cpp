@@ -63,7 +63,7 @@ MainController::MainController(QObject *parent) :
     m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
 
     // Temporarily broadcast speed at startup - remove this later
-    m_ebmbusSystem->broadcastSpeed(170);
+    // m_ebmbusSystem->broadcastSpeed(170);
 }
 
 MainController::~MainController()
@@ -102,7 +102,10 @@ void MainController::slot_timer_fired()
 
         if ((m_speed != currentManualSpeed) && (m_speed != -1))
         {
-            m_ebmbusSystem->broadcastSpeed(m_speed);
+            if (currentManualSpeed == -1)
+                m_ebmbusSystem->broadcastSpeed(m_speed, true);
+            else
+                m_ebmbusSystem->broadcastSpeed(m_speed, false);
             currentManualSpeed = m_speed;
         }
 

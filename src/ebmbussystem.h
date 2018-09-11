@@ -19,7 +19,7 @@ public:
     EbmBus* getBusByID(int busID);
 
     QString broadcast(int busID, QMap<QString,QString> dataMap);
-    void broadcastSpeed(quint8 speed);
+    void broadcastSpeed(quint8 speed, bool disableAutosaveAndAutostart = false);
 
 private:
     QList<EbmBus*> m_ebmbuslist;

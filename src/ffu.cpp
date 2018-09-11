@@ -273,8 +273,8 @@ void FFU::setRemoteControlled(bool remoteControlled)
     m_remoteControlled = remoteControlled;
     if (remoteControlled)
         setAutostart(true);
-    else
-        setAutostart(false);
+//    else  // Do not disable autostart here, because this leads to a drop in RPM when software reset occures. Do it as broadcast as soon as user selects manual speed.
+//        setAutostart(false);
 }
 
 bool FFU::isRemoteControlled() const

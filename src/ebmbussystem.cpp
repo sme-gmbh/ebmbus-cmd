@@ -58,10 +58,15 @@ QString EbmBusSystem::broadcast(int busID, QMap<QString, QString> dataMap)
     return response;
 }
 
-void EbmBusSystem::broadcastSpeed(quint8 speed)
+void EbmBusSystem::broadcastSpeed(quint8 speed, bool disableAutosaveAndAutostart)
 {
     foreach (EbmBus* ebmbus, m_ebmbuslist)
     {
+        if (disableAutosaveAndAutostart)
+        {
+            ebmbus->writeEEPROM(0, 0, EbmBusEEPROM::OperationModes_1, 0x03);
+            ebmbus->softwareReset(0, 0);
+        }
         ebmbus->setSpeedSetpoint(0, 0, speed);
     }
 }
