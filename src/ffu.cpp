@@ -92,7 +92,7 @@ void FFU::setSpeedRaw(int value, bool refreshOnly)
             if (bus == NULL)
                 return;     // Drop requests for non existing bus ids
 
-            bus->setSpeedSetpoint(m_fanAddress, m_fanGroup, m_setpointSpeedRaw);
+            m_transactionIDs.append(bus->setSpeedSetpoint(m_fanAddress, m_fanGroup, m_setpointSpeedRaw));
         }
         else
         {
@@ -368,6 +368,8 @@ void FFU::setAutostart(bool enabled)
     {
         m_transactionIDs.append(bus->writeEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::OperationModes_1, 0x03));
         m_transactionIDs.append(bus->softwareReset(m_fanAddress, m_fanGroup));
+        // Now autostart is disabled, so set the ffu manually to the last known speed, because otherwise ffu will stop after the reset
+        m_transactionIDs.append(bus->setSpeedSetpoint(m_fanAddress, m_fanGroup, m_setpointSpeedRaw));
     }
 }
 
