@@ -14,7 +14,7 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
 
     m_id = -1;
     m_setpointSpeedRaw = 170;
-    m_speedMaxRPM = 1280.0;     // Just some initial data, read back real values later from EEPROM
+    m_speedMaxRPM = 1000.0;     // Just some initial data, read back real values later from EEPROM
     m_busID = -1;
     m_unit = -1;
     m_fanAddress = -1;   // Invalid Address
@@ -33,9 +33,18 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
     m_actualData.statusString_LSB = QString();
     m_actualData.statusString_MSB = QString();
     m_actualData.warnings = 0;
-    m_actualData.dcCurrent = 0;
-    m_actualData.dcVoltage = 0;
+    m_actualData.dcCurrent = 0.0;
+    m_actualData.dcVoltage = 0.0;
     m_actualData.temperatureOfPowerModule = 0;
+
+    m_configData.valid = false;
+    m_configData.speedMax = 0;
+    m_configData.manufacturingDateCode_Day = 0;
+    m_configData.manufacturingDateCode_Month = 0;
+    m_configData.manufacturingDateCode_Year = 0;
+    m_configData.serialNumber = 0;
+    m_configData.referenceDClinkVoltage = 0;
+    m_configData.referenceDClinkCurrent = 0;
 }
 
 FFU::~FFU()
@@ -100,6 +109,20 @@ void FFU::setNmax(int maxRpm)
         m_dataChanged = true;
         emit signal_needsSaving();
     }
+}
+
+void FFU::setNmaxFromConfigData()
+{
+    if (!m_configData.valid)
+        return;
+
+    int maxRpm = 1.875e9 / ((double) m_configData.speedMax);
+    setNmax(maxRpm);
+}
+
+void FFU::processConfigData()
+{
+    setNmaxFromConfigData();
 }
 
 int FFU::getSpeedSetpoint()
@@ -199,11 +222,11 @@ QString FFU::getData(QString key)
     }
     else if (key == "dcVoltage")
     {
-        return QString().sprintf("%i", m_actualData.dcVoltage);
+        return QString().sprintf("%.1lf", m_actualData.dcVoltage);
     }
     else if (key == "dcCurrent")
     {
-        return QString().sprintf("%i", m_actualData.dcCurrent);
+        return QString().sprintf("%.3lf", m_actualData.dcCurrent);
     }
     else if (key == "temperatureOfPowerModule")
     {
@@ -239,15 +262,19 @@ void FFU::setData(QString key, QString value)
     {
         setFanGroup(value.toInt());
     }
-    else if (key == "nmax")
-    {
-        setNmax(value.toInt());
-    }
+//    else if (key == "nmax")
+//    {
+//        setNmax(value.toInt());
+//    } // Not to be used anymore, because nmax is read from EEPROM
 }
 
 void FFU::setRemoteControlled(bool remoteControlled)
 {
     m_remoteControlled = remoteControlled;
+    if (remoteControlled)
+        setAutostart(true);
+    else
+        setAutostart(false);
 }
 
 bool FFU::isRemoteControlled() const
@@ -290,6 +317,9 @@ void FFU::requestStatus()
     if (bus == NULL)
         return;
 
+    if (!m_configData.valid)
+        requestConfig();
+
     m_transactionIDs.append(bus->getActualSpeed(m_fanAddress, m_fanGroup));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::SetPoint));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusLowByte));
@@ -298,6 +328,46 @@ void FFU::requestStatus()
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCvoltage));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCcurrent));
     m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::TemperatureOfPowerModule));
+}
+
+void FFU::requestConfig()
+{
+    if (!isConfigured())
+        return;
+
+    EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
+    if (bus == NULL)
+        return;
+
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_LSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_Mid));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_MSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkCurrent_LSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkCurrent_MSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkVoltage_LSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkVoltage_MSB));
+}
+
+// Make shure m_setpointSpeedRaw is set to the desired value before calling this function
+void FFU::setAutostart(bool enabled)
+{
+    if (!isConfigured())
+        return;
+
+    EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
+    if (bus == NULL)
+        return;
+
+    if (enabled)
+    {
+        m_transactionIDs.append(bus->writeEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::OperationModes_1, 0x0b));
+        m_transactionIDs.append(bus->writeEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::SetTargetValue, m_setpointSpeedRaw));
+        m_transactionIDs.append(bus->softwareReset(m_fanAddress, m_fanGroup));
+    }
+    else
+    {
+        m_transactionIDs.append(bus->writeEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::OperationModes_1, 0x03));
+    }
 }
 
 void FFU::save()
@@ -316,7 +386,7 @@ void FFU::save()
     wdata.append(QString().sprintf("unit=%i ", m_unit));
     wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
     wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
-    wdata.append(QString().sprintf("nmax=%.2lf ", m_speedMaxRPM));
+    wdata.append(QString().sprintf("nmax=%.2lf ", m_speedMaxRPM));      // No need to save this anymore, as it is read from EEPROM in current version of this software
     wdata.append(QString().sprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
     wdata.append(QString().sprintf("speedSettingLostCount=%i\n", m_actualData.speedSettingLostCount));    // Todo: decide when to save this. Do not write flash to dead!
 
@@ -550,10 +620,10 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         m_actualData.warnings = rawValue;
         break;
     case EbmBusStatus::DCvoltage:
-        m_actualData.dcVoltage = rawValue;
+        m_actualData.dcVoltage = (double)rawValue * (double)m_configData.referenceDClinkVoltage * 0.02;
         break;
     case EbmBusStatus::DCcurrent:
-        m_actualData.dcCurrent = rawValue;
+        m_actualData.dcCurrent = (double)rawValue * (double)m_configData.referenceDClinkCurrent * 0.002;
         break;
     case EbmBusStatus::TemperatureOfPowerModule:
         m_actualData.temperatureOfPowerModule = rawValue;
@@ -624,12 +694,12 @@ void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 
 {
     Q_UNUSED(telegramID);
 
-    markAsOnline();
-
     if (fanAddress != m_fanAddress)
         return;
     if (fanGroup != m_fanGroup)
         return;
+
+    markAsOnline();
 
     // At the moment we dont do anything with that information.
     // Setpoint has been set - so far so good.
@@ -639,12 +709,12 @@ void FFU::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint
 {
     Q_UNUSED(telegramID);
 
-    markAsOnline();
-
     if (fanAddress != m_fanAddress)
         return;
     if (fanGroup != m_fanGroup)
         return;
+
+    markAsOnline();
 
     // At the moment we dont do anything with that information.
     // EEPROM has been written - so far so good.
@@ -654,12 +724,212 @@ void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup
 {
     Q_UNUSED(telegramID);
 
-    markAsOnline();
-
     if (fanAddress != m_fanAddress)
         return;
     if (fanGroup != m_fanGroup)
         return;
 
-    // Todo: do something here with the data from the EEPROM...
+    markAsOnline();
+
+    switch(eepromAddress)
+    {
+    case EbmBusEEPROM::FanGroupAddress:
+        break;
+    case EbmBusEEPROM::FanAddress:
+        break;
+    case EbmBusEEPROM::OperationModes_1:
+        break;
+    case EbmBusEEPROM::SetTargetValue:
+        break;
+
+    case EbmBusEEPROM::Controller_P_factor:
+        break;
+    case EbmBusEEPROM::Controller_I_factor:
+        break;
+    case EbmBusEEPROM::Controller_D_factor:
+        break;
+    case EbmBusEEPROM::MaxSpeed_MSB:
+        m_configData.speedMax &= 0x00FFFF;
+        m_configData.speedMax |= (dataByte << 16);
+        break;
+    case EbmBusEEPROM::MaxSpeed_Mid:
+        m_configData.speedMax &= 0xFF00FF;
+        m_configData.speedMax |= (dataByte << 8);
+        break;
+    case EbmBusEEPROM::MaxSpeed_LSB:
+        m_configData.speedMax &= 0xFFFF00;
+        m_configData.speedMax |= (dataByte << 0);
+        break;
+    case EbmBusEEPROM::DutyCycleMax:
+        break;
+    case EbmBusEEPROM::DutyCycleMin:
+        break;
+    case EbmBusEEPROM::DutyCycleStart:
+        break;
+    case EbmBusEEPROM::TargetValue_0:
+        break;
+    case EbmBusEEPROM::TargetValue_1:
+        break;
+
+    case EbmBusEEPROM::OperationModes_2:
+        break;
+    case EbmBusEEPROM::RatingFactor:
+        break;
+
+        // Sensor values coded in IEEE754
+    case EbmBusEEPROM::SensorValueMin_Byte_1:
+        break;
+    case EbmBusEEPROM::SensorValueMin_Byte_2:
+        break;
+    case EbmBusEEPROM::SensorValueMin_Byte_3:
+        break;
+    case EbmBusEEPROM::SensorValueMin_Byte_4:
+        break;
+    case EbmBusEEPROM::SensorValueMax_Byte_1:
+        break;
+    case EbmBusEEPROM::SensorValueMax_Byte_2:
+        break;
+    case EbmBusEEPROM::SensorValueMax_Byte_3:
+        break;
+    case EbmBusEEPROM::SensorValueMax_Byte_4:
+        break;
+
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_01:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_02:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_03:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_04:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_05:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_06:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_07:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_08:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_09:
+        break;
+    case EbmBusEEPROM::PhysicalUnitOfMeasuredQuantity_Char_10:
+        break;
+
+        // Conversion factor is coded in IEEE754
+    case EbmBusEEPROM::ConversionFactor_Byte_1:
+        break;
+    case EbmBusEEPROM::ConversionFactor_Byte_2:
+        break;
+    case EbmBusEEPROM::ConversionFactor_Byte_3:
+        break;
+    case EbmBusEEPROM::ConversionFactor_Byte_4:
+        break;
+
+    case EbmBusEEPROM::EEPROMstatus:
+        break;
+    case EbmBusEEPROM::MotorDesign_NumberOfPoles:
+        break;
+    case EbmBusEEPROM::MotorDesign_Function:
+        break;
+    case EbmBusEEPROM::DutyCycleMaxAdmissible:
+        break;
+    case EbmBusEEPROM::DutyCycleMinAdmissible:
+        break;
+    case EbmBusEEPROM::Identification:
+        break;
+
+    case EbmBusEEPROM::FailureDisplay_N0_HighByte:
+        break;
+    case EbmBusEEPROM::FailureDisplay_N1_HighByte:
+        break;
+    case EbmBusEEPROM::FailureDisplay_N2_HighByte:
+        break;
+    case EbmBusEEPROM::FailureDisplay_N0_LowByte:
+        break;
+    case EbmBusEEPROM::FailureDisplay_N1_LowByte:
+        break;
+    case EbmBusEEPROM::FailureDisplay_N2_LowByte:
+        break;
+
+    case EbmBusEEPROM::OperationHours_MSB:
+        break;
+    case EbmBusEEPROM::OperationHours_LSB:
+        break;
+
+    case EbmBusEEPROM::ManufacturingDateCode_Day:
+         m_configData.manufacturingDateCode_Day = dataByte;
+        break;
+    case EbmBusEEPROM::ManufacturingDateCode_Month:
+        m_configData.manufacturingDateCode_Month = dataByte;
+        break;
+    case EbmBusEEPROM::ManufacturingDateCode_Year:
+        m_configData.manufacturingDateCode_Year = dataByte;
+        break;
+
+    case EbmBusEEPROM::SerialNumber_Byte_2:
+        m_configData.serialNumber &= 0x00FFFF;
+        m_configData.serialNumber |= (dataByte << 16);
+        break;
+    case EbmBusEEPROM::SerialNumber_Byte_1:
+        m_configData.serialNumber &= 0xFF00FF;
+        m_configData.serialNumber |= (dataByte << 8);
+        break;
+    case EbmBusEEPROM::SerialNumber_Byte_0:
+        m_configData.serialNumber &= 0xFFFF00;
+        m_configData.serialNumber |= (dataByte << 0);
+        break;
+
+    case EbmBusEEPROM::DClinkCurrentMax:
+        break;
+    case EbmBusEEPROM::AmbientTemperatureMax:
+        break;
+    case EbmBusEEPROM::RampUpAccelerationRate:
+        break;
+    case EbmBusEEPROM::RampDownDecelerationRate:
+        break;
+    case EbmBusEEPROM::DClinkVoltageMin:
+        break;
+    case EbmBusEEPROM::LineVoltageMin:
+        break;
+    case EbmBusEEPROM::DCIrelais:
+        break;
+
+    case EbmBusEEPROM::ReferenceDClinkVoltage_MSB:
+        m_configData.referenceDClinkVoltage &= 0x00FF;
+        m_configData.referenceDClinkVoltage |= (dataByte << 8);
+        m_configData.valid = true;  // Set the configData valid as ReferenceDClinkVoltage_MSB is the last value requested at startup
+        processConfigData();
+        break;
+    case EbmBusEEPROM::ReferenceDClinkVoltage_LSB:
+        m_configData.referenceDClinkVoltage &= 0xFF00;
+        m_configData.referenceDClinkVoltage |= (dataByte << 0);
+        break;
+    case EbmBusEEPROM::ReferenceDClinkCurrent_MSB:
+        m_configData.referenceDClinkCurrent &= 0x00FF;
+        m_configData.referenceDClinkCurrent |= (dataByte << 8);
+        break;
+    case EbmBusEEPROM::ReferenceDClinkCurrent_LSB:
+        m_configData.referenceDClinkCurrent &= 0xFF00;
+        m_configData.referenceDClinkCurrent |= (dataByte << 0);
+        break;
+    case EbmBusEEPROM::ReferenceAClineVoltage_MSB:
+        break;
+    case EbmBusEEPROM::ReferenceAClineVoltage_LSB:
+        break;
+    case EbmBusEEPROM::ReferenceAClineCurrent_MSB:
+        break;
+    case EbmBusEEPROM::ReferenceAClineCurrent_LSB:
+        break;
+
+    case EbmBusEEPROM::ActualOperationMode:
+        break;
+    case EbmBusEEPROM::ActualMaxPWMdutyCycle:
+        break;
+    case EbmBusEEPROM::ActualMinPWMdutyCycle:
+        break;
+    case EbmBusEEPROM::ActualTargetValue:
+        break;
+    case EbmBusEEPROM::ActualSensorValue:
+        break;
+    }
 }

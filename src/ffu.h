@@ -25,10 +25,21 @@ public:
         QString statusString_LSB;
         QString statusString_MSB;
         quint8 warnings;
-        quint8 dcCurrent;
-        quint8 dcVoltage;
+        double dcCurrent;
+        double dcVoltage;
         quint8 temperatureOfPowerModule;
     } ActualData;
+
+    typedef struct {
+        bool valid;
+        int speedMax;                           // Unit RpM
+        quint8 manufacturingDateCode_Day;
+        quint8 manufacturingDateCode_Month;
+        quint8 manufacturingDateCode_Year;
+        quint32 serialNumber;
+        int referenceDClinkVoltage;             // Unit 20 mV
+        int referenceDClinkCurrent;             // Unit 2 mA
+    } ConfigData;
 
     int getId() const;
     void setId(int id);
@@ -47,7 +58,6 @@ public:
 
     void setSpeed(int rpm);
     void setSpeedRaw(int value, bool refreshOnly = false);
-    void setNmax(int maxRpm);
 
     int getSpeedSetpoint();
     int getSpeedSetpointRaw();
@@ -66,6 +76,12 @@ public:
 
     // This function triggers bus requests to get actual values, status, warnings ans errors
     void requestStatus();
+
+    // This function triggers bus requests to get the necessary config data from the ffu
+    void requestConfig();
+
+    // This enables automatic startup of the fan. Be carful: If set, each setpoint change results in a writecycle of the eeprom
+    void setAutostart(bool enabled);
 
     void save();
     void setFiledirectory(QString path);
@@ -93,6 +109,7 @@ private:
     bool m_remoteControlled;
 
     ActualData m_actualData;
+    ConfigData m_configData;
 
     bool m_dataChanged;
     bool m_autosave;
@@ -102,6 +119,12 @@ private:
 
     bool isConfigured();    // Returns false if either fanAddress or fanGroup or busID is not set
     void markAsOnline();
+
+    void setNmax(int maxRpm);
+    void setNmaxFromConfigData();
+
+    // This uses m_configData to configure ffu
+    void processConfigData();
 
 signals:
     void signal_needsSaving();
