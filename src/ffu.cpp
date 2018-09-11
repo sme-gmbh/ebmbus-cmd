@@ -623,10 +623,10 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         m_actualData.warnings = rawValue;
         break;
     case EbmBusStatus::DCvoltage:
-        m_actualData.dcVoltage = (double)rawValue * (double)m_configData.referenceDClinkVoltage * 0.02;
+        m_actualData.dcVoltage = (double)rawValue / 265.0 * (double)m_configData.referenceDClinkVoltage * 0.02;
         break;
     case EbmBusStatus::DCcurrent:
-        m_actualData.dcCurrent = (double)rawValue * (double)m_configData.referenceDClinkCurrent * 0.002;
+        m_actualData.dcCurrent = (double)rawValue / 256.0 * (double)m_configData.referenceDClinkCurrent * 0.002;
         break;
     case EbmBusStatus::TemperatureOfPowerModule:
         m_actualData.temperatureOfPowerModule = rawValue;
