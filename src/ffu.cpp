@@ -367,6 +367,7 @@ void FFU::setAutostart(bool enabled)
     else
     {
         m_transactionIDs.append(bus->writeEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::OperationModes_1, 0x03));
+        m_transactionIDs.append(bus->softwareReset(m_fanAddress, m_fanGroup));
     }
 }
 

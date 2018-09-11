@@ -43,11 +43,13 @@ private:
     RemoteController* m_remotecontroller;
 
     QTimer m_timer;
+    QTimer m_manualSpeedUpdateTimer;
 
     int m_speed;
 
 private slots:
     void slot_timer_fired();
+    void slot_manualSpeedUpdateTimer_fired();
 
     void slot_button_operation_clicked();
     void slot_button_error_clicked();

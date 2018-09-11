@@ -19,6 +19,9 @@ MainController::MainController(QObject *parent) :
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
 
+    connect(&m_manualSpeedUpdateTimer, SIGNAL(timeout()), this, SLOT(slot_manualSpeedUpdateTimer_fired()));
+    m_manualSpeedUpdateTimer.start(300000); // Every 300 seconds (5 minutes)
+
     m_lightbutton_operation = new LightButton(this, &m_io, 4, 4);
     m_lightbutton_error = new LightButton(this, &m_io, 5, 5);
     m_lightbutton_speed_0 = new LightButton(this, &m_io, 6, 6);
@@ -147,6 +150,15 @@ void MainController::slot_timer_fired()
         m_lightbutton_speed_0->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_50->slot_setLight(LightButton::LED_OFF);
         m_lightbutton_speed_100->slot_setLight(LightButton::LED_OFF);
+    }
+}
+
+// This timer broadcasts manual speed on a regular basis to catch all ffus that had a powerfailure in the meantime
+void MainController::slot_manualSpeedUpdateTimer_fired()
+{
+    if (!m_remotecontroller->isEnabled() && (m_speed != -1))
+    {
+        m_ebmbusSystem->broadcastSpeed(m_speed);
     }
 }
 
