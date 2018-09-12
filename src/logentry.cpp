@@ -10,6 +10,9 @@ LogEntry::LogEntry(LoggingCategory loggingCategory, QString module, QString text
 
 void LogEntry::quit()
 {
+    if (!m_active)
+        return;     // You can not quit non-active errors
+
     if (!m_dateTime_firstQuit.isValid())
         m_dateTime_firstQuit = QDateTime::currentDateTime();
     else
