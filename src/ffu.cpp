@@ -5,9 +5,10 @@
 #include <QStringList>
 #include <QDir>
 
-FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem) : QObject(parent)
+FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem, Loghandler *loghandler) : QObject(parent)
 {
     m_ebmbusSystem = ebmbusSystem;
+    m_loghandler = loghandler;
 
     m_dataChanged = false;
     setAutoSave(true);
@@ -473,6 +474,12 @@ void FFU::deleteFromHdd()
     file.remove();
 }
 
+void FFU::deleteAllErrors()
+{
+    m_loghandler->slot_entryGone(LogEntry::Error, "FFU id=" + QString().setNum(m_id), "Not online.");
+    m_loghandler->slot_entryGone(LogEntry::Warning, "FFU id=" + QString().setNum(m_id), "Warnings present.");
+}
+
 bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
 {
     bool found = m_transactionIDs.contains(telegramID);
@@ -503,7 +510,11 @@ bool FFU::isConfigured()
 void FFU::markAsOnline()
 {
     // If we reach this point we are going to parse a telegram for this ffu, so mark it as online
-    m_actualData.online = true;
+    if (!m_actualData.online)
+    {
+        m_loghandler->slot_entryGone(LogEntry::Error, "FFU id=" + QString().setNum(m_id), "Not online.");
+        m_actualData.online = true;
+    }
     m_actualData.lastSeen = QDateTime::currentDateTime();
 }
 
@@ -584,7 +595,11 @@ void FFU::slot_transactionLost(quint64 id)
 
     // If the ffu has a lost telegram, mark it as offline and increment error counter
     m_actualData.lostTelegrams++;
-    m_actualData.online = false;
+    if (m_actualData.online)
+    {
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFU id=" + QString().setNum(m_id), "Not online.");
+        m_actualData.online = false;
+    }
     emit signal_FFUactualDataHasChanged(m_id);
 }
 
@@ -614,6 +629,10 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
     case EbmBusStatus::MotorStatusLowByte:
         m_actualData.statusRaw_LSB = rawValue;
         m_actualData.statusString_LSB = status;
+        if (m_actualData.statusRaw_LSB != 0)
+            m_loghandler->slot_newEntry(LogEntry::Error, "FFU id=" + QString().setNum(m_id), "Status error present.");
+        else
+            m_loghandler->slot_entryGone(LogEntry::Error, "FFU id=" + QString().setNum(m_id), "Status error present.");
         break;
     case EbmBusStatus::MotorStatusHighByte:
         m_actualData.statusRaw_MSB = rawValue;
@@ -621,6 +640,10 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         break;
     case EbmBusStatus::Warnings:
         m_actualData.warnings = rawValue;
+        if (m_actualData.warnings != 0)
+            m_loghandler->slot_newEntry(LogEntry::Warning, "FFU id=" + QString().setNum(m_id), "Warnings present.");
+        else
+            m_loghandler->slot_entryGone(LogEntry::Warning, "FFU id=" + QString().setNum(m_id), "Warnings present.");
         break;
     case EbmBusStatus::DCvoltage:
         m_actualData.dcVoltage = (double)rawValue / 265.0 * (double)m_configData.referenceDClinkVoltage * 0.02;

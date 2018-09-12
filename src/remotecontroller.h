@@ -29,6 +29,7 @@ private:
     Loghandler* m_loghandler;
     bool m_activated; // True if remote controller is supposed to do remote controlling actions
     bool m_noConnection;  // True if no server is connected
+    QTimer m_timer_connectionTimeout;   // Server should connect within this time, otherwise signal error
 
 signals:
     void signal_activated();
@@ -50,6 +51,7 @@ private slots:
     void slot_new_connection();
     void slot_broadcast(QByteArray data);
     void slot_connectionClosed(QTcpSocket* socket, RemoteClientHandler* remoteClientHandler);
+    void slot_connectionTimeout();
 };
 
 #endif // REMOTECONTROLLER_H

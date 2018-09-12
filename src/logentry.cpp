@@ -34,6 +34,7 @@ void LogEntry::setActive()
 void LogEntry::setInactive()
 {
     m_activeError = false;
+    m_dateTime_gone = QDateTime::currentDateTime();
 }
 
 bool LogEntry::isActiveError()

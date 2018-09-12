@@ -26,6 +26,7 @@ signals:
 
 public slots:
     void slot_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text);
+    void slot_entryGone(LogEntry::LoggingCategory loggingCategory, QString module, QString text);
     void slot_quitErrors();
 };
 

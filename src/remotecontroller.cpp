@@ -11,6 +11,11 @@ RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, Loghandl
     m_activated = true;
     m_noConnection = true;
 
+    connect(&m_timer_connectionTimeout, SIGNAL(timeout()), this, SLOT(slot_connectionTimeout()));
+    connect(this, SIGNAL(signal_connected()), &m_timer_connectionTimeout, SLOT(stop()));
+    m_timer_connectionTimeout.setSingleShot(true);
+    m_timer_connectionTimeout.start(30000); // 30 Sec.
+
     connect(&m_server, SIGNAL(newConnection()),  this, SLOT(slot_new_connection()));
     m_server.listen(QHostAddress::LocalHost, 16001);    // Restrict to localhost (ssh tunnel endpoint)
 }
@@ -37,8 +42,8 @@ bool RemoteController::isEnabled()
 
 void RemoteController::slot_activate()
 {
-//    if (m_noConnection)
-//        return;
+    if (m_noConnection)
+        m_loghandler->slot_newEntry(LogEntry::Error, "Remotecontroller", "No connection to server.");
 
     m_activated = true;
     slot_broadcast(QString("Status[RemoteController]: Activated").toUtf8());
@@ -72,6 +77,7 @@ void RemoteController::slot_new_connection()
     if (m_noConnection)
     {
         m_noConnection = false;
+        m_loghandler->slot_entryGone(LogEntry::Error, "Remotecontroller", "No connection to server.");
         emit signal_connected();
     }
 }
@@ -98,4 +104,9 @@ void RemoteController::slot_connectionClosed(QTcpSocket *socket, RemoteClientHan
         m_loghandler->slot_newEntry(LogEntry::Error, "Remotecontroller", "No connection to server.");
         emit signal_disconnected();
     }
+}
+
+void RemoteController::slot_connectionTimeout()
+{
+    m_loghandler->slot_newEntry(LogEntry::Error, "Remotecontroller", "No connection to server.");
 }

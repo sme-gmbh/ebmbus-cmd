@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QDateTime>
 #include "revpidio.h"
+#include "loghandler.h"
 
 #ifdef USE_LIBFTDI
 #include <ftdi.h>
@@ -16,7 +17,7 @@ class UninterruptiblePowerSupply : public QObject
 {
     Q_OBJECT
 public:
-    explicit UninterruptiblePowerSupply(QObject *parent, RevPiDIO *io, int address_mainswitch);
+    explicit UninterruptiblePowerSupply(QObject *parent, RevPiDIO *io, int address_mainswitch, Loghandler* loghandler);
 
     void setShutdownTimeout(int milliseconds);
     void setMainswitchDelay(int milliseconds);
@@ -25,6 +26,7 @@ public:
 private:
     RevPiDIO* m_io;
     int m_address_mainswitch;
+    Loghandler* m_loghandler;
     QTimer m_timer;
     QTimer m_shutdownTimer;
     QTimer m_powerGoodTimer;

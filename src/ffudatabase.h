@@ -13,12 +13,13 @@
 #include <libebmbus/ebmbus.h>
 #include "ffu.h"
 #include "ebmbussystem.h"
+#include "loghandler.h"
 
 class FFUdatabase : public QObject
 {
     Q_OBJECT
 public:
-    explicit FFUdatabase(QObject *parent, EbmBusSystem* ebmbusSystem);
+    explicit FFUdatabase(QObject *parent, EbmBusSystem* ebmbusSystem, Loghandler* loghandler);
 
     void loadFromHdd();
     void saveToHdd();
@@ -40,6 +41,7 @@ public:
 private:
     EbmBusSystem* m_ebmbusSystem;
     QList<EbmBus*>* m_ebmbuslist;
+    Loghandler* m_loghandler;
     QList<FFU*> m_ffus;
     QTimer m_timer_pollStatus;
     QMap<int,QList<int>> m_unitIdsPerBus;

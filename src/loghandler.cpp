@@ -23,6 +23,29 @@ void Loghandler::slot_newEntry(LogEntry::LoggingCategory loggingCategory, QStrin
     emit signal_newError();
 }
 
+void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QString module, QString text)
+{
+    // First search the original ticket
+    LogEntry* originalEntry = NULL;
+    foreach(LogEntry* entry, m_logentries)
+    {
+        if (entry->loggingCategory() != loggingCategory)
+            continue;
+        if (entry->module() != module)
+            continue;
+        if (entry->text() != text)
+            continue;
+
+        originalEntry = entry;
+        break;
+    }
+
+    if (originalEntry == NULL)
+        return; // In case we did not find it for some strange reason
+
+    originalEntry->setInactive();
+}
+
 void Loghandler::slot_quitErrors()
 {
     foreach (LogEntry* e, m_logentries)

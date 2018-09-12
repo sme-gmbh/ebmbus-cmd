@@ -1,9 +1,11 @@
 #include "ffudatabase.h"
 
-FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem) : QObject(parent)
+FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem, Loghandler *loghandler) : QObject(parent)
 {
     m_ebmbusSystem = ebmbusSystem;
     m_ebmbuslist = ebmbusSystem->ebmbuslist();  // Try to eliminate the use of ebmbuslist here later!
+
+    m_loghandler = loghandler;
 
     foreach (EbmBus* ebmBus, *m_ebmbuslist)
     {
@@ -38,7 +40,7 @@ void FFUdatabase::loadFromHdd()
     while(iterator.hasNext())
     {
         QString filepath = iterator.next();
-        FFU* newFFU = new FFU(this, m_ebmbusSystem);
+        FFU* newFFU = new FFU(this, m_ebmbusSystem, m_loghandler);
         newFFU->load(filepath);
         newFFU->setFiledirectory(directory);
         connect(newFFU, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SIGNAL(signal_FFUactualDataHasChanged(int)));
@@ -59,7 +61,7 @@ void FFUdatabase::saveToHdd()
 
 QString FFUdatabase::addFFU(int id, int busID, int unit, int fanAddress, int fanGroup)
 {
-    FFU* newFFU = new FFU(this, m_ebmbusSystem);
+    FFU* newFFU = new FFU(this, m_ebmbusSystem, m_loghandler);
     newFFU->setFiledirectory("/var/openffucontrol/ffus/");
     newFFU->setAutoSave(false);
     newFFU->setId(id);
@@ -86,6 +88,7 @@ QString FFUdatabase::deleteFFU(int id)
     {
         disconnect(ffu, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SIGNAL(signal_FFUactualDataHasChanged(int)));
         ffu->deleteFromHdd();
+        ffu->deleteAllErrors();
         delete ffu;
         return "OK[FFUdatabase]: Removed ID " + QString().setNum(id);
     }

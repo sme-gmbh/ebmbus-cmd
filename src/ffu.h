@@ -5,12 +5,13 @@
 #include <QMap>
 #include <QDateTime>
 #include "ebmbussystem.h"
+#include "loghandler.h"
 
 class FFU : public QObject
 {
     Q_OBJECT
 public:
-    explicit FFU(QObject *parent, EbmBusSystem *ebmbusSystem);
+    explicit FFU(QObject *parent, EbmBusSystem *ebmbusSystem, Loghandler* loghandler);
     ~FFU();
 
     typedef struct {
@@ -90,12 +91,14 @@ public:
     void setAutoSave(bool on);
 
     void deleteFromHdd();
+    void deleteAllErrors();
 
     bool isThisYourTelegram(quint64 telegramID, bool deleteID = true);
 
 
 private:
     EbmBusSystem* m_ebmbusSystem;
+    Loghandler* m_loghandler;
     QList<quint64> m_transactionIDs;
 
     int m_id;

@@ -34,7 +34,7 @@ MainController::MainController(QObject *parent) :
     connect(m_lightbutton_speed_50, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_50_clicked()));
     connect(m_lightbutton_speed_100, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_100_clicked()));
 
-    m_ups = new UninterruptiblePowerSupply(this, &m_io, 9);
+    m_ups = new UninterruptiblePowerSupply(this, &m_io, 9, m_loghandler);
     m_osControl = new OperatingSystemControl(this);
     connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
@@ -42,7 +42,7 @@ MainController::MainController(QObject *parent) :
     connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), m_osControl, SLOT(slot_shutdownNOW()));
     connect(m_ups, SIGNAL(signal_powerGoodAgain()), this, SLOT(slot_mainsPowerRestored()));
 
-    m_ffudatabase = new FFUdatabase(this, m_ebmbusSystem);
+    m_ffudatabase = new FFUdatabase(this, m_ebmbusSystem, m_loghandler);
     m_ffudatabase->loadFromHdd();
 
     m_remotecontroller = new RemoteController(this, m_ffudatabase, m_loghandler);
@@ -168,11 +168,6 @@ void MainController::slot_manualSpeedUpdateTimer_fired()
 // This slot is called if the operator clicked (=== pressed for less than 1 second) the operation mode button locally
 void MainController::slot_button_operation_clicked()
 {
-    if (!m_remotecontroller->isConnected())
-    {
-        m_loghandler->slot_newEntry(LogEntry::Error, "Maincontroller", "Server link is down");
-    }
-
     if (m_remotecontroller->isEnabled())
         m_remotecontroller->slot_deactivate();
     else

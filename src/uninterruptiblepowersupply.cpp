@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO *io, int address_mainswitch) : QObject(parent)
+UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO *io, int address_mainswitch, Loghandler *loghandler) : QObject(parent)
 {
     m_io = io;
     m_address_mainswitch = address_mainswitch;
+    m_loghandler = loghandler;
 
     m_ftdi = NULL;
 
@@ -217,6 +218,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_bufferReady = true;
                 fprintf(stderr, "UPS: Info: Energy storage is ready to take over load.\n");
+                m_loghandler->slot_entryGone(LogEntry::Error, "UPS", "Energy storage level is low.");
                 emit signal_info_EnergyStorageReady();
             }
             emit signal_ups_communicationHeartbeat();
@@ -227,6 +229,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_bufferReady = false;
                 fprintf(stderr, "UPS: Alarm: Energy storage level is low!\n");
+                m_loghandler->slot_newEntry(LogEntry::Error, "UPS", "Energy storage level is low.");
                 emit signal_alarm_EnergyStorageLow();
             }
             emit signal_ups_communicationHeartbeat();
@@ -237,6 +240,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = true;
                 fprintf(stderr, "UPS: Info: DC input voltage is ok.\n");
+                m_loghandler->slot_entryGone(LogEntry::Error, "UPS", "DC input voltage is low.");
                 emit signal_info_DCinputVoltageOK();
             }
             emit signal_ups_communicationHeartbeat();
@@ -247,6 +251,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = false;
                 fprintf(stderr, "UPS: Warning: DC input voltage is low!\n");
+                m_loghandler->slot_newEntry(LogEntry::Error, "UPS", "DC input voltage is low.");
                 emit signal_warning_DCinputVoltageLow();
             }
             emit signal_ups_communicationHeartbeat();
@@ -333,6 +338,7 @@ void UninterruptiblePowerSupply::slot_ups_communicationHeartbeat()
     if (m_ups_communicationOK == false)
     {
         fprintf(stderr, "UPS: Successfully reestablished communication to UPS.\n");
+        m_loghandler->slot_entryGone(LogEntry::Error, "UPS", "Communication failure.");
     }
     m_ups_communicationOK = true;
 }
@@ -341,6 +347,7 @@ void UninterruptiblePowerSupply::slot_ups_communicationFailure()
 {
     m_ups_communicationOK = false;
     fprintf(stderr, "UPS: Communication failure - trying to reconnect...\n");
+    m_loghandler->slot_newEntry(LogEntry::Error, "UPS", "Communication failure.");
     disconnectFromUPS();
     connectToUPS();
 }

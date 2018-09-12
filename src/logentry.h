@@ -35,6 +35,7 @@ private:
     bool m_activeError;
     QDateTime m_dateTime_triggered; // This holds the time when the event was triggered
     QDateTime m_dateTime_quit;      // This holds the time when the event was quit by an operator.
+    QDateTime m_dateTime_gone;      // This holds the time when the error was gone.
 };
 
 #endif // LOGENTRY_H
