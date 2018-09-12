@@ -12,13 +12,13 @@ void LogEntry::quit()
 {
     if (!m_dateTime_firstQuit.isValid())
         m_dateTime_firstQuit = QDateTime::currentDateTime();
-
-    m_dateTime_lastQuit = QDateTime::currentDateTime();
+    else
+        m_dateTime_lastQuit = QDateTime::currentDateTime();
 }
 
 bool LogEntry::isQuit()
 {
-    if (m_dateTime_lastQuit.isValid())
+    if (m_dateTime_firstQuit.isValid() || m_dateTime_lastQuit.isValid())
         return true;
     else
         return false;
@@ -105,7 +105,7 @@ QString LogEntry::toString()
     str += " Occurred first " + m_dateTime_firstTriggered.toString() + ".";
     if (m_dateTime_firstQuit.isValid())
     {
-        str += "It was first quit " + m_dateTime_firstQuit.toString();
+        str += " It was first quit " + m_dateTime_firstQuit.toString();
         if (m_dateTime_lastQuit.isValid())
             str += " and last quit " + m_dateTime_lastQuit.toString();
         str += ".";
