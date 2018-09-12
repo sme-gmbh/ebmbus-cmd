@@ -117,7 +117,7 @@ QString LogEntry::toString()
     if (m_count > 1)
     {
         str += " In sum it occurred " + QString().setNum(m_count) + " times, last " + m_dateTime_lastTriggered.toString();
-        if (m_dateTime_lastGone.isValid())
+        if (m_dateTime_lastGone.isValid() && !m_active)
             str += " but is gone since " + m_dateTime_lastGone.toString() + ".";
         else
             str += " and is still active.";
