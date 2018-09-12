@@ -29,6 +29,7 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
 
+    connect(this, SIGNAL(signal_ups_communicationHeartbeat()), this, SLOT(slot_ups_communicationHeartbeat()));
     connect(this, SIGNAL(signal_ups_communicationHeartbeat()), &m_ups_communicationWatchdogTimer, SLOT(start()));
     connect(&m_ups_communicationWatchdogTimer, SIGNAL(timeout()), this, SIGNAL(signal_ups_communicationFailure()));
     connect(&m_ups_communicationWatchdogTimer, SIGNAL(timeout()), this, SLOT(slot_ups_communicationFailure()));
