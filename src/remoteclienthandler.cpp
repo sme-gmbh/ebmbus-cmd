@@ -1,9 +1,10 @@
 #include "remoteclienthandler.h"
 
-RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB) : QObject(parent)
+RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB, Loghandler* loghandler) : QObject(parent)
 {
     this->socket = socket;
     m_ffuDB = ffuDB;
+    m_loghandler = loghandler;
 
     m_livemode = false;
 
@@ -101,6 +102,8 @@ void RemoteClientHandler::slot_read_ready()
                           "        Stop live showing of ffu data.\r\n"
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
+                          "    log\r\n"
+                          "        Show the log consisting of infos, warnings and errors.\r\n"
                           "\r\n"
                           "    button --button=BUTTONNAME\r\n"
                           "        Simulate a button click.\r\n"
@@ -166,6 +169,13 @@ void RemoteClientHandler::slot_read_ready()
 
                 socket->write(line.toUtf8());
             }
+        }
+        // ************************************************** log **************************************************
+        else if (command == "log")
+        {
+            socket->write(m_loghandler->toString(LogEntry::Info).toUtf8() + "\n");
+            socket->write(m_loghandler->toString(LogEntry::Warning).toUtf8() + "\n");
+            socket->write(m_loghandler->toString(LogEntry::Error).toUtf8() + "\n");
         }
         // ************************************************** button **************************************************
         else if (command == "button")

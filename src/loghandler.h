@@ -14,9 +14,11 @@ public:
     explicit Loghandler(QObject *parent = 0);
 
     bool hasActiveErrors();
+    QString toString(LogEntry::LoggingCategory category, bool onlyActive = false);
 
 private:
     QList<LogEntry*> m_logentries;
+    LogEntry* findOrMakeLogEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text, bool justFind = false);
 
 signals:
 

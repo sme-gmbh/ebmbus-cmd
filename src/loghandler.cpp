@@ -9,24 +9,28 @@ bool Loghandler::hasActiveErrors()
 {
     foreach (LogEntry* e, m_logentries)
     {
-        if (e->isActiveError())
+        if (e->isActiveErrorOrWarning())
             return true;
     }
 
     return false;
 }
 
-void Loghandler::slot_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text)
+QString Loghandler::toString(LogEntry::LoggingCategory category, bool onlyActive)
 {
-    LogEntry* newEntry = new LogEntry(loggingCategory, module, text);
-    m_logentries.append(newEntry);
-    emit signal_newError();
+    QString str;
+    foreach (LogEntry* e, m_logentries)
+    {
+        if (e->loggingCategory() != category)
+            continue;
+        if (!onlyActive || (onlyActive && e->isActive()))
+            str += e->toString() + "\n";
+    }
+    return str;
 }
 
-void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QString module, QString text)
+LogEntry *Loghandler::findOrMakeLogEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text, bool justFind)
 {
-    // First search the original ticket
-    LogEntry* originalEntry = NULL;
     foreach(LogEntry* entry, m_logentries)
     {
         if (entry->loggingCategory() != loggingCategory)
@@ -36,14 +40,26 @@ void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QStri
         if (entry->text() != text)
             continue;
 
-        originalEntry = entry;
-        break;
+        return entry;
     }
+    if (justFind)
+        return NULL;
+    else
+        return new LogEntry(loggingCategory, module, text);
+}
 
-    if (originalEntry == NULL)
-        return; // In case we did not find it for some strange reason
+void Loghandler::slot_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text)
+{
+    LogEntry* entry = findOrMakeLogEntry(loggingCategory, module, text);
+    m_logentries.append(entry);
+    emit signal_newError();
+}
 
-    originalEntry->setInactive();
+void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QString module, QString text)
+{
+    // First search the original ticket
+    LogEntry* entry = findOrMakeLogEntry(loggingCategory, module, text, true);
+    entry->setInactive();
 
     if (!hasActiveErrors())
         emit signal_allErrorsGone();

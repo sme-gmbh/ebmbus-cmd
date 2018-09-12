@@ -20,22 +20,31 @@ public:
 
     void setActive();
     void setInactive();
-    bool isActiveError();
+    bool isActiveErrorOrWarning();
+    bool isActive() const;
+
+    quint64 getCount();
 
     LoggingCategory loggingCategory() const;
     QString module() const;
     QString text() const;
-    QDateTime dateTime_triggered() const;
-    QDateTime dateTime_quit() const;
+    QDateTime dateTime_lastTriggered() const;
+    QDateTime dateTime_lastQuit() const;
+
+    QString toString();
 
 private:
     LoggingCategory m_loggingCategory;
     QString m_module;
     QString m_text;
-    bool m_activeError;
-    QDateTime m_dateTime_triggered; // This holds the time when the event was triggered
-    QDateTime m_dateTime_quit;      // This holds the time when the event was quit by an operator.
-    QDateTime m_dateTime_gone;      // This holds the time when the error was gone.
+    bool m_active;
+    quint64 m_count;                    // This increments every time the entry is set active.
+    QDateTime m_dateTime_firstTriggered;// This holds the first time when the event was triggered.
+    QDateTime m_dateTime_firstQuit;     // This holds the first time when the event was quit by an operator.
+    QDateTime m_dateTime_firstGone;     // This holds the first time when the error was gone.
+    QDateTime m_dateTime_lastTriggered; // This holds the last time when the event was triggered.
+    QDateTime m_dateTime_lastQuit;      // This holds the last time when the event was quit by an operator.
+    QDateTime m_dateTime_lastGone;      // This holds the last time when the error was gone.
 };
 
 #endif // LOGENTRY_H

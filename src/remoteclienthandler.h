@@ -12,16 +12,18 @@
 #include <QHostInfo>
 
 #include "ffudatabase.h"
+#include "loghandler.h"
 
 class RemoteClientHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit RemoteClientHandler(QObject *parent, QTcpSocket* socket, FFUdatabase* ffuDB);
+    explicit RemoteClientHandler(QObject *parent, QTcpSocket* socket, FFUdatabase* ffuDB, Loghandler *loghandler);
 
 private:
     QTcpSocket* socket;
     FFUdatabase* m_ffuDB;
+    Loghandler* m_loghandler;
     bool m_livemode;
 
 signals:
