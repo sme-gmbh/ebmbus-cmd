@@ -7,6 +7,7 @@ LogEntry::LogEntry(LoggingCategory loggingCategory, QString module, QString text
     m_loggingCategory = loggingCategory;
     m_module = module;
     m_text = text;
+    m_count = 0;
 }
 
 void LogEntry::quit()
@@ -92,24 +93,28 @@ QString LogEntry::toString()
     switch (m_loggingCategory)
     {
     case LogEntry::Info:
-        str = "Info";
+        str = "Info ";
         break;
     case LogEntry::Warning:
-        str = "Warning";
+        str = "Warning ";
         break;
     case LogEntry::Error:
-        str = "Error";
+        str = "Error ";
         break;
     }
+
+    str += m_text + " in module " + m_module;
     str += " occurred first " + m_dateTime_firstTriggered.toString() + ".";
     if (m_dateTime_firstQuit.isValid())
+    {
         str += "It was first quit " + m_dateTime_firstQuit.toString();
-    if (m_dateTime_lastQuit.isValid())
-        str += " and last quit " + m_dateTime_lastQuit.toString();
-    str += ".";
+        if (m_dateTime_lastQuit.isValid())
+            str += " and last quit " + m_dateTime_lastQuit.toString();
+        str += ".";
+    }
 
     if (m_dateTime_firstGone.isValid())
-        str += " It was first gone " + m_dateTime_firstGone.toString() + " .";
+        str += " It was first gone " + m_dateTime_firstGone.toString() + ".";
 
     if (m_count > 1)
     {
