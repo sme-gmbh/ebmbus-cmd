@@ -45,13 +45,17 @@ LogEntry *Loghandler::findOrMakeLogEntry(LogEntry::LoggingCategory loggingCatego
     if (justFind)
         return NULL;
     else
-        return new LogEntry(loggingCategory, module, text);
+    {
+        LogEntry* entry = new LogEntry(loggingCategory, module, text);
+        m_logentries.append(entry);
+        return entry;
+    }
 }
 
 void Loghandler::slot_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text)
 {
     LogEntry* entry = findOrMakeLogEntry(loggingCategory, module, text);
-    m_logentries.append(entry);
+    entry->setActive();
     emit signal_newError();
 }
 
