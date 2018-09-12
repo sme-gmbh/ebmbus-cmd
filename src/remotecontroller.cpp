@@ -47,6 +47,7 @@ void RemoteController::slot_activate()
 
     m_activated = true;
     slot_broadcast(QString("Status[RemoteController]: Activated").toUtf8());
+    m_loghandler->slot_entryGone(LogEntry::Info, "Remotecontroller", "Deactivated - Running in manual mode.");
     emit signal_activated();
 }
 
@@ -54,6 +55,7 @@ void RemoteController::slot_deactivate()
 {
     m_activated = false;
     slot_broadcast(QString("Status[RemoteController]: Deactivated").toUtf8());
+    m_loghandler->slot_newEntry(LogEntry::Info, "Remotecontroller", "Deactivated - Running in manual mode.");
     emit signal_deactivated();
 }
 
