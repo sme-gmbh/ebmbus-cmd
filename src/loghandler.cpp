@@ -44,6 +44,9 @@ void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QStri
         return; // In case we did not find it for some strange reason
 
     originalEntry->setInactive();
+
+    if (!hasActiveErrors())
+        emit signal_allErrorsGone();
 }
 
 void Loghandler::slot_quitErrors()
