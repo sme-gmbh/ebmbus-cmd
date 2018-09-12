@@ -107,6 +107,8 @@ void UninterruptiblePowerSupply::slot_startPSUshutdownTimer()
     ftdi_write_data(m_ftdi, c, 1);
     // And it should shutdown now.
 
+    m_loghandler->slot_newEntry(LogEntry::Warning, "UPS", "System going down due to missing mains power.");
+
     sleep(1);
     disconnectFromUPS();
 
@@ -240,7 +242,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = true;
                 fprintf(stderr, "UPS: Info: DC input voltage is ok.\n");
-                m_loghandler->slot_entryGone(LogEntry::Error, "UPS", "DC input voltage is low.");
+                m_loghandler->slot_entryGone(LogEntry::Warning, "UPS", "DC input voltage is low.");
                 emit signal_info_DCinputVoltageOK();
             }
             emit signal_ups_communicationHeartbeat();
@@ -251,7 +253,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_supplyVoltageOK = false;
                 fprintf(stderr, "UPS: Warning: DC input voltage is low!\n");
-                m_loghandler->slot_newEntry(LogEntry::Error, "UPS", "DC input voltage is low.");
+                m_loghandler->slot_newEntry(LogEntry::Warning, "UPS", "DC input voltage is low.");
                 emit signal_warning_DCinputVoltageLow();
             }
             emit signal_ups_communicationHeartbeat();
@@ -262,6 +264,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_runningInIsland = false;
                 fprintf(stderr, "UPS: Info: Running on mains power.\n");
+                m_loghandler->slot_entryGone(LogEntry::Warning, "UPS", "Running in island.");
                 emit signal_info_UPSonline();
             }
             emit signal_ups_communicationHeartbeat();
@@ -272,6 +275,7 @@ void UninterruptiblePowerSupply::tryToParseUPSresponse(QByteArray *buffer)
             {
                 m_ups_runningInIsland = true;
                 fprintf(stderr, "UPS: Warning: Running in island!\n");
+                m_loghandler->slot_newEntry(LogEntry::Warning, "UPS", "Running in island.");
                 emit signal_warning_UPSinIsland();
             }
             emit signal_ups_communicationHeartbeat();
@@ -325,6 +329,7 @@ void UninterruptiblePowerSupply::slot_timer_fired()
     {
         m_mainswitchOffSignaled = true;
         fprintf(stderr, "Mains power switch was operated to off position.\n");
+        m_loghandler->slot_newEntry(LogEntry::Info, "UPS", "Mains power switch was operated to off position.");
         slot_startPSUshutdownTimer();
         emit signal_mainswitchOff();
     }
