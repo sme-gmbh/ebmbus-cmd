@@ -59,7 +59,8 @@ void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QStri
 {
     // First search the original ticket
     LogEntry* entry = findOrMakeLogEntry(loggingCategory, module, text, true);
-    entry->setInactive();
+    if (entry != NULL)
+        entry->setInactive();
 
     if (!hasActiveErrors())
         emit signal_allErrorsGone();
