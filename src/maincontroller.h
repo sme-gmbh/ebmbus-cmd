@@ -7,6 +7,7 @@
 #include <libebmbus/ebmbus.h>
 #include "revpidio.h"
 #include "ebmbussystem.h"
+#include "ebmmodbussystem.h"
 #include "lightbutton.h"
 #include "uninterruptiblepowersupply.h"
 #include "operatingsystemcontrol.h"
@@ -34,6 +35,7 @@ private:
     LightButton* m_lightbutton_speed_100;
 
     EbmBusSystem* m_ebmbusSystem;
+    EbmModbusSystem* m_ebmModbusSystem;
 
     UninterruptiblePowerSupply* m_ups;
     OperatingSystemControl* m_osControl;

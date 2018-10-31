@@ -15,6 +15,7 @@ MainController::MainController(QObject *parent) :
     m_speed = -1;
 
     m_ebmbusSystem = new EbmBusSystem(this, &m_io);
+    m_ebmModbusSystem = new EbmModbusSystem(this, m_loghandler);
 
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);

@@ -4,7 +4,7 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
 {
     m_io = io;
 
-    for (int i=0; i<=3; i++)
+    for (int i=0; i<=2; i++)    // tbd.: Get the interfaces from config!
     {
         EbmBus* newEbmBus = new EbmBus(this, QString("/dev/ttyUSB").append(QString().setNum(i)));
         m_ebmbuslist.append(newEbmBus);

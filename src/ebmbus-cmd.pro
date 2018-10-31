@@ -39,9 +39,14 @@ SOURCES += main.cpp \
     ffudatabase.cpp \
     logentry.cpp \
     loghandler.cpp \
-    ebmbussystem.cpp
+    ebmbussystem.cpp \
+    ebmmodbussystem.cpp \
+    ebmmodbus.cpp \
+    auxfandatabase.cpp \
+    auxfan.cpp
 
 LIBS     += -lebmbus
+LIBS     += -lmodbus
 
 HEADERS += \
     revpidio.h \
@@ -56,7 +61,11 @@ HEADERS += \
     ffudatabase.h \
     logentry.h \
     loghandler.h \
-    ebmbussystem.h
+    ebmbussystem.h \
+    ebmmodbussystem.h \
+    ebmmodbus.h \
+    auxfandatabase.h \
+    auxfan.h
 
 DISTFILES += \
     ../unix/ebmbus-cmd.service \

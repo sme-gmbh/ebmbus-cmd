@@ -3,6 +3,7 @@
 FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem, Loghandler *loghandler) : QObject(parent)
 {
     m_ebmbusSystem = ebmbusSystem;
+
     m_ebmbuslist = ebmbusSystem->ebmbuslist();  // Try to eliminate the use of ebmbuslist here later!
 
     m_loghandler = loghandler;
@@ -315,7 +316,7 @@ void FFUdatabase::slot_transactionLost(quint64 telegramID)
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_transactionLost(telegramID);
@@ -326,7 +327,7 @@ void FFUdatabase::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_simpleStatus(telegramID, fanAddress, fanGroup, status);
@@ -337,7 +338,7 @@ void FFUdatabase::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanG
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_status(telegramID, fanAddress, fanGroup, statusAddress, status, rawValue);
@@ -348,7 +349,7 @@ void FFUdatabase::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_actualSpeed(telegramID, fanAddress, fanGroup, actualRawSpeed);
@@ -359,7 +360,7 @@ void FFUdatabase::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress,
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_setPointHasBeenSet(telegramID, fanAddress, fanGroup);
@@ -370,7 +371,7 @@ void FFUdatabase::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddres
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_EEPROMhasBeenWritten(telegramID, fanAddress, fanGroup);
@@ -381,7 +382,7 @@ void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 
     FFU* ffu = getFFUbyTelegramID(telegramID);
     if (ffu == NULL)
     {
-        // Somebody other than the ffu requested that respinse, so do nothing with the response at this point
+        // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
     }
     ffu->slot_EEPROMdata(telegramID, fanAddress, fanGroup, eepromAddress, dataByte);
