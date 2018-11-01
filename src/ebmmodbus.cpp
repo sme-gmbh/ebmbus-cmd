@@ -50,7 +50,7 @@ void EbmModbus::slot_writeHoldingRegisterData(quint64 telegramID, quint16 adr, E
     else
     {
         emit signal_newEntry(LogEntry::Info, "EbmModbus", QString("modbus_write_register returned: ") + QString(modbus_strerror(errno) +
-                                             QString().sprintf(". TelegramID=%llu, adr=%i, reg=%i.", telegramID, adr, reg)));
+                                             QString().sprintf(". adr=%i, reg=%i.", telegramID, adr, reg)));
         emit signal_transactionLost(telegramID);
     }
 }
@@ -66,7 +66,7 @@ void EbmModbus::slot_readHoldingRegisterData(quint64 telegramID, quint16 adr, Eb
     else
     {
         emit signal_newEntry(LogEntry::Info, "EbmModbus", QString("modbus_read_registers returned: ") + QString(modbus_strerror(errno) +
-                                            QString().sprintf(". TelegramID=%llu, adr=%i, reg=%i.", telegramID, adr, reg)));
+                                            QString().sprintf(". adr=%i, reg=%i.", telegramID, adr, reg)));
         emit signal_transactionLost(telegramID);
     }
 }
@@ -82,7 +82,7 @@ void EbmModbus::slot_readInputRegisterData(quint64 telegramID, quint16 adr, EbmM
     else
     {
         emit signal_newEntry(LogEntry::Info, "EbmModbus", QString("modbus_read_input_registers returned: ") + QString(modbus_strerror(errno) +
-                                            QString().sprintf(". TelegramID=%llu, adr=%i, reg=%i.", telegramID, adr, reg)));
+                                            QString().sprintf(". adr=%i, reg=%i.", telegramID, adr, reg)));
         emit signal_transactionLost(telegramID);
     }
 }
