@@ -6,7 +6,7 @@ EbmModbusSystem::EbmModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 
     // tbd.: Make interface numbers configurable!
 
-    EbmModbus* newEbmModbus = new EbmModbus(this, QString("/dev/ttyUSB3"));
+    EbmModbus* newEbmModbus = new EbmModbus(0, QString("/dev/ttyUSB3"));    // parent must be 0 in order to be moved to workerThread later
     m_ebmModbuslist.append(newEbmModbus);
     newEbmModbus->moveToThread(&m_workerThread);
     connect(&m_workerThread, &QThread::finished, newEbmModbus, &QObject::deleteLater);
