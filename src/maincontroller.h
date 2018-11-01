@@ -13,6 +13,7 @@
 #include "operatingsystemcontrol.h"
 #include "remotecontroller.h"
 #include "ffudatabase.h"
+#include "auxfandatabase.h"
 #include "loghandler.h"
 
 class MainController : public QObject
@@ -41,6 +42,7 @@ private:
     OperatingSystemControl* m_osControl;
 
     FFUdatabase* m_ffudatabase;
+    AuxFanDatabase* m_auxfandatabase;
 
     RemoteController* m_remotecontroller;
 

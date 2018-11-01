@@ -9,13 +9,14 @@
 #include <iostream>
 #include "remoteclienthandler.h"
 #include "ffudatabase.h"
+#include "auxfandatabase.h"
 #include "loghandler.h"
 
 class RemoteController : public QObject
 {
     Q_OBJECT
 public:
-    explicit RemoteController(QObject *parent, FFUdatabase* ffuDB, Loghandler* loghandler);
+    explicit RemoteController(QObject *parent, FFUdatabase* ffuDB, AuxFanDatabase* aufFanDB, Loghandler* loghandler);
     ~RemoteController();
 
     bool isConnected(); // Returns true if at least one server is connected
@@ -26,6 +27,7 @@ private:
     QTcpServer m_server;
     QList<QTcpSocket*> m_socket_list;
     FFUdatabase* m_ffuDB;
+    AuxFanDatabase* m_auxFanDB;
     Loghandler* m_loghandler;
     bool m_activated; // True if remote controller is supposed to do remote controlling actions
     bool m_noConnection;  // True if no server is connected

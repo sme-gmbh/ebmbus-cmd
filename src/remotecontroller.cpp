@@ -1,12 +1,13 @@
 #include "remotecontroller.h"
 
-RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, Loghandler *loghandler) : QObject(parent)
+RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, AuxFanDatabase *aufFanDB, Loghandler *loghandler) : QObject(parent)
 {
 #ifdef DEBUG
     printf("Server started\n");
 #endif
 
     m_ffuDB = ffuDB;
+    m_auxFanDB = aufFanDB;
     m_loghandler = loghandler;
     m_activated = true;
     m_noConnection = true;
@@ -64,7 +65,7 @@ void RemoteController::slot_new_connection()
     QTcpSocket* newSocket = m_server.nextPendingConnection();
     this->m_socket_list.append(newSocket);
 
-    RemoteClientHandler* remoteClientHandler = new RemoteClientHandler(this, newSocket, m_ffuDB, m_loghandler);
+    RemoteClientHandler* remoteClientHandler = new RemoteClientHandler(this, newSocket, m_ffuDB, m_auxFanDB, m_loghandler);
     connect(remoteClientHandler, SIGNAL(signal_broadcast(QByteArray)),
             this, SLOT(slot_broadcast(QByteArray)));
     connect(remoteClientHandler, SIGNAL(signal_connectionClosed(QTcpSocket*,RemoteClientHandler*)),

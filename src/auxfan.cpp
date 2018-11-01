@@ -32,6 +32,7 @@ AuxFan::AuxFan(QObject *parent, EbmModbusSystem *ebmModbusSystem, Loghandler *lo
     m_actualData.warnings = 0;
     m_actualData.dcCurrent = 0.0;
     m_actualData.dcVoltage = 0.0;
+    m_actualData.dcPower = 0.0;
     m_actualData.temperatureOfPowerModule = 0;
 
     m_configData.valid = false;
@@ -225,7 +226,7 @@ QString AuxFan::getData(QString key)
         return QString().sprintf("%i", m_actualData.temperatureOfPowerModule);
     }
 
-    return "Error[FFU]: Key " + key + " not available";
+    return "Error[AuxFan]: Key " + key + " not available";
 }
 
 void AuxFan::setData(QString key, QString value)

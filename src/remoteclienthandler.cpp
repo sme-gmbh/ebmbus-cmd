@@ -1,9 +1,10 @@
 #include "remoteclienthandler.h"
 
-RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB, Loghandler* loghandler) : QObject(parent)
+RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB, AuxFanDatabase *auxFanDB, Loghandler* loghandler) : QObject(parent)
 {
     this->socket = socket;
     m_ffuDB = ffuDB;
+    m_auxFanDB = auxFanDB;
     m_loghandler = loghandler;
 
     m_livemode = false;
@@ -31,6 +32,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingFinished(int)), this, SLOT(slot_DCIaddressingFinished(int)));
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)));
     connect(m_ffuDB, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SLOT(slot_FFUactualDataHasChanged(int)));
+    connect(m_auxFanDB, &AuxFanDatabase::signal_AuxFanActualDataHasChanged, this, &RemoteClientHandler::slot_AuxFanActualDataHasChanged);
 }
 
 void RemoteClientHandler::slot_read_ready()
@@ -102,6 +104,8 @@ void RemoteClientHandler::slot_read_ready()
                           "        Stop live showing of ffu data.\r\n"
                           "    list\r\n"
                           "        Show the list of currently configured ffus from the controller database.\r\n"
+                          "    list-auxfans\r\n"
+                          "        Show the list of currently configured auxiliary fans from the controller database.\r\n"
                           "    log\r\n"
                           "        Show the log consisting of infos, warnings and errors.\r\n"
                           "\r\n"
@@ -115,6 +119,13 @@ void RemoteClientHandler::slot_read_ready()
                           "    delete-ffu --id=ID --bus=BUSNR\r\n"
                           "        Delete ffu with ID from the controller database.\r\n"
                           "        Note that you can delete all ffus of a certain bus by using BUSNR only.\r\n"
+                          "\r\n"
+                          "    add-auxfan --bus=BUSNR --id=ID --fanAddress=ADR\r\n"
+                          "        Add a new auxiliary fan with ID to the controller database at BUSNR with modbus address ADR.\r\n"
+                          "\r\n"
+                          "    delete-auxfan --id=ID --bus=BUSNR\r\n"
+                          "        Delete auxiliary fan with ID from the controller database.\r\n"
+                          "        Note that you can delete all auxiliary fans of a certain bus by using BUSNR only.\r\n"
                           "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
@@ -170,6 +181,19 @@ void RemoteClientHandler::slot_read_ready()
                 socket->write(line.toUtf8());
             }
         }
+        // ************************************************** list-auxfans **************************************************
+        else if (command == "list-auxfans")
+        {
+            QList<AuxFan*> auxFans = m_auxFanDB->getAuxFans();
+            foreach(AuxFan* auxFan, auxFans)
+            {
+                QString line;
+
+                line.sprintf("FFU id=%i busID=%i fanAddress=%i nSet=%i\r\n", auxFan->getId(), auxFan->getBusID(), auxFan->getFanAddress(), auxFan->getSpeedSetpoint());
+
+                socket->write(line.toUtf8());
+            }
+        }
         // ************************************************** log **************************************************
         else if (command == "log")
         {
@@ -199,7 +223,7 @@ void RemoteClientHandler::slot_read_ready()
                 emit signal_buttonSimulated_speed_100_clicked();
         }
         // ************************************************** add-ffu **************************************************
-        else if (command == "add-ffu")
+        else if ((command == "add-ffu") || (command == "add-auxfan"))
         {
             bool ok;
 
@@ -221,16 +245,28 @@ void RemoteClientHandler::slot_read_ready()
 
             QString unitString = data.value("unit");
             int unit = unitString.toInt(&ok);
-            if (unitString.isEmpty() || !ok)
+            if ((unitString.isEmpty() || !ok) && (command == "add-ffu"))
             {
                 socket->write("Error[Commandparser]: parameter \"unit\" not specified or id can not be parsed. Abort.\r\n");
+                continue;
+            }
+
+            QString addressString = data.value("fanAddress");
+            int fanAddress = addressString.toInt(&ok);
+            if ((addressString.isEmpty() || !ok) && (command == "add-auxfan"))
+            {
+                socket->write("Error[Commandparser]: parameter \"fanAddress\" not specified or id can not be parsed. Abort.\r\n");
                 continue;
             }
 
 #ifdef DEBUG
             socket->write("add-ffu bus=" + QString().setNum(bus).toUtf8() + " id=" + QString().setNum(id).toUtf8() + " unit=" + QString().setNum(unit).toUtf8() + "\r\n");
 #endif
-            QString response = m_ffuDB->addFFU(id, bus, unit);
+            QString response;
+            if (command == "add-ffu")
+                response = m_ffuDB->addFFU(id, bus, unit);
+            else if (command == "add-auxfan")
+                response = m_auxFanDB->addAuxFan(id, bus, fanAddress);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** delete-ffu **************************************************
@@ -272,6 +308,50 @@ void RemoteClientHandler::slot_read_ready()
 
 #ifdef DEBUG
             socket->write("delete-ffu id=" + QString().setNum(id).toUtf8() + "\r\n");
+#endif
+
+
+            socket->write(response.toUtf8() + "\r\n");
+        }
+        // ************************************************** delete-auxfan **************************************************
+        else if (command == "delete-auxfan")
+        {
+            bool ok;
+            QString response;
+            bool noID = false;
+            bool noBus = false;
+
+            QString idString = data.value("id");
+            int id = idString.toInt(&ok);
+            if (idString.isEmpty() || !ok)
+            {
+                noID = true;
+            }
+            else
+            {
+                response += m_ffuDB->deleteFFU(id) + "\n";
+            }
+
+            QString busString = data.value("bus");
+            int bus = busString.toInt(&ok);
+            if (busString.isEmpty() || !ok)
+            {
+                noBus = true;
+            }
+            else
+            {
+                foreach (AuxFan* auxFan, m_auxFanDB->getAuxFans(bus))
+                {
+                    response += m_auxFanDB->deleteAuxFan(auxFan->getId()) + "\n";
+                }
+            }
+
+            if (noID && noBus)
+                response = "Error[Commandparser]: Neither parameter \"id\" nor parameter \"bus\" specified. Abort.\r\n";
+
+
+#ifdef DEBUG
+            socket->write("delete-auxfan id=" + QString().setNum(id).toUtf8() + "\r\n");
 #endif
 
 
@@ -374,7 +454,11 @@ void RemoteClientHandler::slot_read_ready()
 #ifdef DEBUG
             socket->write("set id=" + QString().setNum(id).toUtf8() + "\r\n");
 #endif
-            QString response = m_ffuDB->setFFUdata(id, data);
+            QString response;
+            if (m_ffuDB->getFFUbyID(id) != NULL)
+                response = m_ffuDB->setFFUdata(id, data);
+            else if (m_auxFanDB->getAuxFanByID(id) != NULL)
+                response = m_auxFanDB->setAuxFanData(id, data);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** get **************************************************
@@ -392,7 +476,12 @@ void RemoteClientHandler::slot_read_ready()
 #ifdef DEBUG
             socket->write("get id=" + id.toUtf8() + "\r\n");
 #endif
-            QMap<QString,QString> responseData = m_ffuDB->getFFUdata(id, data.keys("query"));
+            QMap<QString,QString> responseData;
+
+            if (m_ffuDB->getFFUbyID(id) != NULL)
+                responseData = m_ffuDB->getFFUdata(id, data.keys("query"));
+            else if (m_auxFanDB->getAuxFanByID(id) != NULL)
+                responseData = m_auxFanDB->getAuxFanData(id, data.keys("query"));
             if (responseData.value("actualData").toInt() == 1)
             {
                 socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
@@ -468,6 +557,23 @@ void RemoteClientHandler::slot_FFUactualDataHasChanged(int id)
         {
             QString response = responseData.value(key);
             if (!response.startsWith("Error[FFU]:"))
+                socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
+        }
+        socket->write("\r\n");
+    }
+}
+
+void RemoteClientHandler::slot_AuxFanActualDataHasChanged(int id)
+{
+    if (m_livemode)
+    {
+        socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
+        QMap<QString,QString> responseData = m_auxFanDB->getAuxFanData(id, QStringList() << "actual");
+        responseData.remove("actualData");  // Remove special treatment marker
+        foreach(QString key, responseData.keys())
+        {
+            QString response = responseData.value(key);
+            if (!response.startsWith("Error[AuxFan]:"))
                 socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
         }
         socket->write("\r\n");
