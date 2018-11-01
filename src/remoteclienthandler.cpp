@@ -189,7 +189,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 QString line;
 
-                line.sprintf("FFU id=%i busID=%i fanAddress=%i nSet=%i\r\n", auxFan->getId(), auxFan->getBusID(), auxFan->getFanAddress(), auxFan->getSpeedSetpoint());
+                line.sprintf("AuxFan id=%i busID=%i fanAddress=%i nSet=%i\r\n", auxFan->getId(), auxFan->getBusID(), auxFan->getFanAddress(), auxFan->getSpeedSetpoint());
 
                 socket->write(line.toUtf8());
             }

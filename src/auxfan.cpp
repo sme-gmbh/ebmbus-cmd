@@ -609,3 +609,8 @@ void AuxFan::slot_wroteHoldingRegisterData(quint64 telegramID)
 
     markAsOnline();
 }
+
+void AuxFan::slot_save()
+{
+    save();
+}

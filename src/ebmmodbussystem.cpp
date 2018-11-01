@@ -4,6 +4,9 @@ EbmModbusSystem::EbmModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 {
     m_loghandler = loghandler;
 
+    qRegisterMetaType<EbmModbus::EbmModbusHoldingRegister>("EbmModbus::EbmModbusHoldingRegister");
+    qRegisterMetaType<EbmModbus::EbmModbusInputRegister>("EbmModbus::EbmModbusInputRegister");
+
     // tbd.: Make interface numbers configurable!
 
     EbmModbus* newEbmModbus = new EbmModbus(0, QString("/dev/ttyUSB3"));    // parent must be 0 in order to be moved to workerThread later
