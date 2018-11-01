@@ -12,6 +12,7 @@ EbmModbusSystem::EbmModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
     EbmModbus* newEbmModbus = new EbmModbus(0, QString("/dev/ttyUSB3"));    // parent must be 0 in order to be moved to workerThread later
     m_ebmModbuslist.append(newEbmModbus);
     newEbmModbus->moveToThread(&m_workerThread);
+    m_workerThread.start();
     connect(&m_workerThread, &QThread::finished, newEbmModbus, &QObject::deleteLater);
 
     connect(newEbmModbus, SIGNAL(signal_newEntry(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_newEntry(LogEntry::LoggingCategory,QString,QString)));
