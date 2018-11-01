@@ -311,6 +311,8 @@ void AuxFan::requestStatus()
 
     m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D010_ActualSpeed));
     m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D021_CurrentPower));
+    m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D013_DClinkVoltage));
+    m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D014_DClinkCurrent));
     m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D01A_CurrentSetValue));
     m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D011_MotorStatus));
     m_transactionIDs.append(m_ebmModbusSystem->readInputRegister(m_busID, m_fanAddress, EbmModbus::INPUT_REG_D012_Warning));

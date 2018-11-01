@@ -75,7 +75,6 @@ quint64 EbmModbusSystem::readInputRegister(int busID, quint16 adr, EbmModbus::Eb
 {
     Q_UNUSED(busID);
     quint64 telegramID = getNewTelegramID();
-    fprintf(stderr, "EbmModbusSystem: readInputRegister.\n");
     emit signal_readInputRegisterData(telegramID, adr, reg);
     return telegramID;
 }
