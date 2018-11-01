@@ -25,6 +25,7 @@ bool EbmModbus::open()
         return false;
     }
 
+    fprintf(stderr, "EbmModbus::open(): Modbus interface configured and connected.\n");
     return true;
 }
 
@@ -37,7 +38,6 @@ void EbmModbus::close()
 void EbmModbus::setSlaveAddress(quint16 adr)
 {
     modbus_set_slave(m_bus, adr);
-
 }
 
 void EbmModbus::slot_writeHoldingRegisterData(quint64 telegramID, quint16 adr, EbmModbus::EbmModbusHoldingRegister reg, quint16 rawdata)
