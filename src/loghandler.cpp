@@ -2,7 +2,7 @@
 
 Loghandler::Loghandler(QObject *parent) : QObject(parent)
 {
-
+    qRegisterMetaType<LogEntry::LoggingCategory>("LogEntry::LoggingCategory");
 }
 
 bool Loghandler::hasActiveErrors()
