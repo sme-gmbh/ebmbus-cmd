@@ -67,6 +67,7 @@ void EbmModbus::slot_readInputRegisterData(quint64 telegramID, quint16 adr, EbmM
 {
     int result;
     uint16_t rawdata;
+    fprintf(stderr, "EbmModbus::slot_readInputRegisterData.\n");
     modbus_set_slave(m_bus, adr);
     result = modbus_read_input_registers(m_bus, reg, 1, &rawdata);
     if (result >= 0)
