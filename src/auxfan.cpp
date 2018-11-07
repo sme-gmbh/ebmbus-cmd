@@ -604,9 +604,9 @@ void AuxFan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, Ebm
         break;
     case EbmModbus::INPUT_REG_D01A_CurrentSetValue:
         m_actualData.speedSetpoint = rawdata;
-        // If the setpoint in the ffu does not match the setpoint in the controller, write the setpoint from the controller
+        // If the setpoint in the auxfan does not match the setpoint in the controller, write the setpoint from the controller
         // to the ffu.
-        if ((m_actualData.speedSetpoint != m_setpointSpeedRaw) && m_remoteControlled)
+        if ((abs(m_actualData.speedSetpoint - m_setpointSpeedRaw) > 64) && m_remoteControlled)
         {
             if (m_actualData.speedSettingLostCount < 2000)    // EEPROM wear limiter
                 setSpeedRaw(m_setpointSpeedRaw, true);
