@@ -24,7 +24,7 @@ EbmModbusSystem::EbmModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 
     // tbd.: Make interface numbers configurable!
 
-    EbmModbus* newEbmModbus = new EbmModbus(0, QString("/dev/ttyUSB3"));    // parent must be 0 in order to be moved to workerThread later
+    EbmModbus* newEbmModbus = new EbmModbus(nullptr, QString("/dev/ttyUSB3"));    // parent must be 0 in order to be moved to workerThread later
     m_ebmModbuslist.append(newEbmModbus);
     newEbmModbus->moveToThread(&m_workerThread);
     m_workerThread.start();
@@ -63,7 +63,7 @@ QList<EbmModbus *> *EbmModbusSystem::ebmModbuslist()
 EbmModbus *EbmModbusSystem::getBusByID(int busID)
 {
     if (m_ebmModbuslist.length() <= busID)
-        return NULL; // Bus id not available
+        return nullptr; // Bus id not available
 
     EbmModbus* bus = m_ebmModbuslist.at(busID);
 
@@ -72,7 +72,7 @@ EbmModbus *EbmModbusSystem::getBusByID(int busID)
 
 quint64 EbmModbusSystem::readHoldingRegister(int busID, quint16 adr, EbmModbus::EbmModbusHoldingRegister reg)
 {
-    Q_UNUSED(busID);
+    Q_UNUSED(busID)
     quint64 telegramID = getNewTelegramID();
     emit signal_readHoldingRegisterData(telegramID, adr, reg);
     return telegramID;
@@ -80,7 +80,7 @@ quint64 EbmModbusSystem::readHoldingRegister(int busID, quint16 adr, EbmModbus::
 
 quint64 EbmModbusSystem::writeHoldingRegister(int busID, quint16 adr, EbmModbus::EbmModbusHoldingRegister reg, quint16 rawdata)
 {
-    Q_UNUSED(busID);
+    Q_UNUSED(busID)
     quint64 telegramID = getNewTelegramID();
     emit signal_writeHoldingRegisterData(telegramID, adr, reg, rawdata);
     return telegramID;
@@ -88,7 +88,7 @@ quint64 EbmModbusSystem::writeHoldingRegister(int busID, quint16 adr, EbmModbus:
 
 quint64 EbmModbusSystem::readInputRegister(int busID, quint16 adr, EbmModbus::EbmModbusInputRegister reg)
 {
-    Q_UNUSED(busID);
+    Q_UNUSED(busID)
     quint64 telegramID = getNewTelegramID();
     emit signal_readInputRegisterData(telegramID, adr, reg);
     return telegramID;

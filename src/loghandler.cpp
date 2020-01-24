@@ -58,7 +58,7 @@ LogEntry *Loghandler::findOrMakeLogEntry(LogEntry::LoggingCategory loggingCatego
         return entry;
     }
     if (justFind)
-        return NULL;
+        return nullptr;
     else
     {
         LogEntry* entry = new LogEntry(loggingCategory, module, text);
@@ -78,7 +78,7 @@ void Loghandler::slot_entryGone(LogEntry::LoggingCategory loggingCategory, QStri
 {
     // First search the original ticket
     LogEntry* entry = findOrMakeLogEntry(loggingCategory, module, text, true);
-    if (entry != NULL)
+    if (entry != nullptr)
         entry->setInactive();
 
     if (!hasActiveErrors())

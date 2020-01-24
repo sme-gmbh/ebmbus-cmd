@@ -23,7 +23,7 @@ UninterruptiblePowerSupply::UninterruptiblePowerSupply(QObject *parent, RevPiDIO
     m_address_mainswitch = address_mainswitch;
     m_loghandler = loghandler;
 
-    m_ftdi = NULL;
+    m_ftdi = nullptr;
 
     setShutdownTimeout(30000);
     setPowerGoodDelay(5000);
@@ -137,10 +137,10 @@ void UninterruptiblePowerSupply::connectToUPS()
 
     int ret;
 
-    if ((m_ftdi = ftdi_new()) == 0)
+    if ((m_ftdi = ftdi_new()) == nullptr)
     {
         fprintf(stderr, "UPS: ftdi_new failed\n");
-        m_ftdi = NULL;
+        m_ftdi = nullptr;
         return;
     }
 
@@ -148,7 +148,7 @@ void UninterruptiblePowerSupply::connectToUPS()
     {
         fprintf(stderr, "UPS: Unable to open ftdi device: %d (%s)\n", ret, ftdi_get_error_string(m_ftdi));
         ftdi_free(m_ftdi);
-        m_ftdi = NULL;
+        m_ftdi = nullptr;
         return;
     }
 
@@ -182,7 +182,7 @@ void UninterruptiblePowerSupply::disconnectFromUPS()
 {
     int ret;
 
-    if (m_ftdi == NULL)
+    if (m_ftdi == nullptr)
         return;
 
     ftdi_setdtr(m_ftdi, 0);
@@ -205,7 +205,7 @@ QByteArray UninterruptiblePowerSupply::readFromUPS()
     unsigned char buf[1024];
     QByteArray response;
 
-    if (m_ftdi == NULL)
+    if (m_ftdi == nullptr)
         return QByteArray();
 
     do

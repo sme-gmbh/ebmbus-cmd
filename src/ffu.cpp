@@ -105,7 +105,7 @@ void FFU::setSpeedRaw(int value, bool refreshOnly)
         if (isConfigured())
         {
             EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
-            if (bus == NULL)
+            if (bus == nullptr)
                 return;     // Drop requests for non existing bus ids
 
             m_transactionIDs.append(bus->setSpeedSetpoint(m_fanAddress, m_fanGroup, m_setpointSpeedRaw));
@@ -330,7 +330,7 @@ void FFU::requestStatus()
         return;
 
     EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
-    if (bus == NULL)
+    if (bus == nullptr)
         return;
 
     if (!m_configData.valid)
@@ -352,7 +352,7 @@ void FFU::requestConfig()
         return;
 
     EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
-    if (bus == NULL)
+    if (bus == nullptr)
         return;
 
     m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_LSB));
@@ -371,7 +371,7 @@ void FFU::setAutostart(bool enabled)
         return;
 
     EbmBus* bus = m_ebmbusSystem->getBusByID(m_busID);
-    if (bus == NULL)
+    if (bus == nullptr)
         return;
 
     if (enabled)
@@ -606,7 +606,7 @@ void FFU::setFanGroup(int fanGroup)
 
 void FFU::slot_transactionLost(quint64 id)
 {
-    Q_UNUSED(id);
+    Q_UNUSED(id)
 
     // If the ffu has a lost telegram, mark it as offline and increment error counter
     m_actualData.lostTelegrams++;
@@ -620,17 +620,17 @@ void FFU::slot_transactionLost(quint64 id)
 
 void FFU::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
 {
-    Q_UNUSED(telegramID);
-    Q_UNUSED(fanAddress);
-    Q_UNUSED(fanGroup);
-    Q_UNUSED(status);
+    Q_UNUSED(telegramID)
+    Q_UNUSED(fanAddress)
+    Q_UNUSED(fanGroup)
+    Q_UNUSED(status)
     // We don't request the simple status, so we don't care about that response
     markAsOnline();
 }
 
 void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (fanAddress != m_fanAddress)
         return;
@@ -718,7 +718,7 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
 
 void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (fanAddress != m_fanAddress)
         return;
@@ -733,7 +733,7 @@ void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGrou
 
 void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (fanAddress != m_fanAddress)
         return;
@@ -748,7 +748,7 @@ void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 
 
 void FFU::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (fanAddress != m_fanAddress)
         return;
@@ -763,7 +763,7 @@ void FFU::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint
 
 void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (fanAddress != m_fanAddress)
         return;

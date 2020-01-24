@@ -96,7 +96,7 @@ QString FFUdatabase::addFFU(int id, int busID, int unit, int fanAddress, int fan
 QString FFUdatabase::deleteFFU(int id)
 {
     FFU* ffu = getFFUbyID(id);
-    if (ffu == NULL)
+    if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
     bool ok = m_ffus.removeOne(ffu);
@@ -134,7 +134,7 @@ FFU *FFUdatabase::getFFUbyID(int id)
         if (ffu->getId() == id)
             return ffu;
     }
-    return NULL;    // Not found
+    return nullptr;    // Not found
 }
 
 FFU *FFUdatabase::getFFUbyTelegramID(quint64 telegramID)
@@ -147,7 +147,7 @@ FFU *FFUdatabase::getFFUbyTelegramID(quint64 telegramID)
         }
     }
 
-    return NULL;    // TransactionID not initiated by ffu requests, so it came frome somebody else
+    return nullptr;    // TransactionID not initiated by ffu requests, so it came frome somebody else
 }
 
 void FFUdatabase::slot_remoteControlActivated()
@@ -167,7 +167,7 @@ void FFUdatabase::slot_remoteControlDeactivated()
 QString FFUdatabase::getFFUdata(int id, QString key)
 {
     FFU* ffu = getFFUbyID(id);
-    if (ffu == NULL)
+    if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
     return ffu->getData(key);
@@ -178,7 +178,7 @@ QMap<QString,QString> FFUdatabase::getFFUdata(int id, QStringList keys)
     QMap<QString,QString> response;
 
     FFU* ffu = getFFUbyID(id);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         return response;
     }
@@ -201,7 +201,7 @@ QMap<QString,QString> FFUdatabase::getFFUdata(int id, QStringList keys)
 QString FFUdatabase::setFFUdata(int id, QString key, QString value)
 {
     FFU* ffu = getFFUbyID(id);
-    if (ffu == NULL)
+    if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
     ffu->setData(key, value);
@@ -211,7 +211,7 @@ QString FFUdatabase::setFFUdata(int id, QString key, QString value)
 QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
 {
     FFU* ffu = getFFUbyID(id);
-    if (ffu == NULL)
+    if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
     QString dataString;
@@ -311,11 +311,11 @@ void FFUdatabase::slot_DaisyChainAddressingGotSerialNumber(quint8 unit, quint8 f
 
 void FFUdatabase::slot_gotResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
 {
-    Q_UNUSED(telegramID);
-    Q_UNUSED(preamble);
-    Q_UNUSED(commandAndFanaddress);
-    Q_UNUSED(fanGroup);
-    Q_UNUSED(data);
+    Q_UNUSED(telegramID)
+    Q_UNUSED(preamble)
+    Q_UNUSED(commandAndFanaddress)
+    Q_UNUSED(fanGroup)
+    Q_UNUSED(data)
 
     // Dont care about raw responses at the moment
     // These will be parsed by libebmbus anyway and sent to the right highlevel slot
@@ -329,7 +329,7 @@ void FFUdatabase::slot_transactionFinished()
 void FFUdatabase::slot_transactionLost(quint64 telegramID)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -340,7 +340,7 @@ void FFUdatabase::slot_transactionLost(quint64 telegramID)
 void FFUdatabase::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -351,7 +351,7 @@ void FFUdatabase::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint
 void FFUdatabase::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 statusAddress, QString status, quint8 rawValue)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -362,7 +362,7 @@ void FFUdatabase::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanG
 void FFUdatabase::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, quint8 actualRawSpeed)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -373,7 +373,7 @@ void FFUdatabase::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8
 void FFUdatabase::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -384,7 +384,7 @@ void FFUdatabase::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress,
 void FFUdatabase::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -395,7 +395,7 @@ void FFUdatabase::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddres
 void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte)
 {
     FFU* ffu = getFFUbyTelegramID(telegramID);
-    if (ffu == NULL)
+    if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;

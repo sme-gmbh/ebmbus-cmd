@@ -30,7 +30,7 @@ bool EbmModbus::open()
 {
     QByteArray interface_ba = m_interface.toLocal8Bit();
     m_bus = modbus_new_rtu(interface_ba.data(), 19200, 'E', 8, 1);
-    if (m_bus == NULL) {
+    if (m_bus == nullptr) {
         emit signal_newEntry(LogEntry::Error, "EbmModbus", "Unable to open interface");
         return false;
     }

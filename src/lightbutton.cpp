@@ -43,9 +43,9 @@ void LightButton::setClickTime(int milliseconds)
     m_clickTime = milliseconds;
 }
 
-void LightButton::setBlinkFrequency(int milliHetz)
+void LightButton::setBlinkFrequency(int milliHertz)
 {
-    m_blinkFrequency = milliHetz;
+    m_blinkFrequency = milliHertz;
 }
 
 void LightButton::slot_setLight(LED_Status status)

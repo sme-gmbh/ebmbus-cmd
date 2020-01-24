@@ -35,7 +35,7 @@ public:
     // signal "clicked"
     void setClickTime(int milliseconds);
 
-    void setBlinkFrequency(int milliHetz);
+    void setBlinkFrequency(int milliHertz);
 
     typedef enum {
         LED_OFF,

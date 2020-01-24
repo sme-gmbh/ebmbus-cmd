@@ -32,7 +32,7 @@ class RevPiDIO : public QObject
     Q_OBJECT
 
 public:
-    explicit RevPiDIO(QObject *parent = 0);
+    explicit RevPiDIO(QObject *parent = nullptr);
 
     bool getBit(int position);
     void setBit(int position, bool on);

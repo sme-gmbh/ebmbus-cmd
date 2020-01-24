@@ -26,7 +26,7 @@ class Loghandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit Loghandler(QObject *parent = 0);
+    explicit Loghandler(QObject *parent = nullptr);
 
     bool hasActiveErrors();
     QString toString(LogEntry::LoggingCategory category, bool onlyActive = false);

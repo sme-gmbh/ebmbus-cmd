@@ -47,7 +47,7 @@ QList<EbmBus*>* EbmBusSystem::ebmbuslist()
 EbmBus *EbmBusSystem::getBusByID(int busID)
 {
     if (m_ebmbuslist.length() <= busID)
-        return NULL; // Bus id not available
+        return nullptr; // Bus id not available
 
     EbmBus* bus = m_ebmbuslist.at(busID);
 

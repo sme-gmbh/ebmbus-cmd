@@ -470,9 +470,9 @@ void RemoteClientHandler::slot_read_ready()
             socket->write("set id=" + QString().setNum(id).toUtf8() + "\r\n");
 #endif
             QString response;
-            if (m_ffuDB->getFFUbyID(id) != NULL)
+            if (m_ffuDB->getFFUbyID(id) != nullptr)
                 response = m_ffuDB->setFFUdata(id, data);
-            else if (m_auxFanDB->getAuxFanByID(id) != NULL)
+            else if (m_auxFanDB->getAuxFanByID(id) != nullptr)
                 response = m_auxFanDB->setAuxFanData(id, data);
             socket->write(response.toUtf8() + "\r\n");
         }
@@ -493,9 +493,9 @@ void RemoteClientHandler::slot_read_ready()
 #endif
             QMap<QString,QString> responseData;
 
-            if (m_ffuDB->getFFUbyID(id) != NULL)
+            if (m_ffuDB->getFFUbyID(id) != nullptr)
                 responseData = m_ffuDB->getFFUdata(id, data.keys("query"));
-            else if (m_auxFanDB->getAuxFanByID(id) != NULL)
+            else if (m_auxFanDB->getAuxFanByID(id) != nullptr)
                 responseData = m_auxFanDB->getAuxFanData(id, data.keys("query"));
             if (responseData.value("actualData").toInt() == 1)
             {

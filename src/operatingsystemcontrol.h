@@ -23,7 +23,7 @@ class OperatingSystemControl : public QObject
 {
     Q_OBJECT
 public:
-    explicit OperatingSystemControl(QObject *parent = 0);
+    explicit OperatingSystemControl(QObject *parent = nullptr);
 
 signals:
 

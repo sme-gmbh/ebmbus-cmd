@@ -79,7 +79,7 @@ QString AuxFanDatabase::addAuxFan(int id, int busID, int fanAddress)
 QString AuxFanDatabase::deleteAuxFan(int id)
 {
     AuxFan* auxFan = getAuxFanByID(id);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
         return "Warning[AuxFanDatabase]: ID " + QString().setNum(id) + " not found.";
 
     bool ok = m_auxfans.removeOne(auxFan);
@@ -117,7 +117,7 @@ AuxFan *AuxFanDatabase::getAuxFanByID(int id)
         if (auxFan->getId() == id)
             return auxFan;
     }
-    return NULL;    // Not found
+    return nullptr;    // Not found
 }
 
 AuxFan *AuxFanDatabase::getAuxFanByTelegramID(quint64 telegramID)
@@ -130,13 +130,13 @@ AuxFan *AuxFanDatabase::getAuxFanByTelegramID(quint64 telegramID)
         }
     }
 
-    return NULL;    // TransactionID not initiated by ffu requests, so it came frome somebody else
+    return nullptr;    // TransactionID not initiated by ffu requests, so it came frome somebody else
 }
 
 QString AuxFanDatabase::getAuxFanData(int id, QString key)
 {
     AuxFan* auxFan = getAuxFanByID(id);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
         return "Warning[AuxFanDatabase]: ID " + QString().setNum(id) + " not found.";
 
     return auxFan->getData(key);
@@ -147,7 +147,7 @@ QMap<QString, QString> AuxFanDatabase::getAuxFanData(int id, QStringList keys)
     QMap<QString,QString> response;
 
     AuxFan* auxFan = getAuxFanByID(id);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
     {
         return response;
     }
@@ -170,7 +170,7 @@ QMap<QString, QString> AuxFanDatabase::getAuxFanData(int id, QStringList keys)
 QString AuxFanDatabase::setAuxFanData(int id, QString key, QString value)
 {
     AuxFan* auxFan = getAuxFanByID(id);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
         return "Warning[AuxFanDatabase]: ID " + QString().setNum(id) + " not found.";
 
     auxFan->setData(key, value);
@@ -180,7 +180,7 @@ QString AuxFanDatabase::setAuxFanData(int id, QString key, QString value)
 QString AuxFanDatabase::setAuxFanData(int id, QMap<QString, QString> dataMap)
 {
     AuxFan* auxFan = getAuxFanByID(id);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
         return "Warning[AuxFanDatabase]: ID " + QString().setNum(id) + " not found.";
 
     QString dataString;
@@ -218,7 +218,7 @@ void AuxFanDatabase::slot_transactionFinished()
 void AuxFanDatabase::slot_transactionLost(quint64 telegramID)
 {
     AuxFan* auxFan = getAuxFanByTelegramID(telegramID);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -229,7 +229,7 @@ void AuxFanDatabase::slot_transactionLost(quint64 telegramID)
 void AuxFanDatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, EbmModbus::EbmModbusHoldingRegister reg, quint16 rawdata)
 {
     AuxFan* auxFan = getAuxFanByTelegramID(telegramID);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -240,7 +240,7 @@ void AuxFanDatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint1
 void AuxFanDatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, EbmModbus::EbmModbusInputRegister reg, quint16 rawdata)
 {
     AuxFan* auxFan = getAuxFanByTelegramID(telegramID);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;
@@ -251,7 +251,7 @@ void AuxFanDatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 
 void AuxFanDatabase::slot_wroteHoldingRegisterData(quint64 telegramID)
 {
     AuxFan* auxFan = getAuxFanByTelegramID(telegramID);
-    if (auxFan == NULL)
+    if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
         return;

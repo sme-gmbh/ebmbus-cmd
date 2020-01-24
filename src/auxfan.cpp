@@ -128,7 +128,7 @@ void AuxFan::setSpeedRaw(int value, bool refreshOnly)
         if (isConfigured())
         {
             EbmModbus* bus = m_ebmModbusSystem->getBusByID(m_busID);
-            if (bus == NULL)
+            if (bus == nullptr)
                 return;     // Drop requests for non existing bus ids
 
             m_transactionIDs.append(m_ebmModbusSystem->writeHoldingRegister(m_busID, m_fanAddress, EbmModbus::HOLDING_REG_D001_DefaultSetValue, m_setpointSpeedRaw));
@@ -219,7 +219,7 @@ QString AuxFan::getData(QString key)
     }
     else if (key == "statusString")
     {
-        if ((m_actualData.statusRaw == 0x0000))
+        if (m_actualData.statusRaw == 0x0000)
             return "healthy";
         else
             return m_actualData.statusString.toUtf8().trimmed().toPercentEncoding();
@@ -312,7 +312,7 @@ void AuxFan::requestStatus()
     }
 
     EbmModbus* bus = m_ebmModbusSystem->getBusByID(m_busID);
-    if (bus == NULL)
+    if (bus == nullptr)
     {
         return;
     }
@@ -336,7 +336,7 @@ void AuxFan::requestConfig()
         return;
 
     EbmModbus* bus = m_ebmModbusSystem->getBusByID(m_busID);
-    if (bus == NULL)
+    if (bus == nullptr)
         return;
 
     m_transactionIDs.append(m_ebmModbusSystem->readHoldingRegister(m_busID, m_fanAddress, EbmModbus::HOLDING_REG_D119_MaximumSpeed));
@@ -347,7 +347,7 @@ void AuxFan::requestConfig()
 
 void AuxFan::setAutostart(bool enabled)
 {
-    Q_UNUSED(enabled);
+    Q_UNUSED(enabled)
 // TBD
 }
 
@@ -509,7 +509,7 @@ void AuxFan::processConfigData()
 
 void AuxFan::slot_transactionLost(quint64 id)
 {
-    Q_UNUSED(id);
+    Q_UNUSED(id)
 
     // If the ffu has a lost telegram, mark it as offline and increment error counter
     m_actualData.lostTelegrams++;
@@ -523,7 +523,7 @@ void AuxFan::slot_transactionLost(quint64 id)
 
 void AuxFan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, EbmModbus::EbmModbusHoldingRegister reg, quint16 rawdata)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (adr != m_fanAddress)
         return;
@@ -560,7 +560,7 @@ void AuxFan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, E
 
 void AuxFan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, EbmModbus::EbmModbusInputRegister reg, quint16 rawdata)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
     if (adr != m_fanAddress)
         return;
@@ -623,7 +623,7 @@ void AuxFan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, Ebm
 
 void AuxFan::slot_wroteHoldingRegisterData(quint64 telegramID)
 {
-    Q_UNUSED(telegramID);
+    Q_UNUSED(telegramID)
 
 //    if (fanAddress != m_fanAddress)
 //        return;
