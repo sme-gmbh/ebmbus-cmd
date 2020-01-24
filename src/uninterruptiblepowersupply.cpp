@@ -359,7 +359,7 @@ void UninterruptiblePowerSupply::slot_ups_communicationHeartbeat()
     if (m_ups_communicationOK == false)
     {
         fprintf(stderr, "UPS: Successfully reestablished communication to UPS.\n");
-        m_loghandler->slot_entryGone(LogEntry::Error, "UPS", "Communication failure.");
+        m_loghandler->slot_entryGone(LogEntry::Info, "UPS", "Communication failure.");
     }
     m_ups_communicationOK = true;
 }
@@ -368,7 +368,7 @@ void UninterruptiblePowerSupply::slot_ups_communicationFailure()
 {
     m_ups_communicationOK = false;
     fprintf(stderr, "UPS: Communication failure - trying to reconnect...\n");
-    m_loghandler->slot_newEntry(LogEntry::Error, "UPS", "Communication failure.");
+    m_loghandler->slot_newEntry(LogEntry::Info, "UPS", "Communication failure.");
     disconnectFromUPS();
     connectToUPS();
 }

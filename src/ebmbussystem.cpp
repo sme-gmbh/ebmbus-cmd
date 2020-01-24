@@ -35,7 +35,7 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
         connect(newEbmBus, SIGNAL(signal_transactionFinished()), this, SLOT(slot_transactionFinished()));
 
         if (!newEbmBus->open())
-            printf("Unable to open serial line!\n");
+            fprintf(stderr, "EbmBusSystem::EbmBusSystem(): Unable to open serial line!\n");
     }
 }
 
@@ -89,6 +89,7 @@ void EbmBusSystem::broadcastSpeed(quint8 speed, bool disableAutosaveAndAutostart
 // This slot is called if one of the ebmbus interfaces received a telegram as response from an FFU
 void EbmBusSystem::slot_showResponseRaw(quint64 telegramID, quint8 preamble, quint8 commandAndFanaddress, quint8 fanGroup, QByteArray data)
 {
+#ifdef QT_DEBUG
     printf("ID: %llu PRE: %02X  commandAndFanaddress: %02X  fanGroup: %02X  data: ", telegramID, preamble, commandAndFanaddress, fanGroup);
     foreach (quint8 byte, data)
     {
@@ -96,16 +97,29 @@ void EbmBusSystem::slot_showResponseRaw(quint64 telegramID, quint8 preamble, qui
     }
     printf("\n");
     fflush(stdout);
+#else
+    Q_UNUSED(telegramID)
+    Q_UNUSED(preamble)
+    Q_UNUSED(commandAndFanaddress)
+    Q_UNUSED(fanGroup)
+    Q_UNUSED(data)
+#endif
 }
 
 void EbmBusSystem::slot_transactionLost(quint64 telegramID)
 {
+#ifdef QT_DEBUG
     printf("ID: %llu Transaction lost.\n", telegramID);
     fflush(stdout);
+#else
+    Q_UNUSED(telegramID)
+#endif
 }
 
 void EbmBusSystem::slot_transactionFinished()
 {
+#ifdef QT_DEBUG
     printf("Transaction finished.\n");
     fflush(stdout);
+#endif
 }

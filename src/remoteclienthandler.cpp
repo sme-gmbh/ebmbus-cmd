@@ -24,7 +24,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
 
     m_livemode = false;
 
-#ifdef DEBUG
+#ifdef QT_DEBUG
     QString debugStr;
 
     debugStr += "New connection ";
@@ -63,7 +63,7 @@ void RemoteClientHandler::slot_read_ready()
         QString command = line.left(commandLength);
         line.remove(0, commandLength + 1);  // Remove command and optional space
 
-#ifdef DEBUG
+#ifdef QT_DEBUG
         printf("Received data: \r\n");
 #endif
 
@@ -73,7 +73,7 @@ void RemoteClientHandler::slot_read_ready()
 
         foreach(QString commandChunk, commandChunks)
         {
-#ifdef DEBUG
+#ifdef QT_DEBUG
             printf("Decoding chunk: %s\r\n", commandChunk.toUtf8().data());
 #endif
             QStringList key_value_pair = commandChunk.split('=');
@@ -530,7 +530,7 @@ void RemoteClientHandler::slot_read_ready()
 
 void RemoteClientHandler::slot_disconnected()
 {
-#ifdef DEBUG
+#ifdef QT_DEBUG
     QString debugStr;
 
     debugStr += "Closed connection ";

@@ -20,7 +20,7 @@
 MainController::MainController(QObject *parent) :
     QObject(parent)
 {
-    printf("ebmBus main controller startup...\n");
+    fprintf(stdout, "ebmBus main controller startup...\n");
 
     m_loghandler = new Loghandler(this);
     connect(m_loghandler, SIGNAL(signal_newError()), this, SLOT(slot_newError()));
