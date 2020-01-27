@@ -53,9 +53,18 @@ void FFUdatabase::loadFromHdd()
 {
     QString directory = "/var/openffucontrol/ffus/";
     QDirIterator iterator(directory, QStringList() << "*.csv", QDir::Files, QDirIterator::NoIteratorFlags);
+
+    QStringList filepaths;
+
     while(iterator.hasNext())
     {
-        QString filepath = iterator.next();
+        filepaths.append(iterator.next());
+    }
+
+    filepaths.sort();
+
+    foreach(QString filepath, filepaths)
+    {
         FFU* newFFU = new FFU(this, m_ebmbusSystem, m_loghandler);
         newFFU->load(filepath);
         newFFU->setFiledirectory(directory);

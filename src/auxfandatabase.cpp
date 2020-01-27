@@ -38,9 +38,18 @@ void AuxFanDatabase::loadFromHdd()
 {
     QString directory = "/var/openffucontrol/auxfans/";
     QDirIterator iterator(directory, QStringList() << "*.csv", QDir::Files, QDirIterator::NoIteratorFlags);
+
+    QStringList filepaths;
+
     while(iterator.hasNext())
     {
-        QString filepath = iterator.next();
+        filepaths.append(iterator.next());
+    }
+
+    filepaths.sort();
+
+    foreach(QString filepath, filepaths)
+    {
         AuxFan* newAuxFan = new AuxFan(this, m_ebmModbusSystem, m_loghandler);
         newAuxFan->load(filepath);
         newAuxFan->setFiledirectory(directory);
