@@ -614,8 +614,10 @@ void FFU::slot_transactionLost(quint64 id)
     {
         m_loghandler->slot_newEntry(LogEntry::Error, "FFU id=" + QString().setNum(m_id), "Not online.");
         m_actualData.online = false;
+        emit signal_FFUactualDataHasChanged(m_id);
     }
-    emit signal_FFUactualDataHasChanged(m_id);
+    if (m_actualData.lostTelegrams % 100 == 0)
+        emit signal_FFUactualDataHasChanged(m_id);
 }
 
 void FFU::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, QString status)
