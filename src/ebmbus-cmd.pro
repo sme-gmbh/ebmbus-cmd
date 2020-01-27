@@ -36,9 +36,12 @@ unix {
     systemdfiles.path = /lib/systemd/system/
     udevfiles.files += ../unix/00-ups500s.rules
     udevfiles.path = /etc/udev/rules.d/
+    etcfiles.files += ../etc/ebmbus-cmd.ini.example
+    etcfiles.path = /etc/openffucontrol/ebmbus-cmd/
     INSTALLS += target
     INSTALLS += systemdfiles
     INSTALLS += udevfiles
+    INSTALLS += etcfiles
 }
 
 SOURCES += main.cpp \
@@ -83,6 +86,7 @@ HEADERS += \
     auxfan.h
 
 DISTFILES += \
+    ../etc/ebmbus-cmd.ini.example \
     ../unix/ebmbus-cmd.service \
     ../unix/00-ups500s.rules
 

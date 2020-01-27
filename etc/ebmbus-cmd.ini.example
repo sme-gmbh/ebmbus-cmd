@@ -1,0 +1,22 @@
+# Configuration file for ebmbus-cmd
+
+# Version of Daisy Chain Addressing (Version 0 using RevPi Digital IOs)
+DCIversion=0
+
+[interfacesEbmBus]
+# Each line corresponds to a busline. Buslines must be named in a continuous range starting from 0.
+# Format:
+# ebmbus<n>=<mainSerialInterface>[,<redundantSerialInterface>]
+#
+# Example for non redundant bus line:
+# ebmbus0=ttyUSB0
+#
+# Example for redundant bus line with ttyUSB0 as primary interface and ttyUSB4 as secondary interface
+# ebmbus0=ttyUSB0,ttyUSB4
+
+ebmbus0=ttyUSB0
+ebmbus1=ttyUSB1
+ebmbus2=ttyUSB2
+
+[interfacesEbmModBus]
+#ebmmodbus0=ttyUSB3

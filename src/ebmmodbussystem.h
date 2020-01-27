@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QThread>
+#include <QSettings>
 #include "loghandler.h"
 #include "ebmmodbus.h"
 

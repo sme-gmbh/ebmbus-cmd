@@ -19,6 +19,7 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
+#include <QSettings>
 #include <libebmbus/ebmbus.h>
 #include "revpidio.h"
 #include "daisychaininterface.h"

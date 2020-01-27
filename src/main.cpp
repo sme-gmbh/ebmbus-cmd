@@ -19,6 +19,9 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+    QCoreApplication::setOrganizationName("openffucontrol");
+    QCoreApplication::setOrganizationDomain("sme-gmbh.com");
+    QCoreApplication::setApplicationName("ebmbus-cmd");
     MainController c;
 
     return a.exec();

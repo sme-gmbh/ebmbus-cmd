@@ -22,31 +22,56 @@ EbmModbusSystem::EbmModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
     qRegisterMetaType<EbmModbus::EbmModbusHoldingRegister>("EbmModbus::EbmModbusHoldingRegister");
     qRegisterMetaType<EbmModbus::EbmModbusInputRegister>("EbmModbus::EbmModbusInputRegister");
 
-    // tbd.: Make interface numbers configurable!
+    QSettings settings("/etc/openffucontrol/ebmbus-cmd/ebmbus-cmd.ini", QSettings::IniFormat);
+    settings.beginGroup("interfacesEbmModBus");
 
-    EbmModbus* newEbmModbus = new EbmModbus(nullptr, QString("/dev/ttyUSB3"));    // parent must be 0 in order to be moved to workerThread later
-    m_ebmModbuslist.append(newEbmModbus);
-    newEbmModbus->moveToThread(&m_workerThread);
-    m_workerThread.start();
-    connect(&m_workerThread, &QThread::finished, newEbmModbus, &QObject::deleteLater);
+    QStringList interfaceKeyList = settings.childKeys();
 
-    connect(newEbmModbus, SIGNAL(signal_newEntry(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_newEntry(LogEntry::LoggingCategory,QString,QString)));
-    connect(newEbmModbus, SIGNAL(signal_entryGone(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_entryGone(LogEntry::LoggingCategory,QString,QString)));
-    m_ebmModbuslist.append(newEbmModbus);
+    foreach(QString interfacesKey, interfaceKeyList)
+    {
+        if (!interfacesKey.startsWith("ebmmodbus"))
+            continue;
+        QString interfacesString = settings.value(interfacesKey).toString();
+        QStringList interfaces = interfacesString.split(",", QString::SkipEmptyParts);
 
-    // Routing of calls to bus
-    connect(this, &EbmModbusSystem::signal_readHoldingRegisterData, newEbmModbus, &EbmModbus::slot_readHoldingRegisterData);
-    connect(this, &EbmModbusSystem::signal_readInputRegisterData, newEbmModbus, &EbmModbus::slot_readInputRegisterData);
-    connect(this, &EbmModbusSystem::signal_writeHoldingRegisterData, newEbmModbus, &EbmModbus::slot_writeHoldingRegisterData);
+        if (interfaces.length() == 1)       // Non redundant bus
+        {
+            QString interface_0 = interfaces.at(0);
 
-    // Routing of bus results to master
-    connect(newEbmModbus, &EbmModbus::signal_transactionLost, this, &EbmModbusSystem::signal_transactionLost);
-    connect(newEbmModbus, &EbmModbus::signal_receivedHoldingRegisterData, this, &EbmModbusSystem::signal_receivedHoldingRegisterData);
-    connect(newEbmModbus, &EbmModbus::signal_receivedInputRegisterData, this, &EbmModbusSystem::signal_receivedInputRegisterData);
-    connect(newEbmModbus, &EbmModbus::signal_wroteHoldingRegisterData, this, &EbmModbusSystem::signal_wroteHoldingRegisterData);
+            EbmModbus* newEbmModbus = new EbmModbus(nullptr, QString("/dev/").append(interface_0));    // parent must be 0 in order to be moved to workerThread later
+            m_ebmModbuslist.append(newEbmModbus);
+            newEbmModbus->moveToThread(&m_workerThread);
+            m_workerThread.start();
+            connect(&m_workerThread, &QThread::finished, newEbmModbus, &QObject::deleteLater);
 
-    if (!newEbmModbus->open())
-        return;
+            connect(newEbmModbus, SIGNAL(signal_newEntry(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_newEntry(LogEntry::LoggingCategory,QString,QString)));
+            connect(newEbmModbus, SIGNAL(signal_entryGone(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_entryGone(LogEntry::LoggingCategory,QString,QString)));
+            m_ebmModbuslist.append(newEbmModbus);
+
+            // Routing of calls to bus
+            connect(this, &EbmModbusSystem::signal_readHoldingRegisterData, newEbmModbus, &EbmModbus::slot_readHoldingRegisterData);
+            connect(this, &EbmModbusSystem::signal_readInputRegisterData, newEbmModbus, &EbmModbus::slot_readInputRegisterData);
+            connect(this, &EbmModbusSystem::signal_writeHoldingRegisterData, newEbmModbus, &EbmModbus::slot_writeHoldingRegisterData);
+
+            // Routing of bus results to master
+            connect(newEbmModbus, &EbmModbus::signal_transactionLost, this, &EbmModbusSystem::signal_transactionLost);
+            connect(newEbmModbus, &EbmModbus::signal_receivedHoldingRegisterData, this, &EbmModbusSystem::signal_receivedHoldingRegisterData);
+            connect(newEbmModbus, &EbmModbus::signal_receivedInputRegisterData, this, &EbmModbusSystem::signal_receivedInputRegisterData);
+            connect(newEbmModbus, &EbmModbus::signal_wroteHoldingRegisterData, this, &EbmModbusSystem::signal_wroteHoldingRegisterData);
+
+            if (!newEbmModbus->open())
+                fprintf(stderr, "EbmModbusSystem::EbmModbusSystem(): Unable to open serial line %s!\n", interface_0.toUtf8().data());
+            else
+                fprintf(stderr, "EbmModbusSystem::EbmModbusSystem(): Activated on %s!\n", interface_0.toUtf8().data());
+            fflush(stderr);
+        }
+        else if (interfaces.length() == 2)  // Redundant bus
+        {
+            QString interface_0 = interfaces.at(0);
+            QString interface_1 = interfaces.at(1);
+            // Not implemented yet
+        }
+    }
 }
 
 EbmModbusSystem::~EbmModbusSystem()
