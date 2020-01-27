@@ -26,44 +26,62 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
 
     foreach(QString interfacesKey, interfaceKeyList)
     {
+        QString interface_startOfLoop;
+        QString interface_endOfLoop;
+
         if (!interfacesKey.startsWith("ebmbus"))
             continue;
         QString interfacesString = settings.value(interfacesKey).toString();
         QStringList interfaces = interfacesString.split(",", QString::SkipEmptyParts);
 
+        int i;
+
         if (interfaces.length() == 1)       // Non redundant bus
         {
             bool ok;
             QString interface_0 = interfaces.at(0);
-            int i = interface_0.right(1).toInt(&ok);
+            i = interface_0.right(1).toInt(&ok);
             if (!ok)
                 continue;
 
-            EbmBus* newEbmBus = new EbmBus(this, QString("/dev/").append(interface_0));
-            m_ebmbuslist.append(newEbmBus);
-
-            DaisyChainInterface* newDCI = new DaisyChainInterface(this, m_io, i, i);
-            m_dcilist.append(newDCI);
-
-            connect(newEbmBus, SIGNAL(signal_setDCIoutput(bool)), newDCI, SLOT(slot_setDCIoutput(bool)));
-            connect(newDCI, SIGNAL(signal_DCIloopResponse(bool)), newEbmBus, SLOT(slot_DCIloopResponse(bool)));
-
-            connect(newEbmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
-            connect(newEbmBus, SIGNAL(signal_transactionLost(quint64)), this, SLOT(slot_transactionLost(quint64)));
-            connect(newEbmBus, SIGNAL(signal_transactionFinished()), this, SLOT(slot_transactionFinished()));
-
-            if (!newEbmBus->open())
-                fprintf(stderr, "EbmBusSystem::EbmBusSystem(): Unable to open serial line %s!\n", interface_0.toUtf8().data());
-            else
-                fprintf(stderr, "EbmBusSystem::EbmBusSystem(): Activated on %s!\n", interface_0.toUtf8().data());
-            fflush(stderr);
+            interface_startOfLoop = QString("/dev/").append(interface_0);
         }
         else if (interfaces.length() == 2)  // Redundant bus
         {
+            bool ok;
             QString interface_0 = interfaces.at(0);
+            i = interface_0.right(1).toInt(&ok);
+            if (!ok)
+                continue;
+
             QString interface_1 = interfaces.at(1);
-            // Not implemented yet
+
+            interface_startOfLoop = QString("/dev/").append(interface_0);
+            interface_endOfLoop = QString("/dev/").append(interface_1);
         }
+        else
+            continue;
+
+
+        // Now create bus system **********************************************************************************************
+        EbmBus* newEbmBus = new EbmBus(this, interface_startOfLoop, interface_endOfLoop);
+        m_ebmbuslist.append(newEbmBus);
+
+        DaisyChainInterface* newDCI = new DaisyChainInterface(this, m_io, i, i);
+        m_dcilist.append(newDCI);
+
+        connect(newEbmBus, SIGNAL(signal_setDCIoutput(bool)), newDCI, SLOT(slot_setDCIoutput(bool)));
+        connect(newDCI, SIGNAL(signal_DCIloopResponse(bool)), newEbmBus, SLOT(slot_DCIloopResponse(bool)));
+
+        connect(newEbmBus, SIGNAL(signal_responseRaw(quint64,quint8,quint8,quint8,QByteArray)), this, SLOT(slot_showResponseRaw(quint64,quint8,quint8,quint8,QByteArray)));
+        connect(newEbmBus, SIGNAL(signal_transactionLost(quint64)), this, SLOT(slot_transactionLost(quint64)));
+        connect(newEbmBus, SIGNAL(signal_transactionFinished()), this, SLOT(slot_transactionFinished()));
+
+        if (!newEbmBus->open())
+            fprintf(stderr, "EbmBusSystem::EbmBusSystem(): Unable to open serial line %s or %s!\n", interface_startOfLoop.toUtf8().data(), interface_endOfLoop.toUtf8().data());
+        else
+            fprintf(stderr, "EbmBusSystem::EbmBusSystem(): Activated on %s!\n", interface_startOfLoop.toUtf8().data()); // Tbd.: Write log if redundancy is active
+        fflush(stderr);
     }
 }
 
