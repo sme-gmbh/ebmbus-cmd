@@ -414,15 +414,31 @@ void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 
 
 void FFUdatabase::slot_timer_pollStatus_fired()
 {
-    static int currentFFUid = 0;
+//    static int currentFFUid = 0;
 
-    if (m_ffus.count() > currentFFUid)
+//    if (m_ffus.count() > currentFFUid)
+//    {
+//        FFU* ffu = m_ffus.at(currentFFUid);
+//        ffu->requestStatus();
+//    }
+
+//    currentFFUid++;
+//    if (m_ffus.count() <= currentFFUid)
+//        currentFFUid = 0;
+
+
+    foreach (EbmBus* ebmBus, *m_ebmbuslist)
     {
-        FFU* ffu = m_ffus.at(currentFFUid);
-        ffu->requestStatus();
+        int sizeOfTelegramQueue = ebmBus->getSizeOfTelegramQueue();
+        if (sizeOfTelegramQueue < 20)
+        {
+            foreach(FFU* ffu, m_ffus)
+            {
+                if (m_ebmbuslist->indexOf(ebmBus) == ffu->getBusID())
+                {
+                    ffu->requestStatus();
+                }
+            }
+        }
     }
-
-    currentFFUid++;
-    if (m_ffus.count() <= currentFFUid)
-        currentFFUid = 0;
 }
