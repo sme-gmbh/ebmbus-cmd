@@ -84,6 +84,11 @@ void FFUdatabase::saveToHdd()
     }
 }
 
+QList<EbmBus *>* FFUdatabase::getBusList()
+{
+    return m_ebmbuslist;
+}
+
 QString FFUdatabase::addFFU(int id, int busID, int unit, int fanAddress, int fanGroup)
 {
     FFU* newFFU = new FFU(this, m_ebmbusSystem, m_loghandler);

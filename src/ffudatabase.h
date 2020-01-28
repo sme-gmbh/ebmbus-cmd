@@ -38,6 +38,9 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
+
+    QList<EbmBus *> *getBusList();
+
     QString addFFU(int id, int busID, int unit = -1, int fanAddress = -1, int fanGroup = -1);
     QString deleteFFU(int id);
 

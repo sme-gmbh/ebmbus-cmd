@@ -124,6 +124,9 @@ void RemoteClientHandler::slot_read_ready()
                           "    log\r\n"
                           "        Show the log consisting of infos, warnings and errors.\r\n"
                           "\r\n"
+                          "    buffers\r\n"
+                          "        Show buffer levels.\r\n"
+                          "\r\n"
                           "    button --button=BUTTONNAME\r\n"
                           "        Simulate a button click.\r\n"
                           "        Possible BUTTONNAMEs: operation, error, speed0, speed50, speed100.r\n"
@@ -215,6 +218,19 @@ void RemoteClientHandler::slot_read_ready()
             socket->write(m_loghandler->toString(LogEntry::Info).toUtf8() + "\n");
             socket->write(m_loghandler->toString(LogEntry::Warning).toUtf8() + "\n");
             socket->write(m_loghandler->toString(LogEntry::Error).toUtf8() + "\n");
+        }
+        // ************************************************** buffers **************************************************
+        else if (command == "buffers")
+        {
+            int i = 0;
+            foreach(EbmBus* bus, *m_ffuDB->getBusList())
+            {
+                int telegramQueueLevel = bus->getSizeOfTelegramQueue();
+                QString line;
+                line.sprintf("EbmBus line %i: TelegramQueueLevel=%i\r\n", i, telegramQueueLevel);
+                socket->write(line.toUtf8());
+                i++;
+            }
         }
         // ************************************************** button **************************************************
         else if (command == "button")
