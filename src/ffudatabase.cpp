@@ -456,7 +456,7 @@ void FFUdatabase::slot_timer_pollStatus_fired()
 
     foreach (EbmBus* ebmBus, *m_ebmbuslist)
     {
-        int sizeOfTelegramQueue = ebmBus->getSizeOfTelegramQueue();
+        int sizeOfTelegramQueue = qMax(ebmBus->getSizeOfTelegramQueue(false), ebmBus->getSizeOfTelegramQueue(true));
         if (sizeOfTelegramQueue < 20)
         {
             foreach(FFU* ffu, m_ffus)
