@@ -225,9 +225,11 @@ void RemoteClientHandler::slot_read_ready()
             int i = 0;
             foreach(EbmBus* bus, *m_ffuDB->getBusList())
             {
-                int telegramQueueLevel = bus->getSizeOfTelegramQueue();
+                int telegramQueueLevel_standardPriority = bus->getSizeOfTelegramQueue(false);
+                int telegramQueueLevel_highPriority = bus->getSizeOfTelegramQueue(true);
                 QString line;
-                line.sprintf("EbmBus line %i: TelegramQueueLevel=%i\r\n", i, telegramQueueLevel);
+                line.sprintf("EbmBus line %i: TelegramQueueLevel_standardPriority=%i TelegramQueueLevel_highPriority=%i\r\n",
+                             i, telegramQueueLevel_standardPriority, telegramQueueLevel_highPriority);
                 socket->write(line.toUtf8());
                 i++;
             }
