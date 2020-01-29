@@ -43,6 +43,9 @@ public:
         LED_BLINK
     } LED_Status;
 
+    LED_Status getLightStatus();
+    unsigned long long getBlinkFrequency();
+
 private:
     QTimer m_timer;
     RevPiDIO* m_io;

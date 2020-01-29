@@ -48,6 +48,16 @@ void LightButton::setBlinkFrequency(int milliHertz)
     m_blinkFrequency = milliHertz;
 }
 
+LightButton::LED_Status LightButton::getLightStatus()
+{
+    return m_LEDstatus;
+}
+
+unsigned long long LightButton::getBlinkFrequency()
+{
+    return m_blinkFrequency;
+}
+
 void LightButton::slot_setLight(LED_Status status)
 {
     m_LEDstatus = status;

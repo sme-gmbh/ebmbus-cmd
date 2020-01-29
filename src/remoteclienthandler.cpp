@@ -131,6 +131,9 @@ void RemoteClientHandler::slot_read_ready()
                           "        Simulate a button click.\r\n"
                           "        Possible BUTTONNAMEs: operation, error, speed0, speed50, speed100.r\n"
                           "\r\n"
+                          "    button-leds\r\n"
+                          "        Get shown status of button leds.\r\n"
+                          "\r\n"
                           "    add-ffu --bus=BUSNR --id=ID --unit=UNIT\r\n"
                           "        Add a new ffu with ID to the controller database at BUSNR at position UNIT from start of bus.\r\n"
                           "\r\n"
@@ -254,6 +257,20 @@ void RemoteClientHandler::slot_read_ready()
                 emit signal_buttonSimulated_speed_50_clicked();
             else if (button == "speed100")
                 emit signal_buttonSimulated_speed_100_clicked();
+        }
+        // ************************************************** button-leds **************************************************
+        else if (command == "button-leds")
+        {
+            QString response;
+            response.sprintf("Button-LED[operation]=.\r\n");
+            response.sprintf("Button-LED[error]=.\r\n");
+            response.sprintf("Button-LED[speed0]=.\r\n");
+            response.sprintf("Button-LED[speed50]=.\r\n");
+            response.sprintf("Button-LED[speed100]=.\r\n");
+
+            response = "Not implemented yet.\r\n";  // TBD. Implementation
+
+            socket->write(response.toUtf8());
         }
         // ************************************************** add-ffu **************************************************
         else if ((command == "add-ffu") || (command == "add-auxfan"))
