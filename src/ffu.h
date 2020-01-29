@@ -91,7 +91,7 @@ public:
     ActualData getActualData() const;
 
     // This function triggers bus requests to get actual values, status, warnings ans errors
-    void requestStatus();
+    void requestStatus(bool actualSpeedOnly = false);
 
     // This function triggers bus requests to get the necessary config data from the ffu
     void requestConfig();

@@ -62,6 +62,7 @@ private:
     Loghandler* m_loghandler;
     QList<FFU*> m_ffus;
     QTimer m_timer_pollStatus;
+    QTimer m_timer_fastSpeedPolling;
     QMap<int,QList<int>> m_unitIdsPerBus;
 
     FFU* getFFUbyTelegramID(quint64 telegramID);
@@ -94,6 +95,7 @@ private slots:
     void slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, EbmBusEEPROM::EEPROMaddress eepromAddress, quint8 dataByte);
 
     // Timer slots
+    void slot_startFastSpeedPollingSequence();
     void slot_timer_pollStatus_fired();
 };
 

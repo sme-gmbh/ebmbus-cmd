@@ -324,7 +324,7 @@ FFU::ActualData FFU::getActualData() const
     return m_actualData;
 }
 
-void FFU::requestStatus()
+void FFU::requestStatus(bool actualSpeedOnly)
 {
     if (!isConfigured())
         return;
@@ -336,14 +336,17 @@ void FFU::requestStatus()
     if (!m_configData.valid)
         requestConfig();
 
+    if (!actualSpeedOnly)
+    {
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::SetPoint));
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusLowByte));
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusHighByte));
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::Warnings));
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCvoltage));
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCcurrent));
+        m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::TemperatureOfPowerModule));
+    }
     m_transactionIDs.append(bus->getActualSpeed(m_fanAddress, m_fanGroup));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::SetPoint));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusLowByte));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::MotorStatusHighByte));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::Warnings));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCvoltage));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCcurrent));
-    m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::TemperatureOfPowerModule));
 }
 
 void FFU::requestConfig()
@@ -670,7 +673,7 @@ void FFU::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanGroup, qu
         break;
     case EbmBusStatus::TemperatureOfPowerModule:
         m_actualData.temperatureOfPowerModule = rawValue;
-        emit signal_FFUactualDataHasChanged(m_id);          // TemperatureOfPowerModule is the last data we get from automatic query, so signal new data now
+//        emit signal_FFUactualDataHasChanged(m_id);          // TemperatureOfPowerModule is the last data we get from automatic query, so signal new data now
         break;
     case EbmBusStatus::SetPoint:
         m_actualData.speedSetpoint = rawValue;
@@ -730,7 +733,7 @@ void FFU::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8 fanGrou
     markAsOnline();
 
     m_actualData.speedReading = actualRawSpeed;
-    //emit signal_FFUactualDataHasChanged(m_id);
+    emit signal_FFUactualDataHasChanged(m_id);          // actualSpeed is the last data we get from automatic query, so signal new data now
 }
 
 void FFU::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress, quint8 fanGroup)

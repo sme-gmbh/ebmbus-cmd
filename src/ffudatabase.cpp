@@ -43,6 +43,10 @@ FFUdatabase::FFUdatabase(QObject *parent, EbmBusSystem *ebmbusSystem, Loghandler
         connect (ebmBus, SIGNAL(signal_transactionLost(quint64)), this, SLOT(slot_transactionLost(quint64)));
     }
 
+    // Timer for fast motor speed polling sequence
+    m_timer_fastSpeedPolling.setSingleShot(true);
+    m_timer_fastSpeedPolling.setInterval(30000);    // 30 Seconds of fast polling
+
     // Timer for cyclic poll task to get the status of ffus
     connect(&m_timer_pollStatus, SIGNAL(timeout()), this, SLOT(slot_timer_pollStatus_fired()));
     m_timer_pollStatus.setInterval(2000);
@@ -218,6 +222,9 @@ QString FFUdatabase::setFFUdata(int id, QString key, QString value)
     if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
+    if (key == "nSet")
+        slot_startFastSpeedPollingSequence();
+
     ffu->setData(key, value);
     return "OK[FFUdatabase]: Setting " + key + " to " + value;
 }
@@ -227,6 +234,9 @@ QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
     FFU* ffu = getFFUbyID(id);
     if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
+
+    if (dataMap.keys().contains("nSet"))
+        slot_startFastSpeedPollingSequence();
 
     QString dataString;
 
@@ -274,6 +284,7 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString
         m_unitIdsPerBus.insert(busID, ids);
 
         m_timer_pollStatus.stop();  // Stop polling units on bus while addressing is in progress
+        m_ebmbuslist->at(busID)->clearTelegramQueue(false); // Drop all pending packets from standard priority queue
         m_ebmbuslist->at(busID)->startDaisyChainAddressing();
     }
     return "OK[FFUdatabase]: Starting DCI addressing at bus " + QString().setNum(busID) + ". Ignoring startAddress at the moment. Will be fixed later.";
@@ -281,6 +292,8 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString
 
 QString FFUdatabase::broadcast(int busID, QMap<QString, QString> dataMap)
 {
+    if (dataMap.keys().contains("nSet"))
+        slot_startFastSpeedPollingSequence();
     return m_ebmbusSystem->broadcast(busID, dataMap);
 }
 
@@ -417,6 +430,13 @@ void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 
     ffu->slot_EEPROMdata(telegramID, fanAddress, fanGroup, eepromAddress, dataByte);
 }
 
+void FFUdatabase::slot_startFastSpeedPollingSequence()
+{
+    foreach (EbmBus* ebmBus, *m_ebmbuslist)
+        ebmBus->clearTelegramQueue();               // Drop all other request packets from standard priority queue out of the way
+    m_timer_fastSpeedPolling.start();
+}
+
 void FFUdatabase::slot_timer_pollStatus_fired()
 {
 //    static int currentFFUid = 0;
@@ -432,6 +452,8 @@ void FFUdatabase::slot_timer_pollStatus_fired()
 //        currentFFUid = 0;
 
 
+    bool actualSpeedOnly = m_timer_fastSpeedPolling.isActive();   // This is set to true if we want to do a fast poll of motor speeds after setpoint change
+
     foreach (EbmBus* ebmBus, *m_ebmbuslist)
     {
         int sizeOfTelegramQueue = ebmBus->getSizeOfTelegramQueue();
@@ -441,7 +463,7 @@ void FFUdatabase::slot_timer_pollStatus_fired()
             {
                 if (m_ebmbuslist->indexOf(ebmBus) == ffu->getBusID())
                 {
-                    ffu->requestStatus();
+                    ffu->requestStatus(actualSpeedOnly);
                 }
             }
         }
