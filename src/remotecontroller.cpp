@@ -18,7 +18,7 @@
 RemoteController::RemoteController(QObject *parent, FFUdatabase *ffuDB, AuxFanDatabase *aufFanDB, Loghandler *loghandler) : QObject(parent)
 {
 #ifdef QT_DEBUG
-    printf(stdout, "Server started\n");
+    fprintf(stdout, "Server started\n");
 #endif
 
     m_ffuDB = ffuDB;
@@ -113,7 +113,7 @@ void RemoteController::slot_connectionClosed(QTcpSocket *socket, RemoteClientHan
     this->m_socket_list.removeOne(socket);
     delete remoteClientHandler;
 #ifdef QT_DEBUG
-    printf (stdout, "ClientHandler deleted\r\n");
+    fprintf (stdout, "ClientHandler deleted\r\n");
 #endif
 
     if (m_socket_list.isEmpty())
