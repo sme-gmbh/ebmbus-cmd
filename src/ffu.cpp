@@ -346,7 +346,8 @@ void FFU::requestStatus(bool actualSpeedOnly)
         m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::DCcurrent));
         m_transactionIDs.append(bus->getStatus(m_fanAddress, m_fanGroup, EbmBusStatus::TemperatureOfPowerModule));
     }
-    m_transactionIDs.append(bus->getActualSpeed(m_fanAddress, m_fanGroup));
+    bool highPriority = actualSpeedOnly;
+    m_transactionIDs.append(bus->getActualSpeed(m_fanAddress, m_fanGroup, highPriority));
 }
 
 void FFU::requestConfig()

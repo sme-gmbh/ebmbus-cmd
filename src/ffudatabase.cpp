@@ -432,8 +432,11 @@ void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 
 
 void FFUdatabase::slot_startFastSpeedPollingSequence()
 {
-    foreach (EbmBus* ebmBus, *m_ebmbuslist)
-        ebmBus->clearTelegramQueue();               // Drop all other request packets from standard priority queue out of the way
+    if (!m_timer_fastSpeedPolling.isActive())
+    {
+        foreach (EbmBus* ebmBus, *m_ebmbuslist)
+            ebmBus->clearTelegramQueue();               // Drop all other request packets from standard priority queue out of the way
+    }
     m_timer_fastSpeedPolling.start();
 }
 
