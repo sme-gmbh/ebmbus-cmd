@@ -222,7 +222,7 @@ QString FFUdatabase::setFFUdata(int id, QString key, QString value)
     if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
-    if (key == "nSet")
+    if ((key == "nSet") || (key == "rawspeed"))
         slot_startFastSpeedPollingSequence();
 
     ffu->setData(key, value);
@@ -235,7 +235,7 @@ QString FFUdatabase::setFFUdata(int id, QMap<QString, QString> dataMap)
     if (ffu == nullptr)
         return "Warning[FFUdatabase]: ID " + QString().setNum(id) + " not found.";
 
-    if (dataMap.keys().contains("nSet"))
+    if (dataMap.keys().contains("nSet") || dataMap.keys().contains("rawspeed"))
         slot_startFastSpeedPollingSequence();
 
     QString dataString;
@@ -292,7 +292,7 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString
 
 QString FFUdatabase::broadcast(int busID, QMap<QString, QString> dataMap)
 {
-    if (dataMap.keys().contains("nSet"))
+    if (dataMap.keys().contains("nSet") || dataMap.keys().contains("rawspeed"))
         slot_startFastSpeedPollingSequence();
     return m_ebmbusSystem->broadcast(busID, dataMap);
 }
