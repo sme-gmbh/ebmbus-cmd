@@ -3,7 +3,7 @@ Description=openFFUcontrol remote bus interface service for ebmbus
 After=network.target ssh.service
 
 [Service]
-Type=forking
+Type=simple
 ExecStart=/usr/bin/ebmbus-cmd
 StandardOutput=null
 StandardError=journal
