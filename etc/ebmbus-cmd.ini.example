@@ -3,6 +3,10 @@
 # Version of Daisy Chain Addressing (Version 0 using RevPi Digital IOs)
 DCIversion=0
 
+[configEbmBus]
+telegramRepeatCount=2
+requestTimeout=300
+
 [interfacesEbmBus]
 # Each line corresponds to a busline. Buslines must be named in a continuous range starting from 0.
 # Format:

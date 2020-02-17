@@ -20,6 +20,10 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
     m_io = io;
 
     QSettings settings("/etc/openffucontrol/ebmbus-cmd/ebmbus-cmd.ini", QSettings::IniFormat);
+    settings.beginGroup("configEbmBus");
+    int telegramRepeatCount = settings.value("telegramRepeatCount", 2).toInt();
+    int requestTimeout = settings.value("requestTimeout", 300).toInt();
+    settings.endGroup();
     settings.beginGroup("interfacesEbmBus");
 
     QStringList interfaceKeyList = settings.childKeys();
@@ -65,6 +69,8 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
 
         // Now create bus system **********************************************************************************************
         EbmBus* newEbmBus = new EbmBus(this, interface_startOfLoop, interface_endOfLoop);
+        newEbmBus->setRequestTimeout(requestTimeout);
+        newEbmBus->setTelegramRepeatCount(telegramRepeatCount);
         m_ebmbuslist.append(newEbmBus);
 
         DaisyChainInterface* newDCI = new DaisyChainInterface(this, m_io, i, i);
