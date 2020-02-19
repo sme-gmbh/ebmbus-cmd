@@ -47,14 +47,26 @@ public:
     } ActualData;
 
     typedef struct {
-        bool valid;
         int speedMax;                           // Unit RpM
+        bool speedMax_LSB_valid;
+        bool speedMax_MID_valid;
+        bool speedMax_MSB_valid;
         quint8 manufacturingDateCode_Day;
+        bool manufacturingDateCode_Day_valid;
         quint8 manufacturingDateCode_Month;
+        bool manufacturingDateCode_Month_valid;
         quint8 manufacturingDateCode_Year;
+        bool manufacturingDateCode_Year_valid;
         quint32 serialNumber;
+        bool serialNumber_LSB_valid;
+        bool serialNumber_MID_valid;
+        bool serialNumber_MSB_valid;
         int referenceDClinkVoltage;             // Unit 20 mV
+        bool referenceDClinkVoltage_LSB_valid;
+        bool referenceDClinkVoltage_MSB_valid;
         int referenceDClinkCurrent;             // Unit 2 mA
+        bool referenceDClinkCurrent_LSB_valid;
+        bool referenceDClinkCurrent_MSB_valid;
     } ConfigData;
 
     int getId() const;
@@ -136,6 +148,7 @@ private:
     QString myFilename();
 
     bool isConfigured();    // Returns false if either fanAddress or fanGroup or busID is not set
+    bool isConfigDataValid();
     void markAsOnline();
 
     void setNmax(int maxRpm);

@@ -53,14 +53,26 @@ FFU::FFU(QObject *parent, EbmBusSystem* ebmbusSystem, Loghandler *loghandler) : 
     m_actualData.dcVoltage = 0.0;
     m_actualData.temperatureOfPowerModule = 0;
 
-    m_configData.valid = false;
     m_configData.speedMax = 0;
+    m_configData.speedMax_LSB_valid = false;
+    m_configData.speedMax_MID_valid = false;
+    m_configData.speedMax_MSB_valid = false;
     m_configData.manufacturingDateCode_Day = 0;
+    m_configData.manufacturingDateCode_Day_valid = false;
     m_configData.manufacturingDateCode_Month = 0;
+    m_configData.manufacturingDateCode_Month_valid = false;
     m_configData.manufacturingDateCode_Year = 0;
+    m_configData.manufacturingDateCode_Year_valid = false;
     m_configData.serialNumber = 0;
+    m_configData.serialNumber_LSB_valid = false;
+    m_configData.serialNumber_MID_valid = false;
+    m_configData.serialNumber_MSB_valid = false;
     m_configData.referenceDClinkVoltage = 0;
+    m_configData.referenceDClinkVoltage_LSB_valid = false;
+    m_configData.referenceDClinkVoltage_MSB_valid = false;
     m_configData.referenceDClinkCurrent = 0;
+    m_configData.referenceDClinkCurrent_LSB_valid = false;
+    m_configData.referenceDClinkCurrent_MSB_valid = false;
 }
 
 FFU::~FFU()
@@ -129,7 +141,7 @@ void FFU::setNmax(int maxRpm)
 
 void FFU::setNmaxFromConfigData()
 {
-    if (!m_configData.valid)
+    if (!isConfigDataValid())
         return;
 
     int maxRpm = 1.875e9 / ((double) m_configData.speedMax);
@@ -138,6 +150,9 @@ void FFU::setNmaxFromConfigData()
 
 void FFU::processConfigData()
 {
+    if (!isConfigDataValid())
+        return;
+
     setNmaxFromConfigData();
 }
 
@@ -333,7 +348,7 @@ void FFU::requestStatus(bool actualSpeedOnly)
     if (bus == nullptr)
         return;
 
-    if (!m_configData.valid)
+    if (!isConfigDataValid())
         requestConfig();
 
     if (!actualSpeedOnly)
@@ -524,6 +539,25 @@ bool FFU::isConfigured()
         configured = false;
 
     return configured;
+}
+
+bool FFU::isConfigDataValid()
+{
+    if (!m_configData.speedMax_LSB_valid) return false;
+    if (!m_configData.speedMax_MID_valid) return false;
+    if (!m_configData.speedMax_MSB_valid) return false;
+    if (!m_configData.manufacturingDateCode_Day_valid)   return false;
+    if (!m_configData.manufacturingDateCode_Month_valid) return false;
+    if (!m_configData.manufacturingDateCode_Year_valid)  return false;
+    if (!m_configData.serialNumber_LSB_valid) return false;
+    if (!m_configData.serialNumber_MID_valid) return false;
+    if (!m_configData.serialNumber_MSB_valid) return false;
+    if (!m_configData.referenceDClinkVoltage_LSB_valid) return false;
+    if (!m_configData.referenceDClinkVoltage_MSB_valid) return false;
+    if (!m_configData.referenceDClinkCurrent_LSB_valid) return false;
+    if (!m_configData.referenceDClinkCurrent_MSB_valid) return false;
+
+    return true;
 }
 
 void FFU::markAsOnline()
@@ -798,14 +832,20 @@ void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup
     case EbmBusEEPROM::MaxSpeed_MSB:
         m_configData.speedMax &= 0x00FFFF;
         m_configData.speedMax |= (dataByte << 16);
+        m_configData.speedMax_MSB_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::MaxSpeed_Mid:
         m_configData.speedMax &= 0xFF00FF;
         m_configData.speedMax |= (dataByte << 8);
+        m_configData.speedMax_MID_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::MaxSpeed_LSB:
         m_configData.speedMax &= 0xFFFF00;
         m_configData.speedMax |= (dataByte << 0);
+        m_configData.speedMax_LSB_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::DutyCycleMax:
         break;
@@ -905,25 +945,37 @@ void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup
 
     case EbmBusEEPROM::ManufacturingDateCode_Day:
          m_configData.manufacturingDateCode_Day = dataByte;
+         m_configData.manufacturingDateCode_Day_valid = true;
+         processConfigData();
         break;
     case EbmBusEEPROM::ManufacturingDateCode_Month:
         m_configData.manufacturingDateCode_Month = dataByte;
+        m_configData.manufacturingDateCode_Month_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::ManufacturingDateCode_Year:
         m_configData.manufacturingDateCode_Year = dataByte;
+         m_configData.manufacturingDateCode_Year_valid = true;
+         processConfigData();
         break;
 
     case EbmBusEEPROM::SerialNumber_Byte_2:
         m_configData.serialNumber &= 0x00FFFF;
         m_configData.serialNumber |= (dataByte << 16);
+        m_configData.serialNumber_MSB_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::SerialNumber_Byte_1:
         m_configData.serialNumber &= 0xFF00FF;
         m_configData.serialNumber |= (dataByte << 8);
+        m_configData.serialNumber_MID_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::SerialNumber_Byte_0:
         m_configData.serialNumber &= 0xFFFF00;
         m_configData.serialNumber |= (dataByte << 0);
+        m_configData.serialNumber_LSB_valid = true;
+        processConfigData();
         break;
 
     case EbmBusEEPROM::DClinkCurrentMax:
@@ -944,20 +996,26 @@ void FFU::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 fanGroup
     case EbmBusEEPROM::ReferenceDClinkVoltage_MSB:
         m_configData.referenceDClinkVoltage &= 0x00FF;
         m_configData.referenceDClinkVoltage |= (dataByte << 8);
-        m_configData.valid = true;  // Set the configData valid as ReferenceDClinkVoltage_MSB is the last value requested at startup
+        m_configData.referenceDClinkVoltage_MSB_valid = true;
         processConfigData();
         break;
     case EbmBusEEPROM::ReferenceDClinkVoltage_LSB:
         m_configData.referenceDClinkVoltage &= 0xFF00;
         m_configData.referenceDClinkVoltage |= (dataByte << 0);
+        m_configData.referenceDClinkVoltage_LSB_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::ReferenceDClinkCurrent_MSB:
         m_configData.referenceDClinkCurrent &= 0x00FF;
         m_configData.referenceDClinkCurrent |= (dataByte << 8);
+        m_configData.referenceDClinkCurrent_MSB_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::ReferenceDClinkCurrent_LSB:
         m_configData.referenceDClinkCurrent &= 0xFF00;
         m_configData.referenceDClinkCurrent |= (dataByte << 0);
+        m_configData.referenceDClinkCurrent_LSB_valid = true;
+        processConfigData();
         break;
     case EbmBusEEPROM::ReferenceAClineVoltage_MSB:
         break;
