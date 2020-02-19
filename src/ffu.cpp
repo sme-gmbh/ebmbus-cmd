@@ -377,10 +377,16 @@ void FFU::requestConfig()
     m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_LSB));
     m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_Mid));
     m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::MaxSpeed_MSB));
-    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkCurrent_LSB));
-    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkCurrent_MSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ManufacturingDateCode_Day));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ManufacturingDateCode_Month));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ManufacturingDateCode_Year));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::SerialNumber_Byte_0));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::SerialNumber_Byte_1));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::SerialNumber_Byte_2));
     m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkVoltage_LSB));
     m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkVoltage_MSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkCurrent_LSB));
+    m_transactionIDs.append(bus->readEEPROM(m_fanAddress, m_fanGroup, EbmBusEEPROM::ReferenceDClinkCurrent_MSB));
 }
 
 // Make shure m_setpointSpeedRaw is set to the desired value before calling this function
