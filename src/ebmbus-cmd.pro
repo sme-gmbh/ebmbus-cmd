@@ -45,6 +45,9 @@ unix {
 }
 
 SOURCES += main.cpp \
+    ocu.cpp \
+    ocumodbus.cpp \
+    ocumodbussystem.cpp \
     revpidio.cpp \
     maincontroller.cpp \
     lightbutton.cpp \
@@ -67,6 +70,9 @@ LIBS     += -lebmbus
 LIBS     += -lmodbus
 
 HEADERS += \
+    ocu.h \
+    ocumodbus.h \
+    ocumodbussystem.h \
     revpidio.h \
     maincontroller.h \
     lightbutton.h \
