@@ -46,6 +46,7 @@ unix {
 
 SOURCES += main.cpp \
     ocu.cpp \
+    ocudatabase.cpp \
     ocumodbus.cpp \
     ocumodbussystem.cpp \
     revpidio.cpp \
@@ -71,6 +72,7 @@ LIBS     += -lmodbus
 
 HEADERS += \
     ocu.h \
+    ocudatabase.h \
     ocumodbus.h \
     ocumodbussystem.h \
     revpidio.h \
