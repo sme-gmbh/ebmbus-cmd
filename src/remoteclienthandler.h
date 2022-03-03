@@ -28,18 +28,20 @@
 
 #include "ffudatabase.h"
 #include "auxfandatabase.h"
+#include "ocudatabase.h"
 #include "loghandler.h"
 
 class RemoteClientHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit RemoteClientHandler(QObject *parent, QTcpSocket* socket, FFUdatabase* ffuDB, AuxFanDatabase* auxFanDB, Loghandler *loghandler);
+    explicit RemoteClientHandler(QObject *parent, QTcpSocket* socket, FFUdatabase* ffuDB, AuxFanDatabase* auxFanDB, OCUdatabase *ocuDB, Loghandler *loghandler);
 
 private:
     QTcpSocket* socket;
     FFUdatabase* m_ffuDB;
     AuxFanDatabase* m_auxFanDB;
+    OCUdatabase* m_ocuDB;
     Loghandler* m_loghandler;
     bool m_livemode;
 
@@ -62,6 +64,7 @@ private slots:
     void slot_DCIaddressingGotSerialNumber(int busID, quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
     void slot_FFUactualDataHasChanged(int id);
     void slot_AuxFanActualDataHasChanged(int id);
+    void slot_OCUActualDataHasChanged(int id);
 };
 
 #endif // REMOTECLIENTHANDLER_H

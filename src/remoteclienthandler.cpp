@@ -15,11 +15,12 @@
 
 #include "remoteclienthandler.h"
 
-RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB, AuxFanDatabase *auxFanDB, Loghandler* loghandler) : QObject(parent)
+RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FFUdatabase *ffuDB, AuxFanDatabase *auxFanDB, OCUdatabase *ocuDB, Loghandler* loghandler) : QObject(parent)
 {
     this->socket = socket;
     m_ffuDB = ffuDB;
     m_auxFanDB = auxFanDB;
+    m_ocuDB = ocuDB;
     m_loghandler = loghandler;
 
     m_livemode = false;
@@ -48,6 +49,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)));
     connect(m_ffuDB, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SLOT(slot_FFUactualDataHasChanged(int)));
     connect(m_auxFanDB, &AuxFanDatabase::signal_AuxFanActualDataHasChanged, this, &RemoteClientHandler::slot_AuxFanActualDataHasChanged);
+    connect(m_ocuDB, &OCUdatabase::signal_OCUActualDataHasChanged, this, &RemoteClientHandler::slot_OCUActualDataHasChanged);
 }
 
 void RemoteClientHandler::slot_read_ready()
@@ -121,6 +123,8 @@ void RemoteClientHandler::slot_read_ready()
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "    list-auxfans\r\n"
                           "        Show the list of currently configured auxiliary fans from the controller database.\r\n"
+                          "    list-ocus\r\n"
+                          "        Show the list of currently configured OCUs from the controller database.\r\n"
                           "    log\r\n"
                           "        Show the log consisting of infos, warnings and errors.\r\n"
                           "\r\n"
@@ -147,6 +151,13 @@ void RemoteClientHandler::slot_read_ready()
                           "    delete-auxfan --id=ID --bus=BUSNR\r\n"
                           "        Delete auxiliary fan with ID from the controller database.\r\n"
                           "        Note that you can delete all auxiliary fans of a certain bus by using BUSNR only.\r\n"
+                          "\r\n"
+                          "    add-ocu --bus=BUSNR --unitAddress=ARD --id=ID\r\n"
+                          "        Add a new OCU with ID to the controller database at BUSNR with modbus address ADR.\r\n"
+                          "\r\n"
+                          "    delete-ocu --id=ID --bus=BUSNR\r\n"
+                          "        Delete OCU with ID from the controller database.\r\n"
+                          "        Note that you can delete all OCUs of a certain bus by using BUSNR only.\r\n"
                           "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
                           "        Broadcast data to all buses and all units.\r\n"
@@ -215,6 +226,19 @@ void RemoteClientHandler::slot_read_ready()
                 socket->write(line.toUtf8());
             }
         }
+        // ************************************************** list-ocus **************************************************
+        else if (command == "list-ocus")
+        {
+            QList<OCU*> ocus = m_ocuDB->getOCUs();
+            foreach(OCU* ocu, ocus)
+            {
+                QString line;
+
+                line.sprintf("OCU id=%i busID=%i\r\n", ocu->getId(), ocu->getBusID());
+
+                socket->write(line.toUtf8());
+            }
+        }
         // ************************************************** log **************************************************
         else if (command == "log")
         {
@@ -273,7 +297,7 @@ void RemoteClientHandler::slot_read_ready()
             socket->write(response.toUtf8());
         }
         // ************************************************** add-ffu **************************************************
-        else if ((command == "add-ffu") || (command == "add-auxfan"))
+        else if ((command == "add-ffu") || (command == "add-auxfan") || (command == "add-ocu"))
         {
             bool ok;
 
@@ -295,7 +319,7 @@ void RemoteClientHandler::slot_read_ready()
 
             QString unitString = data.value("unit");
             int unit = unitString.toInt(&ok);
-            if ((unitString.isEmpty() || !ok) && (command == "add-ffu"))
+            if ((unitString.isEmpty() || !ok) && ((command == "add-ffu") || (command == "add-ocu")))
             {
                 socket->write("Error[Commandparser]: parameter \"unit\" not specified or id can not be parsed. Abort.\r\n");
                 continue;
@@ -317,6 +341,8 @@ void RemoteClientHandler::slot_read_ready()
                 response = m_ffuDB->addFFU(id, bus, unit);
             else if (command == "add-auxfan")
                 response = m_auxFanDB->addAuxFan(id, bus, fanAddress);
+            else if (command == "add-ocu")
+                response = m_ocuDB->addOCU(id, bus, unit);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** delete-ffu **************************************************
@@ -624,6 +650,23 @@ void RemoteClientHandler::slot_AuxFanActualDataHasChanged(int id)
         {
             QString response = responseData.value(key);
             if (!response.startsWith("Error[AuxFan]:"))
+                socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
+        }
+        socket->write("\r\n");
+    }
+}
+
+void RemoteClientHandler::slot_OCUActualDataHasChanged(int id)
+{
+    if (m_livemode)
+    {
+        socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
+        QMap<QString,QString> responseData = m_auxFanDB->getAuxFanData(id, QStringList() << "actual");
+        responseData.remove("actualData");  // Remove special treatment marker
+        foreach(QString key, responseData.keys())
+        {
+            QString response = responseData.value(key);
+            if (!response.startsWith("Error[OCU]:"))
                 socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
         }
         socket->write("\r\n");

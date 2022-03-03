@@ -69,7 +69,7 @@ void OCUdatabase::saveToHdd()
     }
 }
 
-QString OCUdatabase::addOCU(int id, int busID, int fanAddress)
+QString OCUdatabase::addOCU(int id, int busID, int unit)
 {
     OCU* newOCU = new OCU(this, m_ocuModbusSystem, m_loghandler);
     newOCU->setFiledirectory("/var/openffucontrol/ocus/");

@@ -27,7 +27,7 @@
 #include <QMap>
 #include "ocumodbussystem.h"
 #include "loghandler.h"
-#include "ocu.h"
+#include "ocufan.h"
 
 // OCUs are managed via Modbus
 
@@ -39,7 +39,7 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
-    QString addOCU(int id, int busID, int fanAddress = -1);
+    QString addOCU(int id, int busID, int unit = -1);
     QString deleteOCU(int id);
 
     QList<OCU*> getOCUs(int busNr = -1);    // If busNr is specified only OCUs of that bus are returned

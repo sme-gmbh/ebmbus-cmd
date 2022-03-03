@@ -32,30 +32,6 @@ public:
     void close();
     void setSlaveAddress(quint16 adr);
 
-    typedef enum {
-        HOLDING_REG_D000_Reset = 0xD000,
-        HOLDING_REG_D001_DefaultSetValue = 0xD001,
-        HOLDING_REG_D002_Password_2 = 0xD002,
-        HOLDING_REG_D003_Password_1 = 0xD003,
-        HOLDING_REG_D004_Password_0 = 0xD004,
-        HOLDING_REG_D005_ControlDefaultSetting = 0xD005,
-        HOLDING_REG_D006_ControlCustomerSetting = 0xD006,
-        HOLDING_REG_D007_NoFunction = 0xD007,
-        HOLDING_REG_D008_Reserved = 0xD008,
-        HOLDING_REG_D009_OperatingHoursCounter = 0xD009,
-        HOLDING_REG_D00A_OperatingMinutesCounter = 0xD00A,
-        HOLDING_REG_D00B_Reserved = 0xD00B
-    } OcuModbusHoldingRegister;
-
-    typedef enum {
-        INPUT_REG_D000_Identification = 0xD000,
-        INPUT_REG_D001_MaximumNumberOfBytes = 0xD001,
-        INPUT_REG_D002_SoftwareNameOfBusController = 0xD002,
-        INPUT_REG_D003_SoftwareVersionOfBusController = 0xD003,
-        INPUT_REG_D004_SoftwareNameOfCommutationController = 0xD004,
-        INPUT_REG_D005_SoftwareVersionOfCommutationController = 0xD005
-    } OcuModbusInputRegister;
-
 signals:
 
 private:
