@@ -656,7 +656,7 @@ void OCUfan::slot_transactionLost(quint64 id)
     emit signal_FanActualDataHasChanged(m_id);
 }
 
-void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, OCUfan::OcuFanModbusHoldingRegister reg, quint16 rawdata)
+void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
 {
     Q_UNUSED(telegramID)
 
@@ -688,7 +688,7 @@ void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, O
     }
 }
 
-void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, OcuFanModbusInputRegister reg, quint16 rawdata)
+void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
 {
     Q_UNUSED(telegramID)
 

@@ -19,8 +19,8 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 {
     m_loghandler = loghandler;
 
-    qRegisterMetaType<OcuModbus::OcuModbusHoldingRegister>("OcuModbus::OcuModbusHoldingRegister");
-    qRegisterMetaType<OcuModbus::OcuModbusInputRegister>("OcuModbus::OcuModbusInputRegister");
+//    qRegisterMetaType<OcuModbus::OcuModbusHoldingRegister>("OcuModbus::OcuModbusHoldingRegister");
+//    qRegisterMetaType<OcuModbus::OcuModbusInputRegister>("OcuModbus::OcuModbusInputRegister");
 
     QSettings settings("/etc/openffucontrol/ebmbus-cmd/ebmbus-cmd.ini", QSettings::IniFormat);
     settings.beginGroup("interfacesOcuModBus");
@@ -95,7 +95,7 @@ OcuModbus *OcuModbusSystem::getBusByID(int busID)
     return bus;
 }
 
-quint64 OcuModbusSystem::readHoldingRegister(int busID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg)
+quint64 OcuModbusSystem::readHoldingRegister(int busID, quint16 adr, quint16 reg)
 {
     Q_UNUSED(busID)
     quint64 telegramID = getNewTelegramID();
@@ -103,7 +103,7 @@ quint64 OcuModbusSystem::readHoldingRegister(int busID, quint16 adr, OcuModbus::
     return telegramID;
 }
 
-quint64 OcuModbusSystem::writeHoldingRegister(int busID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg, quint16 rawdata)
+quint64 OcuModbusSystem::writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata)
 {
     Q_UNUSED(busID)
     quint64 telegramID = getNewTelegramID();
@@ -111,7 +111,7 @@ quint64 OcuModbusSystem::writeHoldingRegister(int busID, quint16 adr, OcuModbus:
     return telegramID;
 }
 
-quint64 OcuModbusSystem::readInputRegister(int busID, quint16 adr, OcuModbus::OcuModbusInputRegister reg)
+quint64 OcuModbusSystem::readInputRegister(int busID, quint16 adr, quint16 reg)
 {
     Q_UNUSED(busID)
     quint64 telegramID = getNewTelegramID();

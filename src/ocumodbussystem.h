@@ -33,9 +33,9 @@ public:
 
     OcuModbus* getBusByID(int busID);
 
-    quint64 readHoldingRegister(int busID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg);
-    quint64 writeHoldingRegister(int busID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg, quint16 rawdata);
-    quint64 readInputRegister(int busID, quint16 adr, OcuModbus::OcuModbusInputRegister reg);
+    quint64 readHoldingRegister(int busID, quint16 adr, quint16 reg);
+    quint64 writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata);
+    quint64 readInputRegister(int busID, quint16 adr, quint16 reg);
 
 
 private:
@@ -49,15 +49,15 @@ signals:
 
     // Incoming signals from bus, routed to host
     void signal_transactionLost(quint64 telegramID);
-    void signal_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg, quint16 rawdata);
-    void signal_receivedInputRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusInputRegister reg, quint16 rawdata);
+    void signal_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
+    void signal_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
     void signal_wroteHoldingRegisterData(quint64 telegramID);
 
 
     // Outgoing signals to bus
-    void signal_writeHoldingRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg, quint16 rawdata);
-    void signal_readHoldingRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg);
-    void signal_readInputRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusInputRegister reg);
+    void signal_writeHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
+    void signal_readHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg);
+    void signal_readInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg);
 
 
 public slots:

@@ -49,7 +49,7 @@ RemoteClientHandler::RemoteClientHandler(QObject *parent, QTcpSocket *socket, FF
     connect(m_ffuDB, SIGNAL(signal_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)), this, SLOT(slot_DCIaddressingGotSerialNumber(int,quint8,quint8,quint8,quint32)));
     connect(m_ffuDB, SIGNAL(signal_FFUactualDataHasChanged(int)), this, SLOT(slot_FFUactualDataHasChanged(int)));
     connect(m_auxFanDB, &AuxFanDatabase::signal_AuxFanActualDataHasChanged, this, &RemoteClientHandler::slot_AuxFanActualDataHasChanged);
-    connect(m_ocuDB, &OCUdatabase::signal_OCUActualDataHasChanged, this, &RemoteClientHandler::slot_OCUActualDataHasChanged);
+    connect(m_ocuDB, &OCUdatabase::signal_FanActualDataHasChanged, this, &RemoteClientHandler::slot_OCUfanActualDataHasChanged);
 }
 
 void RemoteClientHandler::slot_read_ready()
@@ -123,7 +123,7 @@ void RemoteClientHandler::slot_read_ready()
                           "        Show the list of currently configured ffus from the controller database.\r\n"
                           "    list-auxfans\r\n"
                           "        Show the list of currently configured auxiliary fans from the controller database.\r\n"
-                          "    list-ocus\r\n"
+                          "    list-ocufans\r\n"
                           "        Show the list of currently configured OCUs from the controller database.\r\n"
                           "    log\r\n"
                           "        Show the log consisting of infos, warnings and errors.\r\n"
@@ -152,11 +152,11 @@ void RemoteClientHandler::slot_read_ready()
                           "        Delete auxiliary fan with ID from the controller database.\r\n"
                           "        Note that you can delete all auxiliary fans of a certain bus by using BUSNR only.\r\n"
                           "\r\n"
-                          "    add-ocu --bus=BUSNR --unitAddress=ARD --id=ID\r\n"
-                          "        Add a new OCU with ID to the controller database at BUSNR with modbus address ADR.\r\n"
+                          "    add-ocufan --bus=BUSNR --unitAddress=ARD --id=ID\r\n"
+                          "        Add a new OCUfan with ID to the controller database at BUSNR with modbus address ADR.\r\n"
                           "\r\n"
-                          "    delete-ocu --id=ID --bus=BUSNR\r\n"
-                          "        Delete OCU with ID from the controller database.\r\n"
+                          "    delete-ocufan --id=ID --bus=BUSNR\r\n"
+                          "        Delete OCUfan with ID from the controller database.\r\n"
                           "        Note that you can delete all OCUs of a certain bus by using BUSNR only.\r\n"
                           "\r\n"
                           "    broadcast --bus=BUSNR\r\n"
@@ -226,15 +226,15 @@ void RemoteClientHandler::slot_read_ready()
                 socket->write(line.toUtf8());
             }
         }
-        // ************************************************** list-ocus **************************************************
-        else if (command == "list-ocus")
+        // ************************************************** list-ocufans **************************************************
+        else if (command == "list-ocufans")
         {
-            QList<OCU*> ocus = m_ocuDB->getOCUs();
-            foreach(OCU* ocu, ocus)
+            QList<OCUfan*> ocufans = m_ocuDB->getOCUfans();
+            foreach(OCUfan* ocufan, ocufans)
             {
                 QString line;
 
-                line.sprintf("OCU id=%i busID=%i\r\n", ocu->getId(), ocu->getBusID());
+                line.sprintf("OCUfan id=%i busID=%i\r\n", ocufan->getId(), ocufan->getBusID());
 
                 socket->write(line.toUtf8());
             }
@@ -297,7 +297,7 @@ void RemoteClientHandler::slot_read_ready()
             socket->write(response.toUtf8());
         }
         // ************************************************** add-ffu **************************************************
-        else if ((command == "add-ffu") || (command == "add-auxfan") || (command == "add-ocu"))
+        else if ((command == "add-ffu") || (command == "add-auxfan") || (command == "add-ocufan"))
         {
             bool ok;
 
@@ -319,7 +319,7 @@ void RemoteClientHandler::slot_read_ready()
 
             QString unitString = data.value("unit");
             int unit = unitString.toInt(&ok);
-            if ((unitString.isEmpty() || !ok) && ((command == "add-ffu") || (command == "add-ocu")))
+            if ((unitString.isEmpty() || !ok) && ((command == "add-ffu") || (command == "add-ocufan")))
             {
                 socket->write("Error[Commandparser]: parameter \"unit\" not specified or id can not be parsed. Abort.\r\n");
                 continue;
@@ -341,8 +341,8 @@ void RemoteClientHandler::slot_read_ready()
                 response = m_ffuDB->addFFU(id, bus, unit);
             else if (command == "add-auxfan")
                 response = m_auxFanDB->addAuxFan(id, bus, fanAddress);
-            else if (command == "add-ocu")
-                response = m_ocuDB->addOCU(id, bus, unit);
+            else if (command == "add-ocufan")
+                response = m_ocuDB->addOCUfan(id, bus, unit);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** delete-ffu **************************************************
@@ -656,7 +656,7 @@ void RemoteClientHandler::slot_AuxFanActualDataHasChanged(int id)
     }
 }
 
-void RemoteClientHandler::slot_OCUActualDataHasChanged(int id)
+void RemoteClientHandler::slot_OCUfanActualDataHasChanged(int id)
 {
     if (m_livemode)
     {

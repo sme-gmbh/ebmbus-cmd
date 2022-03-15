@@ -56,7 +56,7 @@ void OcuModbus::setSlaveAddress(quint16 adr)
     modbus_set_slave(m_bus, adr);
 }
 
-void OcuModbus::slot_writeHoldingRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg, quint16 rawdata)
+void OcuModbus::slot_writeHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
 {
     int result;
     modbus_set_slave(m_bus, adr);
@@ -73,7 +73,7 @@ void OcuModbus::slot_writeHoldingRegisterData(quint64 telegramID, quint16 adr, O
     }
 }
 
-void OcuModbus::slot_readHoldingRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg)
+void OcuModbus::slot_readHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg)
 {
     int result;
     uint16_t rawdata;
@@ -91,7 +91,7 @@ void OcuModbus::slot_readHoldingRegisterData(quint64 telegramID, quint16 adr, Oc
     }
 }
 
-void OcuModbus::slot_readInputRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusInputRegister reg)
+void OcuModbus::slot_readInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg)
 {
     int result;
     uint16_t rawdata;

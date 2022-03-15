@@ -64,7 +64,7 @@ private slots:
     void slot_DCIaddressingGotSerialNumber(int busID, quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber);
     void slot_FFUactualDataHasChanged(int id);
     void slot_AuxFanActualDataHasChanged(int id);
-    void slot_OCUActualDataHasChanged(int id);
+    void slot_OCUfanActualDataHasChanged(int id);
 };
 
 #endif // REMOTECLIENTHANDLER_H

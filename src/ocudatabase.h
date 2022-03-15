@@ -39,16 +39,16 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
-    QString addOCU(int id, int busID, int unit = -1);
-    QString deleteOCU(int id);
+    QString addOCUfan(int id, int busID, int unit = -1);
+    QString deleteOCUfan(int id);
 
-    QList<OCU*> getOCUs(int busNr = -1);    // If busNr is specified only OCUs of that bus are returned
-    OCU* getOCUByID(int id);
+    QList<OCUfan*> getOCUfans(int busNr = -1);    // If busNr is specified only OCUs of that bus are returned
+    OCUfan* getOCUfansByID(int id);
 
-    QString getOCUData(int id, QString key);
-    QMap<QString,QString> getOCUData(int id, QStringList keys);
-    QString setOCUData(int id, QString key, QString value);
-    QString setOCUData(int id, QMap<QString,QString> dataMap);
+    QString getOCUfanData(int id, QString key);
+    QMap<QString,QString> getOCUfanData(int id, QStringList keys);
+    QString setOCUfanData(int id, QString key, QString value);
+    QString setOCUfanData(int id, QMap<QString,QString> dataMap);
 
     // Broadcast is not implemented yet
     //QString broadcast(int busID, QMap<QString,QString> dataMap);
@@ -59,13 +59,13 @@ private:
     OcuModbusSystem* m_ocuModbusSystem;
     QList<OcuModbus*>* m_ocuModbusList;
     Loghandler* m_loghandler;
-    QList<OCU*> m_ocus;
+    QList<OCUfan*> m_ocus;
     QTimer m_timer_pollStatus;
 
-    OCU* getOCUByTelegramID(quint64 telegramID);
+    OCUfan* getOCUfanByTelegramID(quint64 telegramID);
 
 signals:
-    void signal_OCUActualDataHasChanged(int id);
+    void signal_FanActualDataHasChanged(int id);
 
 public slots:
     void slot_remoteControlActivated();
@@ -75,8 +75,8 @@ private slots:
     // High level bus response slots
     void slot_transactionFinished();
     void slot_transactionLost(quint64 telegramID);
-    void slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusHoldingRegister reg, quint16 rawdata);
-    void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, OcuModbus::OcuModbusInputRegister reg, quint16 rawdata);
+    void slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
+    void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
     void slot_wroteHoldingRegisterData(quint64 telegramID);
 
     // Timer slots
