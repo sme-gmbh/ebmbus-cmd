@@ -36,7 +36,7 @@ OCUdatabase::OCUdatabase(QObject *parent,  OcuModbusSystem *ocuModbusSystem, Log
 
 void OCUdatabase::loadFromHdd()
 {
-    QString directory = "/var/openffucontrol/ocus/";
+    QString directory = "/var/openffucontrol/ocufans/";
     QDirIterator iterator(directory, QStringList() << "*.csv", QDir::Files, QDirIterator::NoIteratorFlags);
 
     QStringList filepaths;
@@ -60,7 +60,7 @@ void OCUdatabase::loadFromHdd()
 
 void OCUdatabase::saveToHdd()
 {
-    QString path = "/var/openffucontrol/ocus/";
+    QString path = "/var/openffucontrol/ocufans/";
 
     foreach (OCUfan* ocufan, m_ocus)
     {
@@ -69,14 +69,15 @@ void OCUdatabase::saveToHdd()
     }
 }
 
-QString OCUdatabase::addOCUfan(int id, int busID, int unit)
+QString OCUdatabase::addOCUfan(int id, int busID, int ocuModbusAddress, int fanAddress)
 {
     OCUfan* newOCUfan = new OCUfan(this, m_ocuModbusSystem, m_loghandler);
-    newOCUfan->setFiledirectory("/var/openffucontrol/ocus/");
+    newOCUfan->setFiledirectory("/var/openffucontrol/ocufans/");
     newOCUfan->setAutoSave(false);
     newOCUfan->setId(id);
     newOCUfan->setBusID(busID);
-    newOCUfan->setFanAddress(fanAddress);
+    newOCUfan->setFanAddress(fanAddress);       // Number of fan on that particular OCU
+    newOCUfan->setFanGroup(ocuModbusAddress);   // Busaddress of the OCU on the ModBus
     newOCUfan->setAutoSave(true);
     newOCUfan->save();
     connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);

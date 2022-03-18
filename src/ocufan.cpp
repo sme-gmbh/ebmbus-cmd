@@ -469,15 +469,15 @@ void OCUfan::save()
 
     QString wdata;
 
-    wdata.append(QString().sprintf("id=%i;", m_id));
-    wdata.append(QString().sprintf("bus=%i;", m_busID));
-    wdata.append(QString().sprintf("fanAddress=%i;", m_fanAddress));
-    wdata.append(QString().sprintf("fanGroup=%i;", m_fanGroup));
-    wdata.append(QString().sprintf("setpointSpeedRaw=%i;", m_setpointSpeedRaw));
-    wdata.append(QString().sprintf("speedSettingLostCount=%i;", m_actualData.speedSettingLostCount));  // Todo: decide when to save this. Do not write flash to dead!
-    wdata.append(QString().sprintf("temperatureSetPointRaw=%i;", m_setpointTemperatureRaw));
-    wdata.append(QString().sprintf("pumpSetPointRaw=%i;", m_setpointPumpRaw));
-    wdata.append(QString().sprintf("temperatureKpRaw=%i;", m_temperatureKpRaw));
+    wdata.append(QString().sprintf("id=%i ", m_id));
+    wdata.append(QString().sprintf("bus=%i ", m_busID));
+    wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
+    wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
+    wdata.append(QString().sprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
+    wdata.append(QString().sprintf("speedSettingLostCount=%i ", m_actualData.speedSettingLostCount));  // Todo: decide when to save this. Do not write flash to dead!
+    wdata.append(QString().sprintf("temperatureSetPointRaw=%i ", m_setpointTemperatureRaw));
+    wdata.append(QString().sprintf("pumpSetPointRaw=%i ", m_setpointPumpRaw));
+    wdata.append(QString().sprintf("temperatureKpRaw=%i ", m_temperatureKpRaw));
     wdata.append(QString().sprintf("temperatureTnRaw=%i\n", m_temperatureTnRaw));
 
     file.write(wdata.toUtf8());
@@ -504,7 +504,7 @@ void OCUfan::load(QString filename)
 
     QString rdata = QString().fromUtf8(file.readLine());
 
-    QStringList dataList = rdata.split(";");
+    QStringList dataList = rdata.split(" ");
     foreach (QString data, dataList)
     {
         QStringList pair = data.split("=");

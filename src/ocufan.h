@@ -93,11 +93,11 @@ public:
     void setBusID(int busID);
 
     // Number of FFU connected to that particular OCU
-    // This is used as offset Address on the Modbus
+    // This is used as offset Address on the Modbus starting from 0
     int getFanAddress() const;
     void setFanAddress(int fanAddress);
 
-    // Bus Address of the current OCU (that may be controlling more than one FFU)
+    // ModBus Address of the current OCU (that may be controlling more than one FFU)
     int getFanGroup() const;
     void setFanGroup(int fanGroup);
 

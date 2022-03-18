@@ -31,6 +31,7 @@ MainController::MainController(QObject *parent) :
 
     m_ebmbusSystem = new EbmBusSystem(this, &m_io);
     m_ebmModbusSystem = new EbmModbusSystem(this, m_loghandler);
+    m_ocuModbusSystem = new OcuModbusSystem(this, m_loghandler);
 
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
     m_timer.start(100);
@@ -64,13 +65,18 @@ MainController::MainController(QObject *parent) :
     m_auxfandatabase = new AuxFanDatabase(this, m_ebmModbusSystem, m_loghandler);
     m_auxfandatabase->loadFromHdd();
 
-    m_remotecontroller = new RemoteController(this, m_ffudatabase, m_auxfandatabase, m_loghandler);
+    m_ocudatabase = new OCUdatabase(this, m_ocuModbusSystem, m_loghandler);
+    m_ocudatabase->loadFromHdd();
+
+    m_remotecontroller = new RemoteController(this, m_ffudatabase, m_auxfandatabase, m_ocudatabase, m_loghandler);
     connect(m_remotecontroller, SIGNAL(signal_activated()), this, SLOT(slot_remoteControlActivated()));
     connect(m_remotecontroller, SIGNAL(signal_activated()), m_ffudatabase, SLOT(slot_remoteControlActivated()));
     connect(m_remotecontroller, SIGNAL(signal_activated()), m_auxfandatabase, SLOT(slot_remoteControlActivated()));
+    connect(m_remotecontroller, SIGNAL(signal_activated()), m_ocudatabase, SLOT(slot_remoteControlActivated()));
     connect(m_remotecontroller, SIGNAL(signal_deactivated()), this, SLOT(slot_remoteControlDeactivated()));
     connect(m_remotecontroller, SIGNAL(signal_deactivated()), m_ffudatabase, SLOT(slot_remoteControlDeactivated()));
     connect(m_remotecontroller, SIGNAL(signal_deactivated()), m_auxfandatabase, SLOT(slot_remoteControlDeactivated()));
+    connect(m_remotecontroller, SIGNAL(signal_deactivated()), m_ocudatabase, SLOT(slot_remoteControlDeactivated()));
     connect(m_remotecontroller, SIGNAL(signal_connected()), this, SLOT(slot_remoteControlConnected()));
     connect(m_remotecontroller, SIGNAL(signal_disconnected()), this, SLOT(slot_remoteControlDisconnected()));
 

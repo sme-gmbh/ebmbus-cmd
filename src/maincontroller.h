@@ -23,12 +23,14 @@
 #include "revpidio.h"
 #include "ebmbussystem.h"
 #include "ebmmodbussystem.h"
+#include "ocumodbussystem.h"
 #include "lightbutton.h"
 #include "uninterruptiblepowersupply.h"
 #include "operatingsystemcontrol.h"
 #include "remotecontroller.h"
 #include "ffudatabase.h"
 #include "auxfandatabase.h"
+#include "ocudatabase.h"
 #include "loghandler.h"
 
 class MainController : public QObject
@@ -52,12 +54,14 @@ private:
 
     EbmBusSystem* m_ebmbusSystem;
     EbmModbusSystem* m_ebmModbusSystem;
+    OcuModbusSystem* m_ocuModbusSystem;
 
     UninterruptiblePowerSupply* m_ups;
     OperatingSystemControl* m_osControl;
 
     FFUdatabase* m_ffudatabase;
     AuxFanDatabase* m_auxfandatabase;
+    OCUdatabase* m_ocudatabase;
 
     RemoteController* m_remotecontroller;
 

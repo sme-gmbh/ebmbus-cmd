@@ -39,7 +39,7 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
-    QString addOCUfan(int id, int busID, int unit = -1);
+    QString addOCUfan(int id, int busID, int ocuModbusAddress, int fanAddress);
     QString deleteOCUfan(int id);
 
     QList<OCUfan*> getOCUfans(int busNr = -1);    // If busNr is specified only OCUs of that bus are returned

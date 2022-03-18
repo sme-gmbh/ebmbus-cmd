@@ -152,8 +152,8 @@ void RemoteClientHandler::slot_read_ready()
                           "        Delete auxiliary fan with ID from the controller database.\r\n"
                           "        Note that you can delete all auxiliary fans of a certain bus by using BUSNR only.\r\n"
                           "\r\n"
-                          "    add-ocufan --bus=BUSNR --unitAddress=ARD --id=ID\r\n"
-                          "        Add a new OCUfan with ID to the controller database at BUSNR with modbus address ADR.\r\n"
+                          "    add-ocufan --bus=BUSNR --unit=ADR --fanAddress=FAN --id=ID\r\n"
+                          "        Add a new OCUfan with ID to the controller database at BUSNR with OCU at modbus address ADR and fan number FAN on that OCU.\r\n"
                           "\r\n"
                           "    delete-ocufan --id=ID --bus=BUSNR\r\n"
                           "        Delete OCUfan with ID from the controller database.\r\n"
@@ -319,7 +319,7 @@ void RemoteClientHandler::slot_read_ready()
 
             QString unitString = data.value("unit");
             int unit = unitString.toInt(&ok);
-            if ((unitString.isEmpty() || !ok) && ((command == "add-ffu") || (command == "add-ocufan")))
+            if ((unitString.isEmpty() || !ok) && ((command == "add-ffu") && (command == "add-ocufan")))
             {
                 socket->write("Error[Commandparser]: parameter \"unit\" not specified or id can not be parsed. Abort.\r\n");
                 continue;
@@ -342,7 +342,10 @@ void RemoteClientHandler::slot_read_ready()
             else if (command == "add-auxfan")
                 response = m_auxFanDB->addAuxFan(id, bus, fanAddress);
             else if (command == "add-ocufan")
-                response = m_ocuDB->addOCUfan(id, bus, unit);
+            {
+                int modbusAddress = unit;
+                response = m_ocuDB->addOCUfan(id, bus, modbusAddress, fanAddress);
+            }
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** delete-ffu **************************************************
