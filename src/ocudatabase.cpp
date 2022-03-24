@@ -83,7 +83,7 @@ QString OCUdatabase::addOCUfan(int id, int busID, int ocuModbusAddress, int fanA
     connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
     m_ocus.append(newOCUfan);
 
-    return "OK[OCUdatabase]: Added OCU ID " + QString().setNum(id);
+    return "OK[OCUdatabase]: Added ID " + QString().setNum(id);
 }
 
 QString OCUdatabase::deleteOCUfan(int id)

@@ -24,3 +24,6 @@ ebmbus2=ttyUSB2
 
 [interfacesEbmModBus]
 #ebmmodbus0=ttyUSB3
+
+[interfacesOcuModBus]
+#ocumodbus0=ttyUSB0

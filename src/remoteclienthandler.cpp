@@ -440,6 +440,7 @@ void RemoteClientHandler::slot_read_ready()
         else if (command == "broadcast")
         {
             bool ok;
+            // TODO: Implement broadcast command for other bus types
 
             QString busString = data.value("bus");
             int bus = busString.toInt(&ok);
@@ -538,6 +539,8 @@ void RemoteClientHandler::slot_read_ready()
                 response = m_ffuDB->setFFUdata(id, data);
             else if (m_auxFanDB->getAuxFanByID(id) != nullptr)
                 response = m_auxFanDB->setAuxFanData(id, data);
+            else if (m_ocuDB->getOCUfansByID(id) != nullptr)
+                response = m_ocuDB->setOCUfanData(id, data);
             socket->write(response.toUtf8() + "\r\n");
         }
         // ************************************************** get **************************************************
@@ -561,6 +564,8 @@ void RemoteClientHandler::slot_read_ready()
                 responseData = m_ffuDB->getFFUdata(id, data.keys("query"));
             else if (m_auxFanDB->getAuxFanByID(id) != nullptr)
                 responseData = m_auxFanDB->getAuxFanData(id, data.keys("query"));
+            else if (m_ocuDB->getOCUfansByID(id) != nullptr)
+                responseData = m_ocuDB->getOCUfanData(id, data.keys("query"));
             if (responseData.value("actualData").toInt() == 1)
             {
                 socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
@@ -664,12 +669,12 @@ void RemoteClientHandler::slot_OCUfanActualDataHasChanged(int id)
     if (m_livemode)
     {
         socket->write("ActualData from id=" + QString().setNum(id).toUtf8());
-        QMap<QString,QString> responseData = m_auxFanDB->getAuxFanData(id, QStringList() << "actual");
+        QMap<QString,QString> responseData = m_ocuDB->getOCUfanData(id, QStringList() << "actual");
         responseData.remove("actualData");  // Remove special treatment marker
         foreach(QString key, responseData.keys())
         {
             QString response = responseData.value(key);
-            if (!response.startsWith("Error[OCU]:"))
+            if (!response.startsWith("Error[OCUfan]:"))
                 socket->write(" " + key.toUtf8() + "=" + response.toUtf8());
         }
         socket->write("\r\n");
