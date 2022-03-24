@@ -29,7 +29,7 @@ OCUfan::OCUfan(QObject *parent, OcuModbusSystem *ocuModbusSystem, Loghandler* lo
     setAutoSave(true);
 
     m_id = -1;
-    m_setpointSpeedRaw = 720;
+    m_setpointSpeedRaw = 820;
     m_speedMaxRPM = 1270;     // Just some initial data, read back real values later from EEPROM
     m_setpointTemperatureRaw = 20000;   // 20.000°C
     m_temperatureKpRaw = -1 * 100;            // -1
@@ -293,11 +293,11 @@ QString OCUfan::getData(QString key)
     }
     else if (key == "speedReading")
     {
-        return QString().sprintf("%i", m_actualData.speedReading);
+        return QString().sprintf("%.0lf", m_actualData.speedReading);
     }
     else if (key == "speedSetpoint")
     {
-        return QString().sprintf("%i", m_actualData.speedSetpoint);
+        return QString().sprintf("%.0lf", m_actualData.speedSetpoint);
     }
     else if (key == "fanPower")
     {
@@ -662,7 +662,7 @@ void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, q
 {
     Q_UNUSED(telegramID)
 
-    if (adr != m_fanAddress)
+    if (adr != m_fanGroup)
         return;
 
     markAsOnline();
@@ -694,7 +694,7 @@ void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, qui
 {
     Q_UNUSED(telegramID)
 
-    if (adr != m_fanAddress)
+    if (adr != m_fanGroup)
         return;
 
     markAsOnline();

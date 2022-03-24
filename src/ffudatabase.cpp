@@ -370,6 +370,7 @@ void FFUdatabase::slot_simpleStatus(quint64 telegramID, quint8 fanAddress, quint
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase::slot_simpleStatus", "Telegram id mismatch.");
         return;
     }
     ffu->slot_simpleStatus(telegramID, fanAddress, fanGroup, status);
@@ -381,6 +382,7 @@ void FFUdatabase::slot_status(quint64 telegramID, quint8 fanAddress, quint8 fanG
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase::slot_status", "Telegram id mismatch.");
         return;
     }
     ffu->slot_status(telegramID, fanAddress, fanGroup, statusAddress, status, rawValue);
@@ -392,6 +394,7 @@ void FFUdatabase::slot_actualSpeed(quint64 telegramID, quint8 fanAddress, quint8
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase::slot_actualSpeed", "Telegram id mismatch.");
         return;
     }
     ffu->slot_actualSpeed(telegramID, fanAddress, fanGroup, actualRawSpeed);
@@ -403,6 +406,7 @@ void FFUdatabase::slot_setPointHasBeenSet(quint64 telegramID, quint8 fanAddress,
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase::slot_setPointHasBeenSet", "Telegram id mismatch.");
         return;
     }
     ffu->slot_setPointHasBeenSet(telegramID, fanAddress, fanGroup);
@@ -414,6 +418,7 @@ void FFUdatabase::slot_EEPROMhasBeenWritten(quint64 telegramID, quint8 fanAddres
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase::slot_EEPROMhasBeenWritten", "Telegram id mismatch.");
         return;
     }
     ffu->slot_EEPROMhasBeenWritten(telegramID, fanAddress, fanGroup);
@@ -425,6 +430,7 @@ void FFUdatabase::slot_EEPROMdata(quint64 telegramID, quint8 fanAddress, quint8 
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase::slot_EEPROMdata", "Telegram id mismatch.");
         return;
     }
     ffu->slot_EEPROMdata(telegramID, fanAddress, fanGroup, eepromAddress, dataByte);

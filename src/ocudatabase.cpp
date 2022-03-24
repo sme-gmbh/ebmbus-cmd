@@ -231,6 +231,7 @@ void OCUdatabase::slot_transactionLost(quint64 telegramID)
     if (ocufan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_transactionLost", "Telegram id mismatch.");
         return;
     }
     ocufan->slot_transactionLost(telegramID);
@@ -242,6 +243,7 @@ void OCUdatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 a
     if (ocufan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_receivedHoldingRegisterData", "Telegram id mismatch.");
         return;
     }
     ocufan->slot_receivedHoldingRegisterData(telegramID, adr, reg, rawdata);
@@ -253,6 +255,7 @@ void OCUdatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr
     if (ocufan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_receivedInputRegisterData", "Telegram id mismatch.");
         return;
     }
     ocufan->slot_receivedInputRegisterData(telegramID, adr, reg, rawdata);
@@ -264,6 +267,7 @@ void OCUdatabase::slot_wroteHoldingRegisterData(quint64 telegramID)
     if (ocufan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_wroteHoldingRegisterData", "Telegram id mismatch.");
         return;
     }
     ocufan->slot_wroteHoldingRegisterData(telegramID);

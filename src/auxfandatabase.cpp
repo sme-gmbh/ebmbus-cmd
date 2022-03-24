@@ -230,6 +230,7 @@ void AuxFanDatabase::slot_transactionLost(quint64 telegramID)
     if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "AuxFanDatabase::slot_transactionLost", "Telegram id mismatch.");
         return;
     }
     auxFan->slot_transactionLost(telegramID);
@@ -241,6 +242,7 @@ void AuxFanDatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint1
     if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "AuxFanDatabase::slot_receivedHoldingRegisterData", "Telegram id mismatch.");
         return;
     }
     auxFan->slot_receivedHoldingRegisterData(telegramID, adr, reg, rawdata);
@@ -252,6 +254,7 @@ void AuxFanDatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 
     if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "AuxFanDatabase::slot_receivedInputRegisterData", "Telegram id mismatch.");
         return;
     }
     auxFan->slot_receivedInputRegisterData(telegramID, adr, reg, rawdata);
@@ -263,6 +266,7 @@ void AuxFanDatabase::slot_wroteHoldingRegisterData(quint64 telegramID)
     if (auxFan == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "AuxFanDatabase::slot_wroteHoldingRegisterData", "Telegram id mismatch.");
         return;
     }
     auxFan->slot_wroteHoldingRegisterData(telegramID);
