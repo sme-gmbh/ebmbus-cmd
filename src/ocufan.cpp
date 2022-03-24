@@ -680,7 +680,7 @@ void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, q
         m_actualData.speedSetpoint = rawdata;
         break;
     case OCUfan::HOLDING_REG_0003_TemperatureControlKp:
-        m_actualData.temperatureKp = (double)rawdata / 100.0;
+        m_actualData.temperatureKp = (double)(qint16)rawdata / 100.0;
         break;
     case OCUfan::HOLDING_REG_0004_TemperatureControlTn:
         m_actualData.temperatureTn = (double)rawdata / 10.0;
