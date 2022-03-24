@@ -59,7 +59,7 @@ private:
     OcuModbusSystem* m_ocuModbusSystem;
     QList<OcuModbus*>* m_ocuModbusList;
     Loghandler* m_loghandler;
-    QList<OCUfan*> m_ocus;
+    QList<OCUfan*> m_ocufans;
     QTimer m_timer_pollStatus;
 
     OCUfan* getOCUfanByTelegramID(quint64 telegramID);

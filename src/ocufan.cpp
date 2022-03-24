@@ -332,7 +332,7 @@ QString OCUfan::getData(QString key)
         return QString().sprintf("%.3lf", m_actualData.pumpSetpoint);
     }
 
-    return "Error[AuxFan]: Key " + key + " not available";
+    return "Error[OCUfan]: Key " + key + " not available";
 }
 
 void OCUfan::setData(QString key, QString value)
@@ -418,12 +418,14 @@ void OCUfan::requestStatus()
 {
     if (!isConfigured())
     {
+        m_loghandler->slot_newEntry(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), " not configured.");
         return;
     }
 
     OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
     if (bus == nullptr)
     {
+        m_loghandler->slot_newEntry(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), " Bus id " + QString().setNum(m_busID) + " not found.");
         return;
     }
 
@@ -713,12 +715,12 @@ void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, qui
         if (rawdata == 0)
         {
             m_actualData.statusString = "healthy";
-            m_loghandler->slot_entryGone(LogEntry::Error, "AuxFan id=" + QString().setNum(m_id), "Status error present.");
+            m_loghandler->slot_entryGone(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), "Status error present.");
         }
         else
         {
             m_actualData.statusString = "problem";
-            m_loghandler->slot_newEntry(LogEntry::Error, "AuxFan id=" + QString().setNum(m_id), "Status error present.");
+            m_loghandler->slot_newEntry(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), "Status error present.");
         }
         break;
     case OCUfan::INPUT_REG_0004_FanRpmRead:

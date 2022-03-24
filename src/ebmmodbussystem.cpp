@@ -46,7 +46,8 @@ EbmModbusSystem::EbmModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 
             connect(newEbmModbus, SIGNAL(signal_newEntry(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_newEntry(LogEntry::LoggingCategory,QString,QString)));
             connect(newEbmModbus, SIGNAL(signal_entryGone(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_entryGone(LogEntry::LoggingCategory,QString,QString)));
-            m_ebmModbuslist.append(newEbmModbus);
+// Bug: Why twice?
+//            m_ebmModbuslist.append(newEbmModbus);
 
             // Routing of calls to bus
             connect(this, &EbmModbusSystem::signal_readHoldingRegisterData, newEbmModbus, &EbmModbus::slot_readHoldingRegisterData);

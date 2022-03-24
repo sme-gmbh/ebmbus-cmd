@@ -46,7 +46,8 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 
             connect(newOcuModbus, SIGNAL(signal_newEntry(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_newEntry(LogEntry::LoggingCategory,QString,QString)));
             connect(newOcuModbus, SIGNAL(signal_entryGone(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_entryGone(LogEntry::LoggingCategory,QString,QString)));
-            m_ocuModbuslist.append(newOcuModbus);
+// BUG: Why twice?
+//            m_ocuModbuslist.append(newOcuModbus);
 
             // Routing of calls to bus
             connect(this, &OcuModbusSystem::signal_readHoldingRegisterData, newOcuModbus, &OcuModbus::slot_readHoldingRegisterData);

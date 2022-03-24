@@ -54,7 +54,7 @@ void OCUdatabase::loadFromHdd()
         newOCUfan->load(filepath);
         newOCUfan->setFiledirectory(directory);
         connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
-        m_ocus.append(newOCUfan);
+        m_ocufans.append(newOCUfan);
     }
 }
 
@@ -62,7 +62,7 @@ void OCUdatabase::saveToHdd()
 {
     QString path = "/var/openffucontrol/ocufans/";
 
-    foreach (OCUfan* ocufan, m_ocus)
+    foreach (OCUfan* ocufan, m_ocufans)
     {
         ocufan->setFiledirectory(path);
         ocufan->save();
@@ -81,7 +81,7 @@ QString OCUdatabase::addOCUfan(int id, int busID, int ocuModbusAddress, int fanA
     newOCUfan->setAutoSave(true);
     newOCUfan->save();
     connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
-    m_ocus.append(newOCUfan);
+    m_ocufans.append(newOCUfan);
 
     return "OK[OCUdatabase]: Added ID " + QString().setNum(id);
 }
@@ -92,7 +92,7 @@ QString OCUdatabase::deleteOCUfan(int id)
     if (ocufan == nullptr)
         return "Warning[OCUdatabase]: ID " + QString().setNum(id) + " not found.";
 
-    bool ok = m_ocus.removeOne(ocufan);
+    bool ok = m_ocufans.removeOne(ocufan);
     if (ok)
     {
         disconnect(ocufan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
@@ -108,10 +108,10 @@ QList<OCUfan *> OCUdatabase::getOCUfans(int busNr)
 {
     QList<OCUfan *> ocufanList;
     if (busNr == -1)
-        return m_ocus;
+        return m_ocufans;
     else
     {
-        foreach (OCUfan* ocufan, m_ocus) {
+        foreach (OCUfan* ocufan, m_ocufans) {
             if (ocufan->getBusID() == busNr)
                 ocufanList.append(ocufan);
         }
@@ -122,7 +122,7 @@ QList<OCUfan *> OCUdatabase::getOCUfans(int busNr)
 
 OCUfan *OCUdatabase::getOCUfansByID(int id)
 {
-    foreach (OCUfan* ocufan, m_ocus)
+    foreach (OCUfan* ocufan, m_ocufans)
     {
         if (ocufan->getId() == id)
             return ocufan;
@@ -132,7 +132,7 @@ OCUfan *OCUdatabase::getOCUfansByID(int id)
 
 OCUfan *OCUdatabase::getOCUfanByTelegramID(quint64 telegramID)
 {
-    foreach (OCUfan* ocufan, m_ocus) {
+    foreach (OCUfan* ocufan, m_ocufans) {
         bool found = ocufan->isThisYourTelegram(telegramID);
         if (found)
         {
@@ -208,14 +208,14 @@ QString OCUdatabase::setOCUfanData(int id, QMap<QString, QString> dataMap)
 
 void OCUdatabase::slot_remoteControlActivated()
 {
-    foreach (OCUfan* ocufan, m_ocus) {
+    foreach (OCUfan* ocufan, m_ocufans) {
         ocufan->setRemoteControlled(true);
     }
 }
 
 void OCUdatabase::slot_remoteControlDeactivated()
 {
-    foreach (OCUfan* ocufan, m_ocus) {
+    foreach (OCUfan* ocufan, m_ocufans) {
         ocufan->setRemoteControlled(false);
     }
 }
@@ -273,13 +273,13 @@ void OCUdatabase::slot_timer_pollStatus_fired()
 {
     static int currentOCUfanId = 0;
 
-    if (m_ocus.count() > currentOCUfanId)
+    if (m_ocufans.count() > currentOCUfanId)
     {
-        OCUfan* ocufan = m_ocus.at(currentOCUfanId);
+        OCUfan* ocufan = m_ocufans.at(currentOCUfanId);
         ocufan->requestStatus();
     }
 
     currentOCUfanId++;
-    if (m_ocus.count() <= currentOCUfanId)
+    if (m_ocufans.count() <= currentOCUfanId)
         currentOCUfanId = 0;
 }
