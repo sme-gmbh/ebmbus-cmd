@@ -54,6 +54,7 @@ void OCUdatabase::loadFromHdd()
         newOCUfan->load(filepath);
         newOCUfan->setFiledirectory(directory);
         connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
+        connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::slot_FanActualDataHasChanged);
         m_ocufans.append(newOCUfan);
     }
 }
