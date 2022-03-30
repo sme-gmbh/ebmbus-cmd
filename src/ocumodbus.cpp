@@ -41,6 +41,12 @@ bool OcuModbus::open()
         return false;
     }
 
+    struct timeval response_timeout;
+    response_timeout.tv_sec = 1;
+    response_timeout.tv_usec = 0;
+
+    modbus_set_response_timeout(m_bus, &response_timeout);
+
     fprintf(stderr, "OcuModbus::open(): Modbus interface configured and connected.\n");
     return true;
 }

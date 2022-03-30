@@ -30,7 +30,7 @@ OCUdatabase::OCUdatabase(QObject *parent,  OcuModbusSystem *ocuModbusSystem, Log
     connect(m_ocuModbusSystem, &OcuModbusSystem::signal_transactionLost, this, &OCUdatabase::slot_transactionLost);
 
     connect(&m_timer_pollStatus, &QTimer::timeout, this, &OCUdatabase::slot_timer_pollStatus_fired);
-    m_timer_pollStatus.setInterval(2000);
+    m_timer_pollStatus.setInterval(10000);
     m_timer_pollStatus.start();
 }
 
