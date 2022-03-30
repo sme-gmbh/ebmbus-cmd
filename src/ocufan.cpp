@@ -667,7 +667,7 @@ void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, q
 
     markAsOnline();
 
-    switch (reg)
+    switch (reg % MODBUS_FFU_BLOCKSIZE)
     {
     case OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint:
         m_actualData.temperatureSetpoint = (double)rawdata / 1000.0;
@@ -699,7 +699,7 @@ void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, qui
 
     markAsOnline();
 
-    switch (reg)
+    switch (reg % MODBUS_FFU_BLOCKSIZE)
     {
     case OCUfan::INPUT_REG_0000_TemperatureFFURead:
         m_actualData.temperatureRead = (double)rawdata / 1000.0;
