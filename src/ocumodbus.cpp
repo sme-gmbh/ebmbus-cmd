@@ -41,11 +41,18 @@ bool OcuModbus::open()
         return false;
     }
 
+    uint32_t to_sec = 1;
+    uint32_t to_usec = 0;
+
+#if LIBMODBUS_VERSION_CHECK(3,1,2)
+    modbus_set_response_timeout(m_bus, to_sec, to_usec);
+#else
     struct timeval response_timeout;
-    response_timeout.tv_sec = 1;
-    response_timeout.tv_usec = 0;
+    response_timeout.tv_sec = to_sec;
+    response_timeout.tv_usec = to_usec;
 
     modbus_set_response_timeout(m_bus, &response_timeout);
+#endif
 
     fprintf(stderr, "OcuModbus::open(): Modbus interface configured and connected.\n");
     return true;
