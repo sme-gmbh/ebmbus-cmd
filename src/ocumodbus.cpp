@@ -74,7 +74,7 @@ void OcuModbus::slot_writeHoldingRegisterData(quint64 telegramID, quint16 adr, q
     int result;
     modbus_set_slave(m_bus, adr);
     // Bus clearance time
-    QThread::msleep(100);
+    QThread::msleep(200);
     result = modbus_write_register(m_bus, reg, rawdata);
     if (result >= 0)
         emit signal_wroteHoldingRegisterData(telegramID);
@@ -92,7 +92,7 @@ void OcuModbus::slot_readHoldingRegisterData(quint64 telegramID, quint16 adr, qu
     uint16_t rawdata;
     modbus_set_slave(m_bus, adr);
     // Bus clearance time
-    QThread::msleep(100);
+    QThread::msleep(200);
     result = modbus_read_registers(m_bus, reg, 1, &rawdata);
     if (result >= 0)
         emit signal_receivedHoldingRegisterData(telegramID, adr, reg, rawdata);
@@ -110,7 +110,7 @@ void OcuModbus::slot_readInputRegisterData(quint64 telegramID, quint16 adr, quin
     uint16_t rawdata;
     modbus_set_slave(m_bus, adr);
     // Bus clearance time
-    QThread::msleep(100);
+    QThread::msleep(200);
     result = modbus_read_input_registers(m_bus, reg, 1, &rawdata);
     if (result >= 0)
         emit signal_receivedInputRegisterData(telegramID, adr, reg, rawdata);
