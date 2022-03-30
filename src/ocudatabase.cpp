@@ -81,6 +81,7 @@ QString OCUdatabase::addOCUfan(int id, int busID, int ocuModbusAddress, int fanA
     newOCUfan->setAutoSave(true);
     newOCUfan->save();
     connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
+    connect(newOCUfan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::slot_FanActualDataHasChanged);
     m_ocufans.append(newOCUfan);
 
     return "OK[OCUdatabase]: Added ID " + QString().setNum(id);
@@ -96,6 +97,7 @@ QString OCUdatabase::deleteOCUfan(int id)
     if (ok)
     {
         disconnect(ocufan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::signal_FanActualDataHasChanged);
+        disconnect(ocufan, &OCUfan::signal_FanActualDataHasChanged, this, &OCUdatabase::slot_FanActualDataHasChanged);
         ocufan->deleteFromHdd();
         ocufan->deleteAllErrors();
         delete ocufan;
@@ -271,6 +273,13 @@ void OCUdatabase::slot_wroteHoldingRegisterData(quint64 telegramID)
         return;
     }
     ocufan->slot_wroteHoldingRegisterData(telegramID);
+}
+
+void OCUdatabase::slot_FanActualDataHasChanged(int id)
+{
+    // If valid response returned, immediately request new status from next fan
+    m_timer_pollStatus.start();
+    slot_timer_pollStatus_fired();
 }
 
 void OCUdatabase::slot_timer_pollStatus_fired()

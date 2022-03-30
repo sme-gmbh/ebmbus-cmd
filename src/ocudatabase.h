@@ -79,6 +79,7 @@ private slots:
     void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
     void slot_wroteHoldingRegisterData(quint64 telegramID);
 
+    void slot_FanActualDataHasChanged(int id);
     // Timer slots
     void slot_timer_pollStatus_fired();
 };
