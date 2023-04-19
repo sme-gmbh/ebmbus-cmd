@@ -43,6 +43,7 @@ public:
 
 private:
     Loghandler* m_loghandler;
+    QSettings* m_settings;
 
     RevPiDIO m_io;
 

@@ -3,6 +3,12 @@
 # Version of Daisy Chain Addressing (Version 0 using RevPi Digital IOs)
 DCIversion=0
 
+[system]
+# Set to 0 if no UPS is present, otherwise system might shut down
+hasUPS=1
+# Set to 0 if no manual operation buttons are present
+hasLightButtons=1
+
 [configEbmBus]
 telegramRepeatCount=2
 requestTimeout=300

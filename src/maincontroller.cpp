@@ -22,6 +22,8 @@ MainController::MainController(QObject *parent) :
 {
     fprintf(stdout, "ebmBus main controller startup...\n");
 
+    m_settings = new QSettings("/etc/openffucontrol/ebmbus-cmd/ebmbus-cmd.ini", QSettings::IniFormat);
+
     m_loghandler = new Loghandler(this);
     connect(m_loghandler, SIGNAL(signal_newError()), this, SLOT(slot_newError()));
     connect(m_loghandler, SIGNAL(signal_allErrorsQuit()), this, SLOT(slot_allErrorsQuit()));
@@ -33,31 +35,37 @@ MainController::MainController(QObject *parent) :
     m_ebmModbusSystem = new EbmModbusSystem(this, m_loghandler);
     m_ocuModbusSystem = new OcuModbusSystem(this, m_loghandler);
 
-    connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
-    m_timer.start(100);
-
     connect(&m_manualSpeedUpdateTimer, SIGNAL(timeout()), this, SLOT(slot_manualSpeedUpdateTimer_fired()));
     m_manualSpeedUpdateTimer.start(300000); // Every 300 seconds (5 minutes)
 
-    m_lightbutton_operation = new LightButton(this, &m_io, 4, 4);
-    m_lightbutton_error = new LightButton(this, &m_io, 5, 5);
-    m_lightbutton_speed_0 = new LightButton(this, &m_io, 6, 6);
-    m_lightbutton_speed_50 = new LightButton(this, &m_io, 7, 7);
-    m_lightbutton_speed_100 = new LightButton(this, &m_io, 8, 8);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_operation = new LightButton(this, &m_io, 4, 4);
+        m_lightbutton_error = new LightButton(this, &m_io, 5, 5);
+        m_lightbutton_speed_0 = new LightButton(this, &m_io, 6, 6);
+        m_lightbutton_speed_50 = new LightButton(this, &m_io, 7, 7);
+        m_lightbutton_speed_100 = new LightButton(this, &m_io, 8, 8);
 
-    connect(m_lightbutton_operation, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_operation_clicked()));
-    connect(m_lightbutton_error, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_error_clicked()));
-    connect(m_lightbutton_speed_0, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_0_clicked()));
-    connect(m_lightbutton_speed_50, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_50_clicked()));
-    connect(m_lightbutton_speed_100, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_100_clicked()));
+        connect(m_lightbutton_operation, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_operation_clicked()));
+        connect(m_lightbutton_error, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_error_clicked()));
+        connect(m_lightbutton_speed_0, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_0_clicked()));
+        connect(m_lightbutton_speed_50, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_50_clicked()));
+        connect(m_lightbutton_speed_100, SIGNAL(signal_button_clicked()), this, SLOT(slot_button_speed_100_clicked()));
 
-    m_ups = new UninterruptiblePowerSupply(this, &m_io, 9, m_loghandler);
-    m_osControl = new OperatingSystemControl(this);
-    connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
-    connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
-    connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), this, SLOT(slot_shutdownNOW()));
-    connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), m_osControl, SLOT(slot_shutdownNOW()));
-    connect(m_ups, SIGNAL(signal_powerGoodAgain()), this, SLOT(slot_mainsPowerRestored()));
+        connect(&m_timer, SIGNAL(timeout()), this, SLOT(slot_timer_fired()));
+        m_timer.start(100);
+    }
+
+    if (m_settings->value("system/hasUPS").toInt() == 1)
+    {
+        m_ups = new UninterruptiblePowerSupply(this, &m_io, 9, m_loghandler);
+        m_osControl = new OperatingSystemControl(this);
+        connect(m_ups, SIGNAL(signal_mainswitchOff()), this, SLOT(slot_shutdownNOW()));
+        connect(m_ups, SIGNAL(signal_mainswitchOff()), m_osControl, SLOT(slot_shutdownNOW()));
+        connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), this, SLOT(slot_shutdownNOW()));
+        connect(m_ups, SIGNAL(signal_shutdownDueToPowerloss()), m_osControl, SLOT(slot_shutdownNOW()));
+        connect(m_ups, SIGNAL(signal_powerGoodAgain()), this, SLOT(slot_mainsPowerRestored()));
+    }
 
     m_ffudatabase = new FFUdatabase(this, m_ebmbusSystem, m_loghandler);
     m_ffudatabase->loadFromHdd();
@@ -86,8 +94,10 @@ MainController::MainController(QObject *parent) :
     connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_speed_50_clicked()), this, SLOT(slot_button_speed_50_clicked()));
     connect(m_remotecontroller, SIGNAL(signal_buttonSimulated_speed_100_clicked()), this, SLOT(slot_button_speed_100_clicked()));
 
-
-    m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    }
 
     // Temporarily broadcast speed at startup - remove this later
     // m_ebmbusSystem->broadcastSpeed(170);
@@ -101,6 +111,9 @@ MainController::~MainController()
 void MainController::slot_timer_fired()
 {
     static int currentManualSpeed = -1;
+
+    if (m_settings->value("system/hasLightButtons").toInt() == 0)
+        return;
 
     if (!m_remotecontroller->isEnabled())
     {
@@ -236,39 +249,57 @@ void MainController::slot_button_speed_100_clicked()
 // This slot is called if remote control by a server is possible and intentionally activated by an operator
 void MainController::slot_remoteControlActivated()
 {
-    m_lightbutton_operation->slot_setLight(LightButton::LED_ON);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_operation->slot_setLight(LightButton::LED_ON);
+    }
 }
 
 // This slot is called if remote controlling is deactivated intentionally by an operator
 void MainController::slot_remoteControlDeactivated()
 {
-    m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    }
 }
 
 // This slot is called as soon as the first server connects to the remotecontroller
 void MainController::slot_remoteControlConnected()
 {
-    if (m_remotecontroller->isActive())
-        m_lightbutton_operation->slot_setLight(LightButton::LED_ON);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        if (m_remotecontroller->isActive())
+            m_lightbutton_operation->slot_setLight(LightButton::LED_ON);
+    }
 }
 
 // This slot is called if the remotecontroller is not connected to at least ONE server
 void MainController::slot_remoteControlDisconnected()
 {
-    m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_operation->slot_setLight(LightButton::LED_BLINK);
+    }
 }
 
 // This slot is called if the errorhandler gets a new error, that we want to show the operator by a blinking red led
 void MainController::slot_newError()
 {
-    m_lightbutton_error->slot_setLight(LightButton::LED_BLINK);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_error->slot_setLight(LightButton::LED_BLINK);
+    }
 }
 
 // This slot is called if the system is going down for poweroff
 void MainController::slot_shutdownNOW()
 {
-    m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
-    m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_operation->slot_setLight(LightButton::LED_OFF);
+        m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+    }
 }
 
 void MainController::slot_mainsPowerRestored()
@@ -279,10 +310,16 @@ void MainController::slot_mainsPowerRestored()
 
 void MainController::slot_allErrorsQuit()
 {
-    m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_error->slot_setLight(LightButton::LED_ON);
+    }
 }
 
 void MainController::slot_allErrorsGone()
 {
-    m_lightbutton_error->slot_setLight(LightButton::LED_OFF);
+    if (m_settings->value("system/hasLightButtons").toInt() == 1)
+    {
+        m_lightbutton_error->slot_setLight(LightButton::LED_OFF);
+    }
 }

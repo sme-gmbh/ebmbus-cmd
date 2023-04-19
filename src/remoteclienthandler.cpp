@@ -208,7 +208,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 QString line;
 
-                line.asprintf("FFU id=%i busID=%i unit=%i fanAddress=%i fanGroup=%i nSet=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getUnit(), ffu->getFanAddress(), ffu->getFanGroup(), ffu->getSpeedSetpoint());
+                line.sprintf("FFU id=%i busID=%i unit=%i fanAddress=%i fanGroup=%i nSet=%i\r\n", ffu->getId(), ffu->getBusID(), ffu->getUnit(), ffu->getFanAddress(), ffu->getFanGroup(), ffu->getSpeedSetpoint());
 
                 socket->write(line.toUtf8());
             }
@@ -221,7 +221,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 QString line;
 
-                line.asprintf("AuxFan id=%i busID=%i fanAddress=%i nSet=%i\r\n", auxFan->getId(), auxFan->getBusID(), auxFan->getFanAddress(), auxFan->getSpeedSetpoint());
+                line.sprintf("AuxFan id=%i busID=%i fanAddress=%i nSet=%i\r\n", auxFan->getId(), auxFan->getBusID(), auxFan->getFanAddress(), auxFan->getSpeedSetpoint());
 
                 socket->write(line.toUtf8());
             }
@@ -234,7 +234,7 @@ void RemoteClientHandler::slot_read_ready()
             {
                 QString line;
 
-                line.asprintf("OCUfan id=%i busID=%i\r\n", ocufan->getId(), ocufan->getBusID());
+                line.sprintf("OCUfan id=%i busID=%i\r\n", ocufan->getId(), ocufan->getBusID());
 
                 socket->write(line.toUtf8());
             }
@@ -255,7 +255,7 @@ void RemoteClientHandler::slot_read_ready()
                 int telegramQueueLevel_standardPriority = bus->getSizeOfTelegramQueue(false);
                 int telegramQueueLevel_highPriority = bus->getSizeOfTelegramQueue(true);
                 QString line;
-                line.asprintf("EbmBus line %i: TelegramQueueLevel_standardPriority=%i TelegramQueueLevel_highPriority=%i\r\n",
+                line.sprintf("EbmBus line %i: TelegramQueueLevel_standardPriority=%i TelegramQueueLevel_highPriority=%i\r\n",
                              i, telegramQueueLevel_standardPriority, telegramQueueLevel_highPriority);
                 socket->write(line.toUtf8());
                 i++;
@@ -286,11 +286,11 @@ void RemoteClientHandler::slot_read_ready()
         else if (command == "button-leds")
         {
             QString response;
-            response.asprintf("Button-LED[operation]=.\r\n");
-            response.asprintf("Button-LED[error]=.\r\n");
-            response.asprintf("Button-LED[speed0]=.\r\n");
-            response.asprintf("Button-LED[speed50]=.\r\n");
-            response.asprintf("Button-LED[speed100]=.\r\n");
+            response.sprintf("Button-LED[operation]=.\r\n");
+            response.sprintf("Button-LED[error]=.\r\n");
+            response.sprintf("Button-LED[speed0]=.\r\n");
+            response.sprintf("Button-LED[speed50]=.\r\n");
+            response.sprintf("Button-LED[speed100]=.\r\n");
 
             response = "Not implemented yet.\r\n";  // TBD. Implementation
 
@@ -626,7 +626,7 @@ void RemoteClientHandler::slot_DCIaddressingFinished(int busID)
 void RemoteClientHandler::slot_DCIaddressingGotSerialNumber(int busID, quint8 unit, quint8 fanAddress, quint8 fanGroup, quint32 serialNumber)
 {
     QString response;
-    response.asprintf("dci-address bus=%i unit=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, unit, serialNumber, fanAddress, fanGroup);
+    response.sprintf("dci-address bus=%i unit=%i serial=%i fanAddress=%i fanGroup=%i\r\n", busID, unit, serialNumber, fanAddress, fanGroup);
     socket->write(response.toUtf8());
 }
 
