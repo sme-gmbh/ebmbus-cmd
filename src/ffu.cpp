@@ -210,11 +210,11 @@ QString FFU::getData(QString key)
     // ***** Actual keys *****
     else if (key == "online")
     {
-        return QString().sprintf("%i", m_actualData.online);
+        return QString().asprintf("%i", m_actualData.online);
     }
     else if (key == "lostTelegrams")
     {
-        return QString().sprintf("%lli", m_actualData.lostTelegrams);
+        return QString().asprintf("%lli", m_actualData.lostTelegrams);
     }
     else if (key == "lastSeen")
     {
@@ -222,23 +222,23 @@ QString FFU::getData(QString key)
     }
     else if (key == "speedSettingLostCount")
     {
-        return QString().sprintf("%i", m_actualData.speedSettingLostCount);
+        return QString().asprintf("%i", m_actualData.speedSettingLostCount);
     }
     else if (key == "speedReading")
     {
-        return QString().sprintf("%i", m_actualData.speedReading);
+        return QString().asprintf("%i", m_actualData.speedReading);
     }
     else if (key == "speedSetpoint")
     {
-        return QString().sprintf("%i", m_actualData.speedSetpoint);
+        return QString().asprintf("%i", m_actualData.speedSetpoint);
     }
     else if (key == "statusRaw_LSB")
     {
-        return QString().sprintf("%02x", m_actualData.statusRaw_LSB);
+        return QString().asprintf("%02x", m_actualData.statusRaw_LSB);
     }
     else if (key == "statusRaw_MSB")
     {
-        return QString().sprintf("%02x", m_actualData.statusRaw_MSB);
+        return QString().asprintf("%02x", m_actualData.statusRaw_MSB);
     }
     else if (key == "statusString")
     {
@@ -249,19 +249,19 @@ QString FFU::getData(QString key)
     }
     else if (key == "warnings")
     {
-        return QString().sprintf("%02x", m_actualData.warnings);
+        return QString().asprintf("%02x", m_actualData.warnings);
     }
     else if (key == "dcVoltage")
     {
-        return QString().sprintf("%.1lf", m_actualData.dcVoltage);
+        return QString().asprintf("%.1lf", m_actualData.dcVoltage);
     }
     else if (key == "dcCurrent")
     {
-        return QString().sprintf("%.3lf", m_actualData.dcCurrent);
+        return QString().asprintf("%.3lf", m_actualData.dcCurrent);
     }
     else if (key == "temperatureOfPowerModule")
     {
-        return QString().sprintf("%i", m_actualData.temperatureOfPowerModule);
+        return QString().asprintf("%i", m_actualData.temperatureOfPowerModule);
     }
 
     return "Error[FFU]: Key " + key + " not available";
@@ -425,14 +425,14 @@ void FFU::save()
 
     QString wdata;
 
-    wdata.append(QString().sprintf("id=%i ", m_id));
-    wdata.append(QString().sprintf("bus=%i ", m_busID));
-    wdata.append(QString().sprintf("unit=%i ", m_unit));
-    wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
-    wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
-    wdata.append(QString().sprintf("nmax=%.2lf ", m_speedMaxRPM));      // No need to save this anymore, as it is read from EEPROM in current version of this software
-    wdata.append(QString().sprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
-    wdata.append(QString().sprintf("speedSettingLostCount=%i\n", m_actualData.speedSettingLostCount));    // Todo: decide when to save this. Do not write flash to dead!
+    wdata.append(QString().asprintf("id=%i ", m_id));
+    wdata.append(QString().asprintf("bus=%i ", m_busID));
+    wdata.append(QString().asprintf("unit=%i ", m_unit));
+    wdata.append(QString().asprintf("fanAddress=%i ", m_fanAddress));
+    wdata.append(QString().asprintf("fanGroup=%i ", m_fanGroup));
+    wdata.append(QString().asprintf("nmax=%.2lf ", m_speedMaxRPM));      // No need to save this anymore, as it is read from EEPROM in current version of this software
+    wdata.append(QString().asprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
+    wdata.append(QString().asprintf("speedSettingLostCount=%i\n", m_actualData.speedSettingLostCount));    // Todo: decide when to save this. Do not write flash to dead!
 
 
     file.write(wdata.toUtf8());
@@ -534,7 +534,7 @@ bool FFU::isThisYourTelegram(quint64 telegramID, bool deleteID)
 
 QString FFU::myFilename()
 {
-    return (m_filepath + QString().sprintf("ffu-%06i.csv", m_id));
+    return (m_filepath + QString().asprintf("ffu-%06i.csv", m_id));
 }
 
 bool FFU::isConfigured()

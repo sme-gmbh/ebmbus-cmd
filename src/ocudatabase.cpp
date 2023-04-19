@@ -265,6 +265,7 @@ void OCUdatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr
 
 void OCUdatabase::slot_FanActualDataHasChanged(int id)
 {
+    Q_UNUSED(id)
     // If valid response returned, immediately request new status from next fan
     m_timer_pollStatus.start();
     slot_timer_pollStatus_fired();

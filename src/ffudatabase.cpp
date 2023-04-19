@@ -257,7 +257,7 @@ QString FFUdatabase::startDCIaddressing(int busID, QString startAddress, QString
     {
         QList<int> ids;
 
-        QStringList parts = idsString.split(",", QString::SkipEmptyParts);
+        QStringList parts = idsString.split(",", Qt::SkipEmptyParts);
         if (parts.count() > 1)
         {
             foreach(QString part, parts)

@@ -32,7 +32,7 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
         if (!interfacesKey.startsWith("ocumodbus"))
             continue;
         QString interfacesString = settings.value(interfacesKey).toString();
-        QStringList interfaces = interfacesString.split(",", QString::SkipEmptyParts);
+        QStringList interfaces = interfacesString.split(",", Qt::SkipEmptyParts);
 
         if (interfaces.length() == 1)       // Non redundant bus
         {
@@ -93,7 +93,7 @@ ModBus *OcuModbusSystem::getBusByID(int busID)
 void OcuModbusSystem::slot_responseRaw(quint64 telegramID, quint8 address, quint8 functionCode, QByteArray data)
 {
 #ifdef QT_DEBUG
-    printf("ID: %llu ADR: %02X  FC: %02X  fanGroup: %02X  data: ", telegramID, address, functionCode);
+    printf("ID: %llu ADR: %02X  FC: %02X data: ", telegramID, address, functionCode);
     foreach (quint8 byte, data)
     {
         printf("%02X ", byte);

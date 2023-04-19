@@ -23,6 +23,9 @@ OperatingSystemControl::OperatingSystemControl(QObject *parent) : QObject(parent
 void OperatingSystemControl::slot_shutdownNOW()
 {
     QProcess p;
+    QStringList args;
+    args.append("poweroff");
 
-    p.startDetached("sudo poweroff");
+//    p.startDetached("sudo poweroff");
+    p.startDetached("sudo", args);
 }

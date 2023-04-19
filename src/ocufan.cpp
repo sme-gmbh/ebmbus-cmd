@@ -277,11 +277,11 @@ QString OCUfan::getData(QString key)
     // ***** Actual keys *****
     else if (key == "online")
     {
-        return QString().sprintf("%i", m_actualData.online);
+        return QString().asprintf("%i", m_actualData.online);
     }
     else if (key == "lostTelegrams")
     {
-        return QString().sprintf("%lli", m_actualData.lostTelegrams);
+        return QString().asprintf("%lli", m_actualData.lostTelegrams);
     }
     else if (key == "lastSeen")
     {
@@ -289,47 +289,47 @@ QString OCUfan::getData(QString key)
     }
     else if (key == "speedSettingLostCount")
     {
-        return QString().sprintf("%i", m_actualData.speedSettingLostCount);
+        return QString().asprintf("%i", m_actualData.speedSettingLostCount);
     }
     else if (key == "speedReading")
     {
-        return QString().sprintf("%.0lf", m_actualData.speedReading);
+        return QString().asprintf("%.0lf", m_actualData.speedReading);
     }
     else if (key == "speedSetpoint")
     {
-        return QString().sprintf("%.0lf", m_actualData.speedSetpoint);
+        return QString().asprintf("%.0lf", m_actualData.speedSetpoint);
     }
     else if (key == "fanPower")
     {
-        return QString().sprintf("%.0lf", m_actualData.fanPower);
+        return QString().asprintf("%.0lf", m_actualData.fanPower);
     }
     else if (key == "temperatureRead")
     {
-        return QString().sprintf("%.3lf", m_actualData.temperatureRead);
+        return QString().asprintf("%.3lf", m_actualData.temperatureRead);
     }
     else if (key == "temperatureSetpoint")
     {
-        return QString().sprintf("%.3lf", m_actualData.temperatureSetpoint);
+        return QString().asprintf("%.3lf", m_actualData.temperatureSetpoint);
     }
     else if (key == "temperatureKp")
     {
-        return QString().sprintf("%lf", m_actualData.temperatureKp);
+        return QString().asprintf("%lf", m_actualData.temperatureKp);
     }
     else if (key == "temperatureTn")
     {
-        return QString().sprintf("%lf", m_actualData.temperatureTn);
+        return QString().asprintf("%lf", m_actualData.temperatureTn);
     }
     else if (key == "coolingValveSet")
     {
-        return QString().sprintf("%.3lf", m_actualData.coolingValveSet);
+        return QString().asprintf("%.3lf", m_actualData.coolingValveSet);
     }
     else if (key == "coolingValveRead")
     {
-        return QString().sprintf("%.3lf", m_actualData.coolingValveRead);
+        return QString().asprintf("%.3lf", m_actualData.coolingValveRead);
     }
     else if (key == "pumpSetpoint")
     {
-        return QString().sprintf("%.3lf", m_actualData.pumpSetpoint);
+        return QString().asprintf("%.3lf", m_actualData.pumpSetpoint);
     }
 
     return "Error[OCUfan]: Key " + key + " not available";
@@ -471,16 +471,16 @@ void OCUfan::save()
 
     QString wdata;
 
-    wdata.append(QString().sprintf("id=%i ", m_id));
-    wdata.append(QString().sprintf("bus=%i ", m_busID));
-    wdata.append(QString().sprintf("fanAddress=%i ", m_fanAddress));
-    wdata.append(QString().sprintf("fanGroup=%i ", m_fanGroup));
-    wdata.append(QString().sprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
-    wdata.append(QString().sprintf("speedSettingLostCount=%i ", m_actualData.speedSettingLostCount));  // Todo: decide when to save this. Do not write flash to dead!
-    wdata.append(QString().sprintf("temperatureSetPointRaw=%i ", m_setpointTemperatureRaw));
-    wdata.append(QString().sprintf("pumpSetPointRaw=%i ", m_setpointPumpRaw));
-    wdata.append(QString().sprintf("temperatureKpRaw=%i ", m_temperatureKpRaw));
-    wdata.append(QString().sprintf("temperatureTnRaw=%i\n", m_temperatureTnRaw));
+    wdata.append(QString().asprintf("id=%i ", m_id));
+    wdata.append(QString().asprintf("bus=%i ", m_busID));
+    wdata.append(QString().asprintf("fanAddress=%i ", m_fanAddress));
+    wdata.append(QString().asprintf("fanGroup=%i ", m_fanGroup));
+    wdata.append(QString().asprintf("setpointSpeedRaw=%i ", m_setpointSpeedRaw));
+    wdata.append(QString().asprintf("speedSettingLostCount=%i ", m_actualData.speedSettingLostCount));  // Todo: decide when to save this. Do not write flash to dead!
+    wdata.append(QString().asprintf("temperatureSetPointRaw=%i ", m_setpointTemperatureRaw));
+    wdata.append(QString().asprintf("pumpSetPointRaw=%i ", m_setpointPumpRaw));
+    wdata.append(QString().asprintf("temperatureKpRaw=%i ", m_temperatureKpRaw));
+    wdata.append(QString().asprintf("temperatureTnRaw=%i\n", m_temperatureTnRaw));
 
     file.write(wdata.toUtf8());
 
@@ -595,7 +595,7 @@ bool OCUfan::isThisYourTelegram(quint64 telegramID, bool deleteID)
 
 QString OCUfan::myFilename()
 {
-    return (m_filepath + QString().sprintf("ocufan-%06i.csv", m_id));
+    return (m_filepath + QString().asprintf("ocufan-%06i.csv", m_id));
 }
 
 bool OCUfan::isConfigured()
