@@ -16,9 +16,9 @@
 QT += core network
 QT -= gui
 
-CONFIG += c++11
-
 TARGET = ebmbus-cmd
+
+CONFIG += c++11
 CONFIG += console
 CONFIG -= app_bundle
 
@@ -47,7 +47,6 @@ unix {
 SOURCES += main.cpp \
     ocudatabase.cpp \
     ocufan.cpp \
-    ocumodbus.cpp \
     ocumodbussystem.cpp \
     revpidio.cpp \
     maincontroller.cpp \
@@ -69,11 +68,11 @@ SOURCES += main.cpp \
 
 LIBS     += -lebmbus
 LIBS     += -lmodbus
+LIBS     += -lopenffucontrol-qtmodbus
 
 HEADERS += \
     ocudatabase.h \
     ocufan.h \
-    ocumodbus.h \
     ocumodbussystem.h \
     revpidio.h \
     maincontroller.h \

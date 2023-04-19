@@ -212,7 +212,6 @@ public slots:
     void slot_transactionLost(quint64 id);
     void slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
     void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
-    void slot_wroteHoldingRegisterData(quint64 telegramID);
 
 private slots:
     void slot_save();

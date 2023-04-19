@@ -145,11 +145,11 @@ void OCUfan::setSpeedRaw(int value, bool refreshOnly)
         }
         if (isConfigured())
         {
-            OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+            ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
             if (bus == nullptr)
                 return;     // Drop requests for non existing bus ids
 
-            m_transactionIDs.append(m_ocuModbusSystem->writeHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0002_FanRpmSetpoint + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_setpointSpeedRaw));
+            m_transactionIDs.append(bus->writeSingleRegister(m_fanGroup, OCUfan::HOLDING_REG_0002_FanRpmSetpoint + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_setpointSpeedRaw));
         }
         else
         {
@@ -174,11 +174,11 @@ void OCUfan::setTemperature(double temperature)
 
     if (isConfigured())
     {
-        OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+        ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
         if (bus == nullptr)
             return;     // Drop requests for non existing bus ids
 
-        m_transactionIDs.append(m_ocuModbusSystem->writeHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_setpointTemperatureRaw));
+        m_transactionIDs.append(bus->writeSingleRegister(m_fanGroup, OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_setpointTemperatureRaw));
     }
     else
     {
@@ -191,11 +191,11 @@ void OCUfan::setTemperatureKp(double Kp)
     m_temperatureKpRaw = (int)(Kp * 100.0);
     if (isConfigured())
     {
-        OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+        ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
         if (bus == nullptr)
             return;     // Drop requests for non existing bus ids
 
-        m_transactionIDs.append(m_ocuModbusSystem->writeHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0003_TemperatureControlKp + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_temperatureKpRaw));
+        m_transactionIDs.append(bus->writeSingleRegister(m_fanGroup, OCUfan::HOLDING_REG_0003_TemperatureControlKp + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_temperatureKpRaw));
     }
     else
     {
@@ -208,11 +208,11 @@ void OCUfan::setTemperatureTn(double Tn)
     m_temperatureTnRaw = (int)(Tn * 10.0);
     if (isConfigured())
     {
-        OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+        ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
         if (bus == nullptr)
             return;     // Drop requests for non existing bus ids
 
-        m_transactionIDs.append(m_ocuModbusSystem->writeHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_temperatureTnRaw));
+        m_transactionIDs.append(bus->writeSingleRegister(m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_temperatureTnRaw));
     }
     else
     {
@@ -225,11 +225,11 @@ void OCUfan::setPump(double speed)
     m_setpointPumpRaw = (int)(speed * 1000.0);
     if (isConfigured())
     {
-        OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+        ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
         if (bus == nullptr)
             return;     // Drop requests for non existing bus ids
 
-        m_transactionIDs.append(m_ocuModbusSystem->writeHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_temperatureTnRaw));
+        m_transactionIDs.append(bus->writeSingleRegister(m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + MODBUS_FFU_BLOCKSIZE * m_fanAddress, m_temperatureTnRaw));
     }
     else
     {
@@ -422,7 +422,7 @@ void OCUfan::requestStatus()
         return;
     }
 
-    OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+    ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
     if (bus == nullptr)
     {
         m_loghandler->slot_newEntry(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), " Bus id " + QString().setNum(m_busID) + " not found.");
@@ -432,17 +432,17 @@ void OCUfan::requestStatus()
     if (!m_configData.valid)
         requestConfig();
 
-    m_transactionIDs.append(m_ocuModbusSystem->readHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0003_TemperatureControlKp + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0002_FanRpmSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0001_PumpSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readHoldingRegister(m_busID, m_fanGroup, OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readInputRegister(m_busID, m_fanGroup, OCUfan::INPUT_REG_0005_FanPowerRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readInputRegister(m_busID, m_fanGroup, OCUfan::INPUT_REG_0004_FanRpmRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readInputRegister(m_busID, m_fanGroup, OCUfan::INPUT_REG_0003_FanErrorCode + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readInputRegister(m_busID, m_fanGroup, OCUfan::INPUT_REG_0002_CoolingValveRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readInputRegister(m_busID, m_fanGroup, OCUfan::INPUT_REG_0001_CoolingValveSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
-    m_transactionIDs.append(m_ocuModbusSystem->readInputRegister(m_busID, m_fanGroup, OCUfan::INPUT_REG_0000_TemperatureFFURead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0003_TemperatureControlKp + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0002_FanRpmSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0001_PumpSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0005_FanPowerRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0004_FanRpmRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0003_FanErrorCode + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0002_CoolingValveRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0001_CoolingValveSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0000_TemperatureFFURead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
 }
 
 void OCUfan::requestConfig()
@@ -450,7 +450,7 @@ void OCUfan::requestConfig()
     if (!isConfigured())
         return;
 
-    OcuModbus* bus = m_ocuModbusSystem->getBusByID(m_busID);
+    ModBus* bus = m_ocuModbusSystem->getBusByID(m_busID);
     if (bus == nullptr)
         return;
 
@@ -732,13 +732,6 @@ void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, qui
     default:
         break;
     }
-}
-
-void OCUfan::slot_wroteHoldingRegisterData(quint64 telegramID)
-{
-    Q_UNUSED(telegramID)
-
-    markAsOnline();
 }
 
 void OCUfan::slot_save()

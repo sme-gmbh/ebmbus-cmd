@@ -20,7 +20,8 @@
 #include <QThread>
 #include <QSettings>
 #include "loghandler.h"
-#include "ocumodbus.h"
+//#include "ocumodbus.h"
+#include <libopenffucontrol-qtmodbus/modbus.h>
 
 class OcuModbusSystem : public QObject
 {
@@ -29,19 +30,19 @@ public:
     explicit OcuModbusSystem(QObject *parent, Loghandler* loghandler);
     ~OcuModbusSystem();
 
-    QList<OcuModbus*> *ocuModbuslist();
+    QList<ModBus*> *ocuModbuslist();
 
-    OcuModbus* getBusByID(int busID);
+    ModBus* getBusByID(int busID);
 
-    quint64 readHoldingRegister(int busID, quint16 adr, quint16 reg);
-    quint64 writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata);
-    quint64 readInputRegister(int busID, quint16 adr, quint16 reg);
+//    quint64 readHoldingRegister(int busID, quint16 adr, quint16 reg);
+//    quint64 writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata);
+//    quint64 readInputRegister(int busID, quint16 adr, quint16 reg);
 
 
 private:
     Loghandler* m_loghandler;
-    QList<OcuModbus*> m_ocuModbuslist;
-    QThread m_workerThread;
+    QList<ModBus*> m_ocuModbuslist;
+//    QThread m_workerThread;
 
     quint64 getNewTelegramID();
 
@@ -49,20 +50,22 @@ signals:
 
     // Incoming signals from bus, routed to host
     void signal_transactionLost(quint64 telegramID);
+    void signal_transactionFinished();
     void signal_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
     void signal_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
-    void signal_wroteHoldingRegisterData(quint64 telegramID);
 
-
-    // Outgoing signals to bus
-    void signal_writeHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
-    void signal_readHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg);
-    void signal_readInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg);
-
+    // Log output signals
+    void signal_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text);
+    void signal_entryGone(LogEntry::LoggingCategory loggingCategory, QString module, QString text);
 
 public slots:
 
 private slots:
+    void slot_responseRaw(quint64 telegramID, quint8 address, quint8 functionCode, QByteArray data);
+    void slot_transactionLost(quint64 telegramID);
+    void slot_transactionFinished();
+    void slot_holdingRegistersRead(quint64 telegramID, quint8 slaveAddress, quint16 dataStartAddress, QList<quint16> data);
+    void slot_inputRegistersRead(quint64 telegramID, quint8 slaveAddress, quint16 dataStartAddress, QList<quint16> data);
 
 };
 

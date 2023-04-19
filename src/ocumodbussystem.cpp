@@ -38,29 +38,24 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
         {
             QString interface_0 = interfaces.at(0);
 
-            OcuModbus* newOcuModbus = new OcuModbus(nullptr, QString("/dev/").append(interface_0));    // parent must be 0 in order to be moved to workerThread later
+            ModBus* newOcuModbus = new ModBus(nullptr, QString("/dev/").append(interface_0));    // parent must be 0 in order to be moved to workerThread later
             m_ocuModbuslist.append(newOcuModbus);
-            newOcuModbus->moveToThread(&m_workerThread);
-            m_workerThread.start();
-            connect(&m_workerThread, &QThread::finished, newOcuModbus, &QObject::deleteLater);
 
-            connect(newOcuModbus, SIGNAL(signal_newEntry(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_newEntry(LogEntry::LoggingCategory,QString,QString)));
-            connect(newOcuModbus, SIGNAL(signal_entryGone(LogEntry::LoggingCategory,QString,QString)), m_loghandler, SLOT(slot_entryGone(LogEntry::LoggingCategory,QString,QString)));
-// BUG: Why twice?
-//            m_ocuModbuslist.append(newOcuModbus);
-
-            // Routing of calls to bus
-            connect(this, &OcuModbusSystem::signal_readHoldingRegisterData, newOcuModbus, &OcuModbus::slot_readHoldingRegisterData);
-            connect(this, &OcuModbusSystem::signal_readInputRegisterData, newOcuModbus, &OcuModbus::slot_readInputRegisterData);
-            connect(this, &OcuModbusSystem::signal_writeHoldingRegisterData, newOcuModbus, &OcuModbus::slot_writeHoldingRegisterData);
+            connect(this, &OcuModbusSystem::signal_newEntry, m_loghandler, &Loghandler::slot_newEntry);
+            connect(this, &OcuModbusSystem::signal_entryGone, m_loghandler, &Loghandler::slot_entryGone);
 
             // Routing of bus results to master
-            connect(newOcuModbus, &OcuModbus::signal_transactionLost, this, &OcuModbusSystem::signal_transactionLost);
-            connect(newOcuModbus, &OcuModbus::signal_receivedHoldingRegisterData, this, &OcuModbusSystem::signal_receivedHoldingRegisterData);
-            connect(newOcuModbus, &OcuModbus::signal_receivedInputRegisterData, this, &OcuModbusSystem::signal_receivedInputRegisterData);
-            connect(newOcuModbus, &OcuModbus::signal_wroteHoldingRegisterData, this, &OcuModbusSystem::signal_wroteHoldingRegisterData);
+            connect(newOcuModbus, &ModBus::signal_transactionFinished, this, &OcuModbusSystem::slot_transactionFinished);
+            connect(newOcuModbus, &ModBus::signal_transactionFinished, this, &OcuModbusSystem::signal_transactionFinished);
+            connect(newOcuModbus, &ModBus::signal_transactionLost, this, &OcuModbusSystem::slot_transactionLost);
+            connect(newOcuModbus, &ModBus::signal_transactionLost, this, &OcuModbusSystem::signal_transactionLost);
+            connect(newOcuModbus, &ModBus::signal_responseRaw, this, &OcuModbusSystem::slot_responseRaw);
+            connect(newOcuModbus, &ModBus::signal_holdingRegistersRead, this, &OcuModbusSystem::slot_holdingRegistersRead);
+            connect(newOcuModbus, &ModBus::signal_inputRegistersRead, this, &OcuModbusSystem::slot_inputRegistersRead);
 
-            if (!newOcuModbus->open())
+            newOcuModbus->setDelayTxTimer(200);
+
+            if (!newOcuModbus->open(QSerialPort::Baud115200))
                 fprintf(stderr, "OcuModbusSystem::OcuModbusSystem(): Unable to open serial line %s!\n", interface_0.toUtf8().data());
             else
                 fprintf(stderr, "OcuModbusSystem::OcuModbusSystem(): Activated on %s!\n", interface_0.toUtf8().data());
@@ -77,55 +72,115 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
 
 OcuModbusSystem::~OcuModbusSystem()
 {
-    m_workerThread.quit();
-    m_workerThread.wait();
+
 }
 
-QList<OcuModbus *> *OcuModbusSystem::ocuModbuslist()
+QList<ModBus *> *OcuModbusSystem::ocuModbuslist()
 {
     return (&m_ocuModbuslist);
 }
 
-OcuModbus *OcuModbusSystem::getBusByID(int busID)
+ModBus *OcuModbusSystem::getBusByID(int busID)
 {
     if (m_ocuModbuslist.length() <= busID)
         return nullptr; // Bus id not available
 
-    OcuModbus* bus = m_ocuModbuslist.at(busID);
+    ModBus* bus = m_ocuModbuslist.at(busID);
 
     return bus;
 }
 
-quint64 OcuModbusSystem::readHoldingRegister(int busID, quint16 adr, quint16 reg)
+void OcuModbusSystem::slot_responseRaw(quint64 telegramID, quint8 address, quint8 functionCode, QByteArray data)
 {
-    Q_UNUSED(busID)
-    quint64 telegramID = getNewTelegramID();
-    emit signal_readHoldingRegisterData(telegramID, adr, reg);
-    return telegramID;
+#ifdef QT_DEBUG
+    printf("ID: %llu ADR: %02X  FC: %02X  fanGroup: %02X  data: ", telegramID, address, functionCode);
+    foreach (quint8 byte, data)
+    {
+        printf("%02X ", byte);
+    }
+    printf("\n");
+    fflush(stdout);
+#else
+    Q_UNUSED(telegramID)
+    Q_UNUSED(address)
+    Q_UNUSED(functionCode)
+    Q_UNUSED(data)
+#endif
 }
 
-quint64 OcuModbusSystem::writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata)
+void OcuModbusSystem::slot_transactionLost(quint64 telegramID)
 {
-    Q_UNUSED(busID)
-    quint64 telegramID = getNewTelegramID();
-    emit signal_writeHoldingRegisterData(telegramID, adr, reg, rawdata);
-    return telegramID;
+    emit signal_newEntry(LogEntry::Info, "OcuModbusSystem", QString("Transaction lost."));
+
+#ifdef QT_DEBUG
+    printf("ID: %llu Transaction lost.\n", telegramID);
+    fflush(stdout);
+#else
+    Q_UNUSED(telegramID)
+#endif
 }
 
-quint64 OcuModbusSystem::readInputRegister(int busID, quint16 adr, quint16 reg)
+void OcuModbusSystem::slot_transactionFinished()
 {
-    Q_UNUSED(busID)
-    quint64 telegramID = getNewTelegramID();
-    emit signal_readInputRegisterData(telegramID, adr, reg);
-    return telegramID;
+#ifdef QT_DEBUG
+    printf("Transaction finished.\n");
+    fflush(stdout);
+#endif
 }
 
-
-quint64 OcuModbusSystem::getNewTelegramID()
+void OcuModbusSystem::slot_holdingRegistersRead(quint64 telegramID, quint8 slaveAddress, quint16 dataStartAddress, QList<quint16> data)
 {
-    static quint64 id = 1;  // Start counting telegram id with 1. 0 is reserved for error
-    id++;
+    quint16 reg = dataStartAddress;
 
-    return id;
+    foreach(quint16 rawdata, data)
+    {
+        emit signal_receivedHoldingRegisterData(telegramID, slaveAddress, reg, rawdata);
+        reg++;
+    }
 }
+
+void OcuModbusSystem::slot_inputRegistersRead(quint64 telegramID, quint8 slaveAddress, quint16 dataStartAddress, QList<quint16> data)
+{
+    quint16 reg = dataStartAddress;
+
+    foreach(quint16 rawdata, data)
+    {
+        emit signal_receivedInputRegisterData(telegramID, slaveAddress, reg, rawdata);
+        reg++;
+    }
+}
+
+//quint64 OcuModbusSystem::readHoldingRegister(int busID, quint16 adr, quint16 reg)
+//{
+//    Q_UNUSED(busID)
+//    quint64 telegramID = getNewTelegramID();
+//    oc
+//    emit signal_readHoldingRegisterData(telegramID, adr, reg);
+//    return telegramID;
+//}
+
+//quint64 OcuModbusSystem::writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata)
+//{
+//    Q_UNUSED(busID)
+//    quint64 telegramID = getNewTelegramID();
+//    emit signal_writeHoldingRegisterData(telegramID, adr, reg, rawdata);
+//    return telegramID;
+//}
+
+//quint64 OcuModbusSystem::readInputRegister(int busID, quint16 adr, quint16 reg)
+//{
+//    Q_UNUSED(busID)
+//    quint64 telegramID = getNewTelegramID();
+//    emit signal_readInputRegisterData(telegramID, adr, reg);
+//    return telegramID;
+//}
+
+
+//quint64 OcuModbusSystem::getNewTelegramID()
+//{
+//    static quint64 id = 1;  // Start counting telegram id with 1. 0 is reserved for error
+//    id++;
+
+//    return id;
+//}
 

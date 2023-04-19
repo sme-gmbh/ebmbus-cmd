@@ -26,7 +26,6 @@ OCUdatabase::OCUdatabase(QObject *parent,  OcuModbusSystem *ocuModbusSystem, Log
     // High level bus-system response connections
     connect(m_ocuModbusSystem, &OcuModbusSystem::signal_receivedHoldingRegisterData, this, &OCUdatabase::slot_receivedHoldingRegisterData);
     connect(m_ocuModbusSystem, &OcuModbusSystem::signal_receivedInputRegisterData, this, &OCUdatabase::slot_receivedInputRegisterData);
-    connect(m_ocuModbusSystem, &OcuModbusSystem::signal_wroteHoldingRegisterData, this, &OCUdatabase::slot_wroteHoldingRegisterData);
     connect(m_ocuModbusSystem, &OcuModbusSystem::signal_transactionLost, this, &OCUdatabase::slot_transactionLost);
 
     connect(&m_timer_pollStatus, &QTimer::timeout, this, &OCUdatabase::slot_timer_pollStatus_fired);
@@ -262,18 +261,6 @@ void OCUdatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr
         return;
     }
     ocufan->slot_receivedInputRegisterData(telegramID, adr, reg, rawdata);
-}
-
-void OCUdatabase::slot_wroteHoldingRegisterData(quint64 telegramID)
-{
-    OCUfan* ocufan = getOCUfanByTelegramID(telegramID);
-    if (ocufan == nullptr)
-    {
-        // Somebody other than the ffu requested that response, so do nothing with the response at this point
-        m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_wroteHoldingRegisterData", "Telegram id mismatch.");
-        return;
-    }
-    ocufan->slot_wroteHoldingRegisterData(telegramID);
 }
 
 void OCUdatabase::slot_FanActualDataHasChanged(int id)

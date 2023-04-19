@@ -57,7 +57,7 @@ public:
 
 private:
     OcuModbusSystem* m_ocuModbusSystem;
-    QList<OcuModbus*>* m_ocuModbusList;
+    QList<ModBus*>* m_ocuModbusList;
     Loghandler* m_loghandler;
     QList<OCUfan*> m_ocufans;
     QTimer m_timer_pollStatus;
@@ -77,7 +77,6 @@ private slots:
     void slot_transactionLost(quint64 telegramID);
     void slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
     void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
-    void slot_wroteHoldingRegisterData(quint64 telegramID);
 
     void slot_FanActualDataHasChanged(int id);
     // Timer slots
