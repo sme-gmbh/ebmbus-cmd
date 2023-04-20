@@ -53,7 +53,8 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
             connect(newOcuModbus, &ModBus::signal_holdingRegistersRead, this, &OcuModbusSystem::slot_holdingRegistersRead);
             connect(newOcuModbus, &ModBus::signal_inputRegistersRead, this, &OcuModbusSystem::slot_inputRegistersRead);
 
-            newOcuModbus->setDelayTxTimer(200);
+            quint32 txDelay = settings.value("txDelay", 200).toUInt();
+            newOcuModbus->setDelayTxTimer(txDelay);
 
             if (!newOcuModbus->open(QSerialPort::Baud115200))
                 fprintf(stderr, "OcuModbusSystem::OcuModbusSystem(): Unable to open serial line %s!\n", interface_0.toUtf8().data());

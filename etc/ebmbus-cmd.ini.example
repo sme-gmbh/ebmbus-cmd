@@ -32,4 +32,5 @@ ebmbus2=ttyUSB2
 #ebmmodbus0=ttyUSB3
 
 [interfacesOcuModBus]
+txDelay=200
 #ocumodbus0=ttyUSB0
