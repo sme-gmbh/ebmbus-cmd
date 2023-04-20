@@ -38,7 +38,7 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
         {
             QString interface_0 = interfaces.at(0);
 
-            ModBus* newOcuModbus = new ModBus(nullptr, QString("/dev/").append(interface_0));    // parent must be 0 in order to be moved to workerThread later
+            ModBus* newOcuModbus = new ModBus(nullptr, QString("/dev/").append(interface_0), true);    // parent must be 0 in order to be moved to workerThread later
             m_ocuModbuslist.append(newOcuModbus);
 
             connect(this, &OcuModbusSystem::signal_newEntry, m_loghandler, &Loghandler::slot_newEntry);

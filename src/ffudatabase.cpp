@@ -359,6 +359,7 @@ void FFUdatabase::slot_transactionLost(quint64 telegramID)
     if (ffu == nullptr)
     {
         // Somebody other than the ffu requested that response, so do nothing with the response at this point
+        m_loghandler->slot_newEntry(LogEntry::Error, "FFUdatabase slot_transactionLost", "Telegram id mismatch.");
         return;
     }
     ffu->slot_transactionLost(telegramID);

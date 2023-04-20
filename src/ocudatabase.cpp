@@ -28,8 +28,9 @@ OCUdatabase::OCUdatabase(QObject *parent,  OcuModbusSystem *ocuModbusSystem, Log
     connect(m_ocuModbusSystem, &OcuModbusSystem::signal_receivedInputRegisterData, this, &OCUdatabase::slot_receivedInputRegisterData);
     connect(m_ocuModbusSystem, &OcuModbusSystem::signal_transactionLost, this, &OCUdatabase::slot_transactionLost);
 
+    // Timer for cyclic poll task to get the status of OCUfans
     connect(&m_timer_pollStatus, &QTimer::timeout, this, &OCUdatabase::slot_timer_pollStatus_fired);
-    m_timer_pollStatus.setInterval(10000);
+    m_timer_pollStatus.setInterval(2000);
     m_timer_pollStatus.start();
 }
 
@@ -67,6 +68,11 @@ void OCUdatabase::saveToHdd()
         ocufan->setFiledirectory(path);
         ocufan->save();
     }
+}
+
+QList<ModBus *> *OCUdatabase::getBusList()
+{
+    return m_ocuModbusList;
 }
 
 QString OCUdatabase::addOCUfan(int id, int busID, int ocuModbusAddress, int fanAddress)
@@ -267,21 +273,36 @@ void OCUdatabase::slot_FanActualDataHasChanged(int id)
 {
     Q_UNUSED(id)
     // If valid response returned, immediately request new status from next fan
-    m_timer_pollStatus.start();
-    slot_timer_pollStatus_fired();
+//    m_timer_pollStatus.start();
+//    slot_timer_pollStatus_fired();
 }
 
 void OCUdatabase::slot_timer_pollStatus_fired()
 {
-    static int currentOCUfanId = 0;
+//    static int currentOCUfanId = 0;
 
-    if (m_ocufans.count() > currentOCUfanId)
+//    if (m_ocufans.count() > currentOCUfanId)
+//    {
+//        OCUfan* ocufan = m_ocufans.at(currentOCUfanId);
+//        ocufan->requestStatus();
+//    }
+
+//    currentOCUfanId++;
+//    if (m_ocufans.count() <= currentOCUfanId)
+//        currentOCUfanId = 0;
+
+    foreach (ModBus* modBus, *m_ocuModbusList)
     {
-        OCUfan* ocufan = m_ocufans.at(currentOCUfanId);
-        ocufan->requestStatus();
+        int sizeOfTelegramQueue = qMax(modBus->getSizeOfTelegramQueue(false), modBus->getSizeOfTelegramQueue(true));
+        if (sizeOfTelegramQueue < 20)
+        {
+            foreach(OCUfan* ocufan, m_ocufans)
+            {
+                if (m_ocuModbusList->indexOf(modBus) == ocufan->getBusID())
+                {
+                    ocufan->requestStatus();
+                }
+            }
+        }
     }
-
-    currentOCUfanId++;
-    if (m_ocufans.count() <= currentOCUfanId)
-        currentOCUfanId = 0;
 }

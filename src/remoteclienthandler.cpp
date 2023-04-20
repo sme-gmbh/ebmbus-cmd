@@ -260,6 +260,19 @@ void RemoteClientHandler::slot_read_ready()
                 socket->write(line.toUtf8());
                 i++;
             }
+
+            i = 0;
+            foreach(ModBus* bus, *m_ocuDB->getBusList())
+            {
+                int telegramQueueLevel_standardPriority = bus->getSizeOfTelegramQueue(false);
+                int telegramQueueLevel_highPriority = bus->getSizeOfTelegramQueue(true);
+                QString line;
+                line.sprintf("OCU ModBus line %i: TelegramQueueLevel_standardPriority=%i TelegramQueueLevel_highPriority=%i\r\n",
+                             i, telegramQueueLevel_standardPriority, telegramQueueLevel_highPriority);
+                socket->write(line.toUtf8());
+                i++;
+            }
+
         }
         // ************************************************** button **************************************************
         else if (command == "button")

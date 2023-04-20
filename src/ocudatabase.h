@@ -39,6 +39,9 @@ public:
 
     void loadFromHdd();
     void saveToHdd();
+
+    QList<ModBus *> *getBusList();
+
     QString addOCUfan(int id, int busID, int ocuModbusAddress, int fanAddress);
     QString deleteOCUfan(int id);
 
