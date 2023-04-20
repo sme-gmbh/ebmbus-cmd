@@ -36,7 +36,7 @@ EbmBusSystem::EbmBusSystem(QObject *parent, RevPiDIO *io) : QObject(parent)
         if (!interfacesKey.startsWith("ebmbus"))
             continue;
         QString interfacesString = settings.value(interfacesKey).toString();
-        QStringList interfaces = interfacesString.split(",", Qt::SkipEmptyParts);
+        QStringList interfaces = interfacesString.split(",", QString::SkipEmptyParts);
 
         int i;
 

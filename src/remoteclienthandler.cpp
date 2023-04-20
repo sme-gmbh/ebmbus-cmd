@@ -70,7 +70,7 @@ void RemoteClientHandler::slot_read_ready()
 #endif
 
         // Parse key/value pairs now
-        QStringList commandChunks = line.split(' ', Qt::SkipEmptyParts);
+        QStringList commandChunks = line.split(' ', QString::SkipEmptyParts);
         QMap<QString, QString> data;
 
         foreach(QString commandChunk, commandChunks)

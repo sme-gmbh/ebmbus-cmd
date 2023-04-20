@@ -32,7 +32,7 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
         if (!interfacesKey.startsWith("ocumodbus"))
             continue;
         QString interfacesString = settings.value(interfacesKey).toString();
-        QStringList interfaces = interfacesString.split(",", Qt::SkipEmptyParts);
+        QStringList interfaces = interfacesString.split(",", QString::SkipEmptyParts);
 
         if (interfaces.length() == 1)       // Non redundant bus
         {
