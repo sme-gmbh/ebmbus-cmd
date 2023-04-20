@@ -78,8 +78,8 @@ private slots:
     // High level bus response slots
     void slot_transactionFinished();
     void slot_transactionLost(quint64 telegramID);
-    void slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
-    void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
+    void slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data);
+    void slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data);
 
     void slot_FanActualDataHasChanged(int id);
     // Timer slots

@@ -245,7 +245,7 @@ void OCUdatabase::slot_transactionLost(quint64 telegramID)
     ocufan->slot_transactionLost(telegramID);
 }
 
-void OCUdatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
+void OCUdatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data)
 {
     OCUfan* ocufan = getOCUfanByTelegramID(telegramID);
     if (ocufan == nullptr)
@@ -254,10 +254,10 @@ void OCUdatabase::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 a
         m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_receivedHoldingRegisterData", "Telegram id mismatch.");
         return;
     }
-    ocufan->slot_receivedHoldingRegisterData(telegramID, adr, reg, rawdata);
+    ocufan->slot_receivedHoldingRegisterData(telegramID, adr, reg, data);
 }
 
-void OCUdatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
+void OCUdatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data)
 {
     OCUfan* ocufan = getOCUfanByTelegramID(telegramID);
     if (ocufan == nullptr)
@@ -266,7 +266,7 @@ void OCUdatabase::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr
         m_loghandler->slot_newEntry(LogEntry::Error, "OCUdatabase slot_receivedInputRegisterData", "Telegram id mismatch.");
         return;
     }
-    ocufan->slot_receivedInputRegisterData(telegramID, adr, reg, rawdata);
+    ocufan->slot_receivedInputRegisterData(telegramID, adr, reg, data);
 }
 
 void OCUdatabase::slot_FanActualDataHasChanged(int id)

@@ -51,8 +51,8 @@ signals:
     // Incoming signals from bus, routed to host
     void signal_transactionLost(quint64 telegramID);
     void signal_transactionFinished();
-    void signal_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
-    void signal_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata);
+    void signal_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data);
+    void signal_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data);
 
     // Log output signals
     void signal_newEntry(LogEntry::LoggingCategory loggingCategory, QString module, QString text);

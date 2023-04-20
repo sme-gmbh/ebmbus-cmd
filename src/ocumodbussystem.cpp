@@ -38,7 +38,11 @@ OcuModbusSystem::OcuModbusSystem(QObject *parent, Loghandler *loghandler) : QObj
         {
             QString interface_0 = interfaces.at(0);
 
-            ModBus* newOcuModbus = new ModBus(nullptr, QString("/dev/").append(interface_0));    // parent must be 0 in order to be moved to workerThread later
+#ifdef QT_DEBUG
+            ModBus* newOcuModbus = new ModBus(nullptr, QString("/dev/").append(interface_0), true);    // parent must be 0 in order to be moved to workerThread later
+#else
+            ModBus* newOcuModbus = new ModBus(nullptr, QString("/dev/").append(interface_0), false);    // parent must be 0 in order to be moved to workerThread later
+#endif
             m_ocuModbuslist.append(newOcuModbus);
 
             connect(this, &OcuModbusSystem::signal_newEntry, m_loghandler, &Loghandler::slot_newEntry);
@@ -131,57 +135,10 @@ void OcuModbusSystem::slot_transactionFinished()
 
 void OcuModbusSystem::slot_holdingRegistersRead(quint64 telegramID, quint8 slaveAddress, quint16 dataStartAddress, QList<quint16> data)
 {
-    quint16 reg = dataStartAddress;
-
-    foreach(quint16 rawdata, data)
-    {
-        emit signal_receivedHoldingRegisterData(telegramID, slaveAddress, reg, rawdata);
-        reg++;
-    }
+    emit signal_receivedHoldingRegisterData(telegramID, slaveAddress, dataStartAddress, data);
 }
 
 void OcuModbusSystem::slot_inputRegistersRead(quint64 telegramID, quint8 slaveAddress, quint16 dataStartAddress, QList<quint16> data)
 {
-    quint16 reg = dataStartAddress;
-
-    foreach(quint16 rawdata, data)
-    {
-        emit signal_receivedInputRegisterData(telegramID, slaveAddress, reg, rawdata);
-        reg++;
-    }
+    emit signal_receivedInputRegisterData(telegramID, slaveAddress, dataStartAddress, data);
 }
-
-//quint64 OcuModbusSystem::readHoldingRegister(int busID, quint16 adr, quint16 reg)
-//{
-//    Q_UNUSED(busID)
-//    quint64 telegramID = getNewTelegramID();
-//    oc
-//    emit signal_readHoldingRegisterData(telegramID, adr, reg);
-//    return telegramID;
-//}
-
-//quint64 OcuModbusSystem::writeHoldingRegister(int busID, quint16 adr, quint16 reg, quint16 rawdata)
-//{
-//    Q_UNUSED(busID)
-//    quint64 telegramID = getNewTelegramID();
-//    emit signal_writeHoldingRegisterData(telegramID, adr, reg, rawdata);
-//    return telegramID;
-//}
-
-//quint64 OcuModbusSystem::readInputRegister(int busID, quint16 adr, quint16 reg)
-//{
-//    Q_UNUSED(busID)
-//    quint64 telegramID = getNewTelegramID();
-//    emit signal_readInputRegisterData(telegramID, adr, reg);
-//    return telegramID;
-//}
-
-
-//quint64 OcuModbusSystem::getNewTelegramID()
-//{
-//    static quint64 id = 1;  // Start counting telegram id with 1. 0 is reserved for error
-//    id++;
-
-//    return id;
-//}
-

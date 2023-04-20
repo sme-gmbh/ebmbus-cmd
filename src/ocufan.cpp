@@ -431,7 +431,7 @@ void OCUfan::requestStatus()
 
     if (!m_configData.valid)
         requestConfig();
-
+/*
     m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0004_TemperatureControlTn + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
     m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0003_TemperatureControlKp + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
     m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0002_FanRpmSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
@@ -443,6 +443,10 @@ void OCUfan::requestStatus()
     m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0002_CoolingValveRead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
     m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0001_CoolingValveSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
     m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0000_TemperatureFFURead + m_fanAddress * MODBUS_FFU_BLOCKSIZE));
+*/
+// Do it in with multiple register read instead, this is way faster
+    m_transactionIDs.append(bus->readHoldingRegisters(m_fanGroup, OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint + m_fanAddress * MODBUS_FFU_BLOCKSIZE, 5));
+    m_transactionIDs.append(bus->readInputRegisters(m_fanGroup, OCUfan::INPUT_REG_0000_TemperatureFFURead + m_fanAddress * MODBUS_FFU_BLOCKSIZE, 6));
 }
 
 void OCUfan::requestConfig()
@@ -658,7 +662,7 @@ void OCUfan::slot_transactionLost(quint64 id)
     emit signal_FanActualDataHasChanged(m_id);
 }
 
-void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
+void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data)
 {
     Q_UNUSED(telegramID)
 
@@ -667,30 +671,34 @@ void OCUfan::slot_receivedHoldingRegisterData(quint64 telegramID, quint16 adr, q
 
     markAsOnline();
 
-    switch (reg % MODBUS_FFU_BLOCKSIZE)
+    foreach(quint16 rawdata, data)
     {
-    case OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint:
-        m_actualData.temperatureSetpoint = (double)rawdata / 1000.0;
-        processConfigData();
-        break;
-    case OCUfan::HOLDING_REG_0001_PumpSetpoint:
-        m_actualData.pumpSetpoint = (double)rawdata / 1000.0;
-        break;
-    case OCUfan::HOLDING_REG_0002_FanRpmSetpoint:
-        m_actualData.speedSetpoint = rawdata;
-        break;
-    case OCUfan::HOLDING_REG_0003_TemperatureControlKp:
-        m_actualData.temperatureKp = (double)(qint16)rawdata / 100.0;
-        break;
-    case OCUfan::HOLDING_REG_0004_TemperatureControlTn:
-        m_actualData.temperatureTn = (double)rawdata / 10.0;
-        break;
-    default:
-        break;
+        switch (reg % MODBUS_FFU_BLOCKSIZE)
+        {
+        case OCUfan::HOLDING_REG_0000_TemperatureFFUSetpoint:
+            m_actualData.temperatureSetpoint = (double)rawdata / 1000.0;
+            break;
+        case OCUfan::HOLDING_REG_0001_PumpSetpoint:
+            m_actualData.pumpSetpoint = (double)rawdata / 1000.0;
+            break;
+        case OCUfan::HOLDING_REG_0002_FanRpmSetpoint:
+            m_actualData.speedSetpoint = rawdata;
+            break;
+        case OCUfan::HOLDING_REG_0003_TemperatureControlKp:
+            m_actualData.temperatureKp = (double)(qint16)rawdata / 100.0;
+            break;
+        case OCUfan::HOLDING_REG_0004_TemperatureControlTn:
+            m_actualData.temperatureTn = (double)rawdata / 10.0;
+            processConfigData();
+            break;
+        default:
+            break;
+        }
+    reg++;
     }
 }
 
-void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, quint16 rawdata)
+void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, quint16 reg, QList<quint16> data)
 {
     Q_UNUSED(telegramID)
 
@@ -699,38 +707,42 @@ void OCUfan::slot_receivedInputRegisterData(quint64 telegramID, quint16 adr, qui
 
     markAsOnline();
 
-    switch (reg % MODBUS_FFU_BLOCKSIZE)
+    foreach(quint16 rawdata, data)
     {
-    case OCUfan::INPUT_REG_0000_TemperatureFFURead:
-        m_actualData.temperatureRead = (double)rawdata / 1000.0;
-        emit signal_FanActualDataHasChanged(m_id);          // Temperature is the last data we get from automatic query, so signal new data now
-        break;
-    case OCUfan::INPUT_REG_0001_CoolingValveSetpoint:
-        m_actualData.coolingValveSet = (double)rawdata / 10000.0;
-        break;
-    case OCUfan::INPUT_REG_0002_CoolingValveRead:
-        m_actualData.coolingValveRead = (double)rawdata / 10000.0;
-        break;
-    case OCUfan::INPUT_REG_0003_FanErrorCode:
-        if (rawdata == 0)
+        switch (reg % MODBUS_FFU_BLOCKSIZE)
         {
-            m_actualData.statusString = "healthy";
-            m_loghandler->slot_entryGone(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), "Status error present.");
+        case OCUfan::INPUT_REG_0000_TemperatureFFURead:
+            m_actualData.temperatureRead = (double)rawdata / 1000.0;
+            break;
+        case OCUfan::INPUT_REG_0001_CoolingValveSetpoint:
+            m_actualData.coolingValveSet = (double)rawdata / 10000.0;
+            break;
+        case OCUfan::INPUT_REG_0002_CoolingValveRead:
+            m_actualData.coolingValveRead = (double)rawdata / 10000.0;
+            break;
+        case OCUfan::INPUT_REG_0003_FanErrorCode:
+            if (rawdata == 0)
+            {
+                m_actualData.statusString = "healthy";
+                m_loghandler->slot_entryGone(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), "Status error present.");
+            }
+            else
+            {
+                m_actualData.statusString = "problem";
+                m_loghandler->slot_newEntry(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), "Status error present.");
+            }
+            break;
+        case OCUfan::INPUT_REG_0004_FanRpmRead:
+            m_actualData.speedReading = rawdata;
+            break;
+        case OCUfan::INPUT_REG_0005_FanPowerRead:
+            m_actualData.fanPower = rawdata;
+            emit signal_FanActualDataHasChanged(m_id);          // INPUT_REG_0005_FanPowerRead is the last data we get from automatic query, so signal new data now
+            break;
+        default:
+            break;
         }
-        else
-        {
-            m_actualData.statusString = "problem";
-            m_loghandler->slot_newEntry(LogEntry::Error, "OCUfan id=" + QString().setNum(m_id), "Status error present.");
-        }
-        break;
-    case OCUfan::INPUT_REG_0004_FanRpmRead:
-        m_actualData.speedReading = rawdata;
-        break;
-    case OCUfan::INPUT_REG_0005_FanPowerRead:
-        m_actualData.fanPower = rawdata;
-        break;
-    default:
-        break;
+        reg++;
     }
 }
 
