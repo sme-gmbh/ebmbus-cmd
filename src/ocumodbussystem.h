@@ -44,7 +44,7 @@ private:
     QList<ModBus*> m_ocuModbuslist;
 //    QThread m_workerThread;
 
-    quint64 getNewTelegramID();
+//    quint64 getNewTelegramID();
 
 signals:
 
