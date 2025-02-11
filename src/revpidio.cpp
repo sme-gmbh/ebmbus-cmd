@@ -24,7 +24,7 @@ RevPiDIO::RevPiDIO(QObject *parent) :
 bool RevPiDIO::getBit(int position)
 {
     bool result;
-    char byte;
+    char byte = 0;
     int offset = 0 + (position / 8);
     position %= 8;
 
